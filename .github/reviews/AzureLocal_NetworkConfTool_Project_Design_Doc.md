@@ -1406,6 +1406,50 @@ When extending the schema (manually or via AI-generated templates):
 
 ## Appendix: Design Decisions
 
+### Technology Choices
+
+**Frontend: TypeScript with Vite**
+
+| Factor | Justification |
+|--------|---------------|
+| **Complex schema** | Deeply nested structures (`vlans[]`, `interfaces[]`, `bgp.neighbors[]`) — TS interfaces catch shape errors at compile time |
+| **Cross-reference validation** | Validating that `interfaces.tagged_vlans` references existing `vlans[].vlan_id` benefits from typed lookups |
+| **Form state management** | Multi-step wizard with Phase 1 → 2 → 3 dependencies — types prevent passing wrong data between steps |
+| **Auto-completion** | Network engineers filling forms benefit from IDE hints for valid field values |
+| **Self-documenting** | Interfaces serve as living documentation matching the schema spec |
+
+**Example interface definitions:**
+```typescript
+interface VLAN {
+  vlan_id: number;
+  name: string;
+  purpose?: 'management' | 'compute' | 'storage_1' | 'storage_2';
+  interface?: { ip: string; cidr: number; dhcp_relay?: string[]; };
+  redundancy?: HSRPConfig | VRRPConfig;
+}
+
+type Role = 'TOR1' | 'TOR2' | 'BMC';
+type Vendor = 'cisco' | 'dellemc';
+
+interface StandardConfig {
+  switch: SwitchConfig;
+  vlans: VLAN[];
+  interfaces: Interface[];
+  port_channels?: PortChannel[];
+  mlag?: MLAGConfig;
+  bgp?: BGPConfig;
+  prefix_lists?: Record<string, PrefixListEntry[]>;
+}
+```
+
+**Backend: Python**
+- Jinja2 templating for vendor configs
+- jsonschema for validation
+- Click CLI framework
+- Established ecosystem for network automation
+
+---
+
 ### Key Architectural Choices
 
 **Flat JSON Structure**  

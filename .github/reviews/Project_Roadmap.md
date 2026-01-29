@@ -28,11 +28,18 @@
 │   │   └── *.py
 │   └── pyproject.toml
 │
-├── frontend/                             # GitHub Pages wizard (self-contained)
+├── frontend/                             # TypeScript wizard (self-contained)
 │   ├── index.html
 │   ├── style.css
-│   ├── app.js
-│   ├── schema.js                         # Synced from backend/schema/
+│   ├── src/
+│   │   ├── main.ts                       # Entry point
+│   │   ├── app.ts                        # Wizard logic
+│   │   ├── types.ts                      # Schema interfaces
+│   │   ├── validator.ts                  # Client-side validation
+│   │   └── utils.ts                      # Helpers
+│   ├── dist/                             # Built output (gitignored)
+│   ├── tsconfig.json
+│   ├── package.json
 │   ├── examples/*.json
 │   └── tests/
 │
@@ -125,9 +132,30 @@ python3 -c "import json; json.load(open('backend/schema/standard.json')); print(
 
 ## Phase 2: Frontend Wizard
 
-**Goal:** Build UI that users interact with. Outputs Standard JSON.
+**Goal:** Build TypeScript-based UI wizard that users interact with. Outputs Standard JSON.
+
+**Technology:** TypeScript with Vite build tooling (compile-time type safety for complex schema)
 
 **Reference:** https://neilbird.github.io/Odin-for-AzureLocal/
+
+### Task 2.0: TypeScript Project Setup
+
+**Files:** `frontend/package.json`, `frontend/tsconfig.json`
+
+**Action:** Initialize TypeScript project with Vite:
+1. Create `package.json` with dependencies: `typescript`, `vite`
+2. Create `tsconfig.json` with strict mode enabled
+3. Create `src/types.ts` with schema interfaces
+
+**Why TypeScript:**
+- Complex nested schema (`vlans[]`, `interfaces[]`, `bgp.neighbors[]`) — types catch shape errors at compile time
+- Cross-reference validation benefits from typed lookups
+- Multi-step wizard state management needs type safety
+- Interfaces serve as living documentation matching schema spec
+
+**Verify:** `cd frontend && npm install && npm run build`
+
+---
 
 ### Task 2.1: HTML Structure
 
@@ -168,31 +196,44 @@ python3 -c "import json; json.load(open('backend/schema/standard.json')); print(
 
 ---
 
-### Task 2.3: JavaScript Logic
+### Task 2.3: TypeScript Logic
 
-**File:** `frontend/app.js`
+**Files:** `frontend/src/app.ts`, `frontend/src/types.ts`
 
-**Action:** Implement:
-- Option card selection
-- Form data collection
-- Summary updates
-- JSON export/import
+**Action:** Implement with full type safety:
+- Typed wizard state management
+- Form data collection with interface validation
+- Summary updates with computed types
+- JSON export/import with schema types
 - Progress tracking
 
-**Verify:** `grep -q "exportJSON" frontend/app.js`
+**Key Types to Define:**
+```typescript
+interface SwitchConfig { vendor: Vendor; model: string; role: Role; ... }
+interface VLAN { vlan_id: number; name: string; purpose?: VLANPurpose; ... }
+interface Interface { name: string; type: InterfaceType; ... }
+interface StandardConfig { switch: SwitchConfig; vlans: VLAN[]; ... }
+```
+
+**Verify:** `cd frontend && npm run typecheck && grep -q "exportJSON" src/app.ts`
 
 ---
 
-### Task 2.4: Schema Sync
+### Task 2.4: Schema Types & Validation
 
-**File:** `frontend/schema.js`
+**Files:** `frontend/src/types.ts`, `frontend/src/validator.ts`
 
 **Action:** 
-1. Copy schema from `backend/schema/standard.json`
-2. Export as JavaScript module
-3. Add `validateConfig()` function
+1. Generate TypeScript interfaces from `backend/schema/standard.json`
+2. Export typed schema definitions
+3. Implement `validateConfig(): ValidationResult` with typed errors
 
-**Verify:** `grep -q "validateConfig" frontend/schema.js`
+**Type Generation:**
+- Use JSON Schema → TypeScript conversion
+- Add union types for enums: `type Role = 'TOR1' | 'TOR2' | 'BMC'`
+- Add branded types for IDs: `type VlanId = number & { readonly brand: unique symbol }`
+
+**Verify:** `grep -q "validateConfig" frontend/src/validator.ts && npm run typecheck`
 
 ---
 
@@ -215,9 +256,12 @@ python3 -c "import json; json.load(open('backend/schema/standard.json')); print(
 
 **File:** `.github/workflows/pages.yml`
 
-**Action:** Create workflow to deploy `frontend/` folder
+**Action:** Create workflow to:
+1. Install Node.js dependencies
+2. Run TypeScript build (`npm run build`)
+3. Deploy `frontend/dist/` folder to GitHub Pages
 
-**Verify:** File exists and contains `path: frontend`
+**Verify:** File exists and contains `npm run build` and `path: frontend/dist`
 
 ---
 
@@ -391,11 +435,12 @@ ls backend/templates/cisco/nxos/*.j2 | wc -l   # 10
 |-------|------|--------|
 | **1** | **Schema** | |
 | | 1.1 Create JSON Schema | ✅ |
-| **2** | **Frontend** | |
+| **2** | **Frontend (TypeScript)** | |
+| | 2.0 TypeScript Project Setup | ⏳ |
 | | 2.1 HTML Structure | ⏳ |
 | | 2.2 CSS Styling | ⏳ |
-| | 2.3 JavaScript Logic | ⏳ |
-| | 2.4 Schema Sync | ⏳ |
+| | 2.3 TypeScript Logic | ⏳ |
+| | 2.4 Schema Types & Validation | ⏳ |
 | | 2.5 Example Configs | ⏳ |
 | | 2.6 GitHub Pages Workflow | ⏳ |
 | **3** | **Backend** | |
@@ -416,8 +461,11 @@ ls backend/templates/cisco/nxos/*.j2 | wc -l   # 10
 ## Commands Reference
 
 ```bash
-# Frontend
-cd /workspace/frontend && python3 -m http.server 8000
+# Frontend (TypeScript)
+cd /workspace/frontend && npm install      # Install dependencies
+cd /workspace/frontend && npm run dev      # Start dev server with HMR
+cd /workspace/frontend && npm run build    # Build for production
+cd /workspace/frontend && npm run typecheck # Check types without emitting
 
 # Backend
 cd /workspace/backend && python3 -m src.cli validate <input.json>
