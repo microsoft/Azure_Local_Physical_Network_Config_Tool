@@ -110,3 +110,7 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Frontend build output
+frontend/dist/
+frontend/node_modules/
