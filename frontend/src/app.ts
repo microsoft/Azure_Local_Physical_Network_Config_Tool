@@ -66,7 +66,7 @@ interface VLANConfig {
 
 const state: WizardState = {
   currentStep: 1,
-  totalSteps: 5,
+  totalSteps: 7,
   config: {
     switch: {
       vendor: 'dellemc',
@@ -193,7 +193,8 @@ export function setupEventListeners(): void {
   getElements('.nav-step').forEach(step => {
     step.addEventListener('click', () => {
       const stepNum = parseInt(step.dataset.step || '1');
-      if (stepNum <= state.currentStep) {
+      // Allow clicking on previous steps, current step, or Review (step 7)
+      if (stepNum <= state.currentStep || stepNum === 7) {
         showStep(stepNum);
       }
     });
@@ -241,6 +242,60 @@ export function setupEventListeners(): void {
 }
 
 // ============================================================================
+// TEMPLATE LOADING
+// ============================================================================
+
+export function showTemplateModal(): void {
+  const modal = getElement('#template-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+export function closeTemplateModal(): void {
+  const modal = getElement('#template-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+export async function loadTemplate(templateName: string): Promise<void> {
+  closeTemplateModal(); // Close modal immediately
+  
+  try {
+    const response = await fetch(`/examples/${templateName}.json`);
+    if (!response.ok) {
+      throw new Error(`Failed to load template: ${response.statusText}`);
+    }
+    const config = await response.json() as Partial<StandardConfig>;
+    loadConfig(config);
+    showSuccessMessage(`Loaded template: ${templateName}`);
+  } catch (error) {
+    showValidationError(`Failed to load template: ${(error as Error).message}`);
+  }
+}
+
+export function toggleCollapsible(header: HTMLElement): void {
+  const content = header.nextElementSibling as HTMLElement;
+  if (content && content.classList.contains('collapsible-content')) {
+    const isVisible = content.style.display !== 'none';
+    content.style.display = isVisible ? 'none' : 'block';
+    header.classList.toggle('expanded');
+  }
+}
+
+export function updateStorageVlanName(storageNum: number): void {
+  const vlanIdInput = getElement<HTMLInputElement>(`#vlan-storage${storageNum}-id`);
+  const nameInput = getElement<HTMLInputElement>(`#vlan-storage${storageNum}-name`);
+  
+  if (vlanIdInput && nameInput && vlanIdInput.value) {
+    nameInput.value = `Storage${storageNum}_${vlanIdInput.value}`;
+    nameInput.style.color = '#666';
+  }
+}
+
+
+// ============================================================================
 // NAVIGATION
 // ============================================================================
 
@@ -252,13 +307,20 @@ function showStep(stepNum: number): void {
     state.currentStep = stepNum;
     updateNavigationUI();
     
-    if (stepNum === 5) populateReviewStep();
+    if (stepNum === 3) updateHostPortsSections();
+    if (stepNum === 7) populateReviewStep();
   }
 }
 
 function nextStep(): void {
   if (validateCurrentStep()) {
     collectStepData();
+    // Mark current step as completed before moving
+    const steps = getElements('.nav-step');
+    const currentStepElem = steps[state.currentStep - 1];
+    if (currentStepElem) {
+      currentStepElem.classList.add('completed');
+    }
     if (state.currentStep < state.totalSteps) {
       showStep(state.currentStep + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -276,13 +338,152 @@ function prevStep(): void {
 function updateNavigationUI(): void {
   getElements('.nav-step').forEach(step => {
     const stepNum = parseInt(step.dataset.step || '0');
-    step.classList.remove('active', 'completed');
+    step.classList.remove('active');
+    // Only add active to current step, but preserve completed class
     if (stepNum === state.currentStep) {
       step.classList.add('active');
     } else if (stepNum < state.currentStep) {
       step.classList.add('completed');
     }
   });
+}
+
+function updateHostPortsSections(): void {
+  const deploymentPattern = state.config.switch.deployment_pattern || 'fully_converged';
+  const displayElem = getElement('#deployment-pattern-display');
+  if (displayElem) {
+    displayElem.textContent = deploymentPattern.replace('_', ' ').toUpperCase();
+  }
+
+  // Hide all port sections first
+  const sections = [
+    '#port-section-converged',
+    '#port-section-mgmt-compute',
+    '#port-section-storage',
+    '#port-section-switchless'
+  ];
+  sections.forEach(id => {
+    const elem = getElement(id);
+    if (elem) (elem as HTMLElement).style.display = 'none';
+  });
+
+  // Show appropriate sections and update VLAN lists
+  if (deploymentPattern === 'fully_converged') {
+    const section = getElement('#port-section-converged');
+    if (section) (section as HTMLElement).style.display = '';
+    updateVlanDisplay('#converged-vlans-display', ['management', 'compute', 'storage_1', 'storage_2']);
+  } else if (deploymentPattern === 'switched') {
+    const section = getElement('#port-section-mgmt-compute');
+    if (section) (section as HTMLElement).style.display = '';
+    updateVlanDisplay('#mgmt-compute-vlans-display', ['management', 'compute', 'storage_1', 'storage_2']);
+    
+    const storageSection = getElement('#port-section-storage');
+    if (storageSection) (storageSection as HTMLElement).style.display = '';
+    updateVlanDisplay('#storage-vlans-display', ['storage_1', 'storage_2']);
+  } else if (deploymentPattern === 'switchless') {
+    const section = getElement('#port-section-switchless');
+    if (section) (section as HTMLElement).style.display = '';
+    updateVlanDisplay('#switchless-vlans-display', ['management', 'compute']);
+  }
+}
+
+function updateVlanDisplay(containerId: string, purposes: string[]): void {
+  // Determine which fields to populate based on the container
+  let nativeFieldId = '';
+  let taggedFieldId = '';
+  let hintId = '';
+  
+  if (containerId === '#converged-vlans-display') {
+    nativeFieldId = '#intf-converged-native';
+    taggedFieldId = '#intf-converged-tagged';
+    hintId = '#converged-vlans-hint';
+  } else if (containerId === '#mgmt-compute-vlans-display') {
+    nativeFieldId = '#intf-mgmt-compute-native';
+    taggedFieldId = '#intf-mgmt-compute-tagged';
+    hintId = '#mgmt-compute-vlans-hint';
+  } else if (containerId === '#storage-vlans-display') {
+    nativeFieldId = '#intf-storage-native';
+    taggedFieldId = '#intf-storage-tagged';
+    hintId = '#storage-vlans-hint';
+  } else if (containerId === '#switchless-vlans-display') {
+    nativeFieldId = '#intf-switchless-native';
+    taggedFieldId = '#intf-switchless-tagged';
+    hintId = '#switchless-vlans-hint';
+  }
+
+  // Get VLANs from state matching the specified purposes
+  const vlans = (state.config.vlans || [])
+    .filter(v => !v.shutdown && purposes.some(p => v.purpose?.includes(p)));
+
+  const mgmtVlan = vlans.find(v => v.purpose === 'management');
+  const vlanIds = vlans.map(v => v.vlan_id).join(',');
+  const vlanNames = vlans.map(v => `${v.vlan_id} (${v.name})`).join(', ');
+
+  // Populate native VLAN (default to management VLAN)
+  const nativeField = getElement<HTMLInputElement>(nativeFieldId);
+  if (nativeField && mgmtVlan) {
+    nativeField.value = String(mgmtVlan.vlan_id);
+    nativeField.placeholder = String(mgmtVlan.vlan_id);
+  }
+
+  // Populate tagged VLANs
+  const taggedField = getElement<HTMLInputElement>(taggedFieldId);
+  if (taggedField) {
+    taggedField.value = vlanIds;
+    taggedField.placeholder = vlanIds || 'No VLANs configured';
+  }
+
+  // Update hint with human-readable names
+  const hint = getElement(hintId);
+  if (hint) {
+    if (vlans.length === 0) {
+      hint.textContent = 'Complete Step 2 to configure VLANs';
+      (hint as HTMLElement).style.color = '#999';
+    } else {
+      hint.textContent = vlanNames;
+      (hint as HTMLElement).style.color = '#4CAF50';
+    }
+  }
+}
+
+function markCompletedSteps(): void {
+  // Mark steps as completed based on populated data in state
+  const steps = getElements('.nav-step');
+  
+  // Step 1: Switch info (always completed if vendor/model set)
+  if (state.config.switch.vendor && state.config.switch.model) {
+    steps[0]?.classList.add('completed');
+  }
+  
+  // Step 2: VLANs (completed if vlans exist)
+  if (state.config.vlans && state.config.vlans.length > 0) {
+    steps[1]?.classList.add('completed');
+  }
+  
+  // Step 3: Host Ports (completed if trunk interfaces exist that aren't peer-links)
+  if (state.config.interfaces && state.config.interfaces.some(i => i.type === 'Trunk')) {
+    steps[2]?.classList.add('completed');
+  }
+  
+  // Step 4: Redundancy (completed if mlag or port_channels exist)
+  if (state.config.mlag || (state.config.port_channels && state.config.port_channels.length > 0)) {
+    steps[3]?.classList.add('completed');
+  }
+  
+  // Step 5: Uplinks (completed if loopback interface exists)
+  if (state.config.interfaces && state.config.interfaces.some(i => i.intf_type === 'loopback')) {
+    steps[4]?.classList.add('completed');
+  }
+  
+  // Step 6: Routing (completed if bgp or static_routes exist)
+  if (state.config.bgp || (state.config.static_routes && state.config.static_routes.length > 0)) {
+    steps[5]?.classList.add('completed');
+  }
+  
+  // Step 7: Review (mark as completed if we have enough data)
+  if (steps[0]?.classList.contains('completed') && steps[1]?.classList.contains('completed')) {
+    steps[6]?.classList.add('completed');
+  }
 }
 
 // ============================================================================
@@ -334,9 +535,15 @@ function collectStepData(): void {
       collectVlanData();
       break;
     case 3:
-      collectPortsData();
+      collectHostPortsData();
       break;
     case 4:
+      collectRedundancyData();
+      break;
+    case 5:
+      collectUplinksData();
+      break;
+    case 6:
       collectRoutingData();
       break;
   }
@@ -472,69 +679,116 @@ function collectVlansByType(
   });
 }
 
-function collectPortsData(): void {
+function collectHostPortsData(): void {
   const interfaces: Interface[] = [];
-  const portChannels: PortChannel[] = [];
-  const role = state.config.switch.role;
-
-  const taggedVlans = (state.config.vlans || [])
-    .filter(v => !v.shutdown)
-    .map(v => v.vlan_id)
-    .join(',');
+  const deploymentPattern = state.config.switch.deployment_pattern;
   
   const mgmtVlan = (state.config.vlans || []).find(v => v.purpose === 'management');
   const nativeVlan = mgmtVlan ? String(mgmtVlan.vlan_id) : '7';
 
-  const hostStart = getInputValue('#intf-host-start');
-  const hostEnd = getInputValue('#intf-host-end');
-  if (hostStart && hostEnd) {
-    const hostQos = getElement<HTMLInputElement>('#intf-host-qos');
-    interfaces.push({
-      name: 'HyperConverged_To_Hosts',
-      type: 'Trunk',
-      intf_type: 'Ethernet',
-      start_intf: hostStart,
-      end_intf: hostEnd,
-      native_vlan: nativeVlan,
-      tagged_vlans: taggedVlans,
-      qos: hostQos?.checked || false
-    } as Interface);
+  const allVlans = (state.config.vlans || [])
+    .filter(v => !v.shutdown)
+    .map(v => v.vlan_id)
+    .join(',');
+
+  const mgmtComputeVlans = (state.config.vlans || [])
+    .filter(v => !v.shutdown && (v.purpose === 'management' || v.purpose === 'compute'))
+    .map(v => v.vlan_id)
+    .join(',');
+
+  const storageVlans = (state.config.vlans || [])
+    .filter(v => v.purpose === 'storage_1' || v.purpose === 'storage_2')
+    .map(v => v.vlan_id)
+    .join(',');
+
+  if (deploymentPattern === 'fully_converged') {
+    // Fully converged: All VLANs on same ports
+    const start = getInputValue('#intf-converged-start');
+    const end = getInputValue('#intf-converged-end');
+    const qos = getElement<HTMLInputElement>('#intf-converged-qos');
+    const nativeVlanInput = getInputValue('#intf-converged-native');
+    const taggedVlansInput = getInputValue('#intf-converged-tagged');
+    
+    if (start && end) {
+      interfaces.push({
+        name: 'HyperConverged_To_Hosts',
+        type: 'Trunk',
+        intf_type: 'Ethernet',
+        start_intf: start,
+        end_intf: end,
+        native_vlan: nativeVlanInput || nativeVlan,
+        tagged_vlans: taggedVlansInput || allVlans,
+        qos: qos?.checked || false
+      } as Interface);
+    }
+  } else if (deploymentPattern === 'switched') {
+    // Storage switched: Separate mgmt/compute and storage ports
+    const mgmtStart = getInputValue('#intf-mgmt-compute-start');
+    const mgmtEnd = getInputValue('#intf-mgmt-compute-end');
+    const mgmtNativeInput = getInputValue('#intf-mgmt-compute-native');
+    const mgmtTaggedInput = getInputValue('#intf-mgmt-compute-tagged');
+    
+    if (mgmtStart && mgmtEnd) {
+      interfaces.push({
+        name: 'Management_Compute_To_Hosts',
+        type: 'Trunk',
+        intf_type: 'Ethernet',
+        start_intf: mgmtStart,
+        end_intf: mgmtEnd,
+        native_vlan: mgmtNativeInput || nativeVlan,
+        tagged_vlans: mgmtTaggedInput || mgmtComputeVlans
+      } as Interface);
+    }
+
+    const storageStart = getInputValue('#intf-storage-start');
+    const storageEnd = getInputValue('#intf-storage-end');
+    const storageNativeInput = getInputValue('#intf-storage-native');
+    const storageTaggedInput = getInputValue('#intf-storage-tagged');
+    
+    if (storageStart && storageEnd) {
+      const storageQos = getElement<HTMLInputElement>('#intf-storage-qos');
+      interfaces.push({
+        name: 'Storage_Ports',
+        type: 'Trunk',
+        intf_type: 'Ethernet',
+        start_intf: storageStart,
+        end_intf: storageEnd,
+        native_vlan: storageNativeInput || nativeVlan,
+        tagged_vlans: storageTaggedInput || storageVlans,
+        qos: storageQos?.checked || false
+      } as Interface);
+    }
+  } else if (deploymentPattern === 'switchless') {
+    // Switchless: Only mgmt/compute ports (no storage network)
+    const start = getInputValue('#intf-switchless-start');
+    const end = getInputValue('#intf-switchless-end');
+    const nativeVlanInput = getInputValue('#intf-switchless-native');
+    const taggedVlansInput = getInputValue('#intf-switchless-tagged');
+    
+    if (start && end) {
+      interfaces.push({
+        name: 'Management_Compute_To_Hosts',
+        type: 'Trunk',
+        intf_type: 'Ethernet',
+        start_intf: start,
+        end_intf: end,
+        native_vlan: nativeVlanInput || nativeVlan,
+        tagged_vlans: taggedVlansInput || mgmtComputeVlans
+      } as Interface);
+    }
   }
 
-  const loopbackIp = getInputValue('#intf-loopback-ip');
-  if (loopbackIp) {
-    interfaces.push({
-      name: 'Loopback0',
-      type: 'L3',
-      intf_type: 'loopback',
-      intf: 'loopback0',
-      ipv4: loopbackIp
-    });
-  }
+  state.config.interfaces = interfaces;
+}
 
-  const uplink1Port = getInputValue('#intf-uplink1-port');
-  const uplink1Ip = getInputValue('#intf-uplink1-ip');
-  if (uplink1Port && uplink1Ip) {
-    interfaces.push({
-      name: 'P2P_Border1',
-      type: 'L3',
-      intf_type: 'Ethernet',
-      intf: uplink1Port,
-      ipv4: uplink1Ip
-    });
-  }
-
-  const uplink2Port = getInputValue('#intf-uplink2-port');
-  const uplink2Ip = getInputValue('#intf-uplink2-ip');
-  if (uplink2Port && uplink2Ip) {
-    interfaces.push({
-      name: 'P2P_Border2',
-      type: 'L3',
-      intf_type: 'Ethernet',
-      intf: uplink2Port,
-      ipv4: uplink2Ip
-    });
-  }
+function collectRedundancyData(): void {
+  const role = state.config.switch.role;
+  const portChannels: PortChannel[] = [];
+  
+  const taggedVlans = (state.config.vlans || [])
+    .filter(v => !v.shutdown)
+    .map(v => v.vlan_id)
+    .join(',');
 
   if (role !== 'BMC') {
     const ibgpPcId = parseIntSafe(getInputValue('#pc-ibgp-id'));
@@ -576,9 +830,51 @@ function collectPortsData(): void {
     state.config.mlag = undefined;
   }
 
-  state.config.interfaces = interfaces;
   state.config.port_channels = portChannels;
 }
+
+function collectUplinksData(): void {
+  const interfaces = state.config.interfaces || [];
+  
+  const loopbackIp = getInputValue('#intf-loopback-ip');
+  if (loopbackIp) {
+    interfaces.push({
+      name: 'Loopback0',
+      type: 'L3',
+      intf_type: 'loopback',
+      intf: 'loopback0',
+      ipv4: loopbackIp
+    });
+  }
+
+  const uplink1Port = getInputValue('#intf-uplink1-port');
+  const uplink1Ip = getInputValue('#intf-uplink1-ip');
+  if (uplink1Port && uplink1Ip) {
+    interfaces.push({
+      name: 'P2P_Border1',
+      type: 'L3',
+      intf_type: 'Ethernet',
+      intf: uplink1Port,
+      ipv4: uplink1Ip
+    });
+  }
+
+  const uplink2Port = getInputValue('#intf-uplink2-port');
+  const uplink2Ip = getInputValue('#intf-uplink2-ip');
+  if (uplink2Port && uplink2Ip) {
+    interfaces.push({
+      name: 'P2P_Border2',
+      type: 'L3',
+      intf_type: 'Ethernet',
+      intf: uplink2Port,
+      ipv4: uplink2Ip
+    });
+  }
+
+  state.config.interfaces = interfaces;
+}
+
+// Legacy function removed - now split into separate functions
 
 function collectRoutingData(): void {
   if (state.config.routing_type === 'bgp') {
@@ -805,12 +1101,12 @@ function removeDynamicVlan(btn: HTMLElement): void {
   }
 }
 
-function updateVlanName(idInput: HTMLInputElement): void {
+export function updateVlanName(idInput: HTMLInputElement, type?: string, prefix?: string): void {
   const vlanId = idInput.value;
   if (!vlanId) return;
   
-  const cssClass = idInput.dataset.cssClass;
-  const namePrefix = idInput.dataset.namePrefix;
+  const cssClass = type || idInput.dataset.cssClass;
+  const namePrefix = prefix || idInput.dataset.namePrefix;
   if (!cssClass || !namePrefix) return;
   
   const card = idInput.closest('.vlan-card');
@@ -906,6 +1202,14 @@ function validateCurrentStep(): boolean {
       return validateSwitchStep();
     case 2:
       return validateVlanStep();
+    case 3:
+      return validateHostPortsStep();
+    case 4:
+      return validateRedundancyStep();
+    case 5:
+      return validateUplinksStep();
+    case 6:
+      return validateRoutingStep();
     default:
       return true;
   }
@@ -914,12 +1218,12 @@ function validateCurrentStep(): boolean {
 function validateSwitchStep(): boolean {
   const hostname = getInputValue('#hostname');
   if (!hostname) {
-    showValidationError('Hostname is required');
+    showValidationError('⚠️ Hostname is required');
     return false;
   }
   
   if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(hostname)) {
-    showValidationError('Invalid hostname format');
+    showValidationError('⚠️ Invalid hostname format. Use letters, numbers, dots, hyphens, and underscores only.');
     return false;
   }
   
@@ -928,9 +1232,88 @@ function validateSwitchStep(): boolean {
 
 function validateVlanStep(): boolean {
   if ((state.config.vlans || []).length === 0) {
-    showValidationError('At least one VLAN is required');
+    showValidationError('⚠️ At least one VLAN is required. Please add a Management or Compute VLAN.');
     return false;
   }
+  
+  const hasManagement = state.config.vlans?.some(v => v.purpose === 'management');
+  if (!hasManagement) {
+    showValidationError('⚠️ At least one Management VLAN is required for switch management.');
+    return false;
+  }
+  
+  return true;
+}
+
+function validateHostPortsStep(): boolean {
+  const deploymentPattern = state.config.switch.deployment_pattern || 'fully_converged';
+  let hostStart = '';
+  let hostEnd = '';
+  
+  // Check appropriate fields based on deployment pattern
+  if (deploymentPattern === 'fully_converged') {
+    hostStart = getInputValue('#intf-converged-start');
+    hostEnd = getInputValue('#intf-converged-end');
+  } else if (deploymentPattern === 'switched') {
+    hostStart = getInputValue('#intf-mgmt-compute-start');
+    hostEnd = getInputValue('#intf-mgmt-compute-end');
+  } else if (deploymentPattern === 'switchless') {
+    hostStart = getInputValue('#intf-switchless-start');
+    hostEnd = getInputValue('#intf-switchless-end');
+  }
+  
+  if (!hostStart || !hostEnd) {
+    showValidationError('⚠️ Host port range is required. Specify both start and end ports.');
+    return false;
+  }
+  
+  return true;
+}
+
+function validateRedundancyStep(): boolean {
+  const role = state.config.switch.role;
+  
+  // BMC switches skip MLAG validation
+  if (role === 'BMC') {
+    return true;
+  }
+  
+  const keepaliveSrc = getInputValue('#mlag-keepalive-src');
+  const keepaliveDst = getInputValue('#mlag-keepalive-dst');
+  
+  if (!keepaliveSrc || !keepaliveDst) {
+    showValidationError('⚠️ MLAG keepalive IPs are required for TOR switches. Specify both source and destination IPs.');
+    return false;
+  }
+  
+  return true;
+}
+
+function validateUplinksStep(): boolean {
+  const loopbackIp = getInputValue('#intf-loopback-ip');
+  
+  if (!loopbackIp) {
+    showValidationError('⚠️ Loopback IP is required for BGP router-id.');
+    return false;
+  }
+  
+  if (!loopbackIp.includes('/32')) {
+    showValidationError('⚠️ Loopback IP must be /32 (e.g., 203.0.113.1/32)');
+    return false;
+  }
+  
+  return true;
+}
+
+function validateRoutingStep(): boolean {
+  if (state.config.routing_type === 'bgp') {
+    const asn = getInputValue('#bgp-asn');
+    if (!asn) {
+      showValidationError('⚠️ BGP ASN is required for BGP routing.');
+      return false;
+    }
+  }
+  
   return true;
 }
 
@@ -939,6 +1322,10 @@ function showValidationError(message: string): void {
   if (errorDiv) {
     errorDiv.textContent = message;
     errorDiv.style.display = 'block';
+    
+    // Scroll to error message
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
     setTimeout(() => {
       errorDiv.style.display = 'none';
     }, 5000);
@@ -1107,6 +1494,7 @@ function handleFileImport(event: Event): void {
 }
 
 function loadConfig(config: Partial<StandardConfig>): void {
+  // Step 1: Switch config
   if (config.switch) {
     state.config.switch = { ...state.config.switch, ...config.switch };
     setInputValue('#hostname', config.switch.hostname || '');
@@ -1127,10 +1515,139 @@ function loadConfig(config: Partial<StandardConfig>): void {
     }
   }
 
+  // Step 2: VLANs
   if (Array.isArray(config.vlans)) {
+    state.config.vlans = config.vlans; // Update state
     populateVlansFromConfig(config.vlans);
+    
+    // Populate storage VLANs
+    const storage1 = config.vlans.find(v => v.purpose === 'storage_1');
+    if (storage1) {
+      setInputValue('#vlan-storage1-id', String(storage1.vlan_id));
+      setInputValue('#vlan-storage1-name', storage1.name || `Storage1_${storage1.vlan_id}`);
+    }
+    
+    const storage2 = config.vlans.find(v => v.purpose === 'storage_2');
+    if (storage2) {
+      setInputValue('#vlan-storage2-id', String(storage2.vlan_id));
+      setInputValue('#vlan-storage2-name', storage2.name || `Storage2_${storage2.vlan_id}`);
+    }
   }
 
+  // Step 3: Host ports - adapt to deployment pattern
+  if (Array.isArray(config.interfaces)) {
+    state.config.interfaces = config.interfaces; // Update state
+    const deploymentPattern = config.switch?.deployment_pattern || 'fully_converged';
+    
+    if (deploymentPattern === 'fully_converged') {
+      const hostInterface = config.interfaces.find(i => i.type === 'Trunk' && i.start_intf);
+      if (hostInterface) {
+        setInputValue('#intf-converged-start', hostInterface.start_intf || '');
+        setInputValue('#intf-converged-end', hostInterface.end_intf || '');
+        setInputValue('#intf-converged-native', hostInterface.native_vlan || '');
+        setInputValue('#intf-converged-tagged', hostInterface.tagged_vlans || '');
+        const qosCheckbox = getElement<HTMLInputElement>('#intf-converged-qos');
+        if (qosCheckbox) qosCheckbox.checked = hostInterface.qos || false;
+      }
+    } else if (deploymentPattern === 'switched') {
+      const mgmtInterface = config.interfaces.find(i => i.name?.includes('Management') || i.name?.includes('Compute'));
+      if (mgmtInterface) {
+        setInputValue('#intf-mgmt-compute-start', mgmtInterface.start_intf || '');
+        setInputValue('#intf-mgmt-compute-end', mgmtInterface.end_intf || '');
+        setInputValue('#intf-mgmt-compute-native', mgmtInterface.native_vlan || '');
+        setInputValue('#intf-mgmt-compute-tagged', mgmtInterface.tagged_vlans || '');
+      }
+      
+      const storageInterface = config.interfaces.find(i => i.name?.includes('Storage'));
+      if (storageInterface) {
+        setInputValue('#intf-storage-start', storageInterface.start_intf || '');
+        setInputValue('#intf-storage-end', storageInterface.end_intf || '');
+        setInputValue('#intf-storage-native', storageInterface.native_vlan || '');
+        setInputValue('#intf-storage-tagged', storageInterface.tagged_vlans || '');
+        const storageQos = getElement<HTMLInputElement>('#intf-storage-qos');
+        if (storageQos) storageQos.checked = storageInterface.qos || false;
+      }
+    } else if (deploymentPattern === 'switchless') {
+      const hostInterface = config.interfaces.find(i => i.type === 'Trunk' && i.start_intf);
+      if (hostInterface) {
+        setInputValue('#intf-switchless-start', hostInterface.start_intf || '');
+        setInputValue('#intf-switchless-end', hostInterface.end_intf || '');
+        setInputValue('#intf-switchless-native', hostInterface.native_vlan || '');
+        setInputValue('#intf-switchless-tagged', hostInterface.tagged_vlans || '');
+      }
+    }
+    
+    // Step 5: Uplinks and loopback (same interfaces array)
+    const loopback = config.interfaces.find(i => i.intf_type === 'loopback');
+    if (loopback) {
+      setInputValue('#intf-loopback-ip', loopback.ipv4 || '');
+    }
+
+    const uplinks = config.interfaces.filter(i => i.type === 'L3' && i.intf_type === 'Ethernet');
+    if (uplinks[0]) {
+      setInputValue('#intf-uplink1-port', uplinks[0].intf || '');
+      setInputValue('#intf-uplink1-ip', uplinks[0].ipv4 || '');
+    }
+    if (uplinks[1]) {
+      setInputValue('#intf-uplink2-port', uplinks[1].intf || '');
+      setInputValue('#intf-uplink2-ip', uplinks[1].ipv4 || '');
+    }
+  }
+
+  // Step 4: Redundancy (MLAG)
+  if (config.mlag) {
+    state.config.mlag = config.mlag; // Update state
+    if (config.mlag.peer_keepalive) {
+      setInputValue('#mlag-keepalive-src', config.mlag.peer_keepalive.source_ip || '');
+      setInputValue('#mlag-keepalive-dst', config.mlag.peer_keepalive.destination_ip || '');
+    }
+    setInputValue('#mlag-domain-id', String(config.mlag.domain_id || 1));
+  }
+
+  if (Array.isArray(config.port_channels)) {
+    state.config.port_channels = config.port_channels; // Update state
+    const ibgpPc = config.port_channels.find(pc => pc.type === 'L3' && !pc.vpc_peer_link);
+    if (ibgpPc) {
+      setInputValue('#pc-ibgp-id', String(ibgpPc.id || 50));
+      setInputValue('#pc-ibgp-ip', ibgpPc.ipv4 || '');
+      setInputValue('#pc-ibgp-members', (ibgpPc.members || []).join(','));
+    }
+  }
+
+  // Step 6: Routing (BGP)
+  if (config.bgp) {
+    state.config.bgp = config.bgp; // Update state
+    setInputValue('#bgp-asn', String(config.bgp.asn || ''));
+    setInputValue('#bgp-router-id', config.bgp.router_id || '');
+    
+    // Load BGP neighbors
+    const neighborsContainer = getElement('#bgp-neighbors');
+    if (neighborsContainer && config.bgp.neighbors) {
+      neighborsContainer.innerHTML = '';
+      config.bgp.neighbors.forEach(neighbor => {
+        addBgpNeighbor();
+        const entries = getElements('.neighbor-entry');
+        const lastEntry = entries[entries.length - 1];
+        if (lastEntry) {
+          const ipInput = lastEntry.querySelector<HTMLInputElement>('.bgp-neighbor-ip');
+          const descInput = lastEntry.querySelector<HTMLInputElement>('.bgp-neighbor-desc');
+          const asnInput = lastEntry.querySelector<HTMLInputElement>('.bgp-neighbor-asn');
+          if (ipInput) ipInput.value = neighbor.ip || '';
+          if (descInput) descInput.value = neighbor.description || '';
+          if (asnInput) asnInput.value = String(neighbor.remote_as || '');
+        }
+      });
+    }
+  }
+  
+  // Update prefix lists if present
+  if (config.prefix_lists) {
+    state.config.prefix_lists = config.prefix_lists;
+  }
+
+  // Mark all steps with populated data as completed
+  markCompletedSteps();
+  
   showStep(1);
 }
 

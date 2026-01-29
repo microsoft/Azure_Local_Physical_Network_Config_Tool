@@ -1,0 +1,1558 @@
+{
+    "Version": "1.0.0",
+    "Description": "Template for ASZ Rack",
+    "InputData": {
+        "MainEnvData": [
+            {
+                "Id": "Env01",
+                "Site": "rr1",
+                "RackName": "n25r20",
+                "NodeCount": 40,
+                "ConnectType": "connected",
+                "CiEnabled": "yes",
+                "ClusterUnits": [
+                    {
+                        "Name": "Cl01",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2001",
+                        "PhysicalNamingPrefix": "n25r2001",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2001.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2001.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl02",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2002",
+                        "PhysicalNamingPrefix": "n25r2002",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2002.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2002.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl03",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2003",
+                        "PhysicalNamingPrefix": "n25r2003",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2003.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2003.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl04",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2004",
+                        "PhysicalNamingPrefix": "n25r2004",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2004.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2004.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl05",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2005",
+                        "PhysicalNamingPrefix": "n25r2005",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2005.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2005.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl06",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2006",
+                        "PhysicalNamingPrefix": "n25r2006",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2006.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2006.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl07",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2007",
+                        "PhysicalNamingPrefix": "n25r2007",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2007.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2007.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl08",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2008",
+                        "PhysicalNamingPrefix": "n25r2008",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2008.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2008.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl09",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2009",
+                        "PhysicalNamingPrefix": "n25r2009",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2009.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2009.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl10",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2010",
+                        "PhysicalNamingPrefix": "n25r2010",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2010.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2010.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl11",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2011",
+                        "PhysicalNamingPrefix": "n25r2011",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2011.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2011.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl12",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2012",
+                        "PhysicalNamingPrefix": "n25r2012",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2012.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2012.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl13",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2013",
+                        "PhysicalNamingPrefix": "n25r2013",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2013.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2013.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl14",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2014",
+                        "PhysicalNamingPrefix": "n25r2014",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2014.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2014.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl15",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2015",
+                        "PhysicalNamingPrefix": "n25r2015",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2015.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2015.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl16",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2016",
+                        "PhysicalNamingPrefix": "n25r2016",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2016.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2016.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl17",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2017",
+                        "PhysicalNamingPrefix": "n25r2017",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2017.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2017.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl18",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2018",
+                        "PhysicalNamingPrefix": "n25r2018",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2018.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2018.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl19",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2019",
+                        "PhysicalNamingPrefix": "n25r2019",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2019.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2019.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl20",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2020",
+                        "PhysicalNamingPrefix": "n25r2020",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2020.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2020.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl21",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2021",
+                        "PhysicalNamingPrefix": "n25r2021",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2021.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2021.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl22",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2022",
+                        "PhysicalNamingPrefix": "n25r2022",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2022.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2022.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl23",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2023",
+                        "PhysicalNamingPrefix": "n25r2023",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2023.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2023.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl24",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2024",
+                        "PhysicalNamingPrefix": "n25r2024",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2024.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2024.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl25",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2025",
+                        "PhysicalNamingPrefix": "n25r2025",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2025.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2025.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl26",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2026",
+                        "PhysicalNamingPrefix": "n25r2026",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2026.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2026.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl27",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2027",
+                        "PhysicalNamingPrefix": "n25r2027",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2027.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2027.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl28",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2028",
+                        "PhysicalNamingPrefix": "n25r2028",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2028.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2028.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl29",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2029",
+                        "PhysicalNamingPrefix": "n25r2029",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2029.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2029.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl30",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2030",
+                        "PhysicalNamingPrefix": "n25r2030",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2030.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2030.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl31",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2031",
+                        "PhysicalNamingPrefix": "n25r2031",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2031.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2031.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl32",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2032",
+                        "PhysicalNamingPrefix": "n25r2032",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2032.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2032.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl33",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2033",
+                        "PhysicalNamingPrefix": "n25r2033",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2033.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2033.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl34",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2034",
+                        "PhysicalNamingPrefix": "n25r2034",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2034.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2034.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl35",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2035",
+                        "PhysicalNamingPrefix": "n25r2035",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2035.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2035.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl36",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2036",
+                        "PhysicalNamingPrefix": "n25r2036",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2036.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2036.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl37",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2037",
+                        "PhysicalNamingPrefix": "n25r2037",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2037.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2037.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl38",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2038",
+                        "PhysicalNamingPrefix": "n25r2038",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2038.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2038.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl39",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2039",
+                        "PhysicalNamingPrefix": "n25r2039",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2039.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2039.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl40",
+                        "NodeCount": 1,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "n25r2040",
+                        "PhysicalNamingPrefix": "n25r2040",
+                        "Topology": "HyperConverged",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "n25r2040.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-n25r2040.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    }
+                ]
+            }
+        ],
+        "Switches": [
+            {
+                "Make": "Cisco",
+                "Model": "C9336C-FX2",
+                "Hostname": "rr1-n25-r12-9336ssp-1a",
+                "Type": "Border1",
+                "ASN": 64811
+            },
+            {
+                "Make": "Cisco",
+                "Model": "C9336C-FX2",
+                "Hostname": "rr1-n25-r12-9336ssp-1b",
+                "Type": "Border2",
+                "ASN": 64811
+            },
+            {
+                "Make": "DellEMC",
+                "Model": "S5248F-ON",
+                "Type": "TOR1",
+                "Hostname": "rr1-n25-r20-5248hl-23-1a",
+                "ASN": 4200003501,
+                "Firmware": "10.5.5.5"
+            },
+            {
+                "Make": "DellEMC",
+                "Model": "S5248F-ON",
+                "Type": "TOR2",
+                "Hostname": "rr1-n25-r20-5248hl-23-1b",
+                "ASN": 4200003501,
+                "Firmware": "10.5.5.5"
+            },
+            {
+                "Make": "DellEMC",
+                "Model": "N3248TE-ON",
+                "Type": "BMC",
+                "Hostname": "rr1-n25-r20-3248bmc-23-1",
+                "ASN": null,
+                "Firmware": "10.5.5.5"
+            }
+        ],
+        "DeploymentPattern": "HyperConverged",
+        "SwitchUplink": "BGP",
+        "HostConnectivity": "BGP",
+        "Supernets": [
+            {
+                "GroupName": "P2P_Border",
+                "Name": "P2P_Border1_Tor1",
+                "VlanId": 0,
+                "Description": "Uplink to Border1, P2P_{$Type}_{$Type}",
+                "IPv4": {
+                    "Name": "P2P_Border1_Tor1",
+                    "VlanId": 0,
+                    "Cidr": 30,
+                    "TORGroup": "",
+                    "NetworkType": "P2P Link",
+                    "Subnet": "100.71.39.128/30",
+                    "Network": "100.71.39.128",
+                    "Netmask": "255.255.255.252",
+                    "Gateway": "",
+                    "BroadcastAddress": "100.71.39.131",
+                    "FirstAddress": "100.71.39.129",
+                    "LastAddress": "100.71.39.130",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.71.39.128"
+                        },
+                        {
+                            "Name": "Border1",
+                            "IP": "100.71.39.129"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.71.39.130"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "P2P_Border",
+                "Name": "P2P_Border1_Tor2",
+                "VlanId": 0,
+                "Description": "Uplink to Border2, P2P_{$Type}_{$Type}",
+                "IPv4": {
+                    "Name": "P2P_Border1_Tor2",
+                    "VlanId": 0,
+                    "Cidr": 30,
+                    "TORGroup": "",
+                    "NetworkType": "P2P Link",
+                    "Subnet": "100.71.39.132/30",
+                    "Network": "100.71.39.132",
+                    "Netmask": "255.255.255.252",
+                    "Gateway": "",
+                    "BroadcastAddress": "100.71.39.135",
+                    "FirstAddress": "100.71.39.133",
+                    "LastAddress": "100.71.39.134",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.71.39.132"
+                        },
+                        {
+                            "Name": "Border1",
+                            "IP": "100.71.39.133"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.71.39.134"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "P2P_Border",
+                "Name": "P2P_Border2_Tor1",
+                "VlanId": 0,
+                "Description": "Uplink to Border2, naming convention P2P_{$Type}_{$Type}",
+                "IPv4": {
+                    "Name": "P2P_Border2_Tor1",
+                    "VlanId": 0,
+                    "Cidr": 30,
+                    "TORGroup": "",
+                    "NetworkType": "P2P Link",
+                    "Subnet": "100.71.39.136/30",
+                    "Network": "100.71.39.136",
+                    "Netmask": "255.255.255.252",
+                    "Gateway": "",
+                    "BroadcastAddress": "100.71.39.139",
+                    "FirstAddress": "100.71.39.137",
+                    "LastAddress": "100.71.39.138",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.71.39.136"
+                        },
+                        {
+                            "Name": "Border2",
+                            "IP": "100.71.39.137"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.71.39.138"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "P2P_Border",
+                "Name": "P2P_Border2_Tor2",
+                "VlanId": 0,
+                "Description": "Uplink to Border2, naming convention P2P_{$Type}_{$Type}",
+                "IPv4": {
+                    "Name": "P2P_Border2_Tor2",
+                    "VlanId": 0,
+                    "Cidr": 30,
+                    "TORGroup": "",
+                    "NetworkType": "P2P Link",
+                    "Subnet": "100.71.39.140/30",
+                    "Network": "100.71.39.140",
+                    "Netmask": "255.255.255.252",
+                    "Gateway": "",
+                    "BroadcastAddress": "100.71.39.143",
+                    "FirstAddress": "100.71.39.141",
+                    "LastAddress": "100.71.39.142",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.71.39.140"
+                        },
+                        {
+                            "Name": "Border2",
+                            "IP": "100.71.39.141"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.71.39.142"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "P2P_IBGP",
+                "Name": "P2P_iBGP",
+                "VlanId": 0,
+                "Description": "IBGP Peer Link",
+                "IPv4": {
+                    "Name": "P2P_iBGP",
+                    "VlanId": 0,
+                    "Cidr": 30,
+                    "TORGroup": "",
+                    "NetworkType": "P2P Link",
+                    "Subnet": "100.71.39.144/30",
+                    "Network": "100.71.39.144",
+                    "Netmask": "255.255.255.252",
+                    "Gateway": "",
+                    "BroadcastAddress": "100.71.39.147",
+                    "FirstAddress": "100.71.39.145",
+                    "LastAddress": "100.71.39.146",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.71.39.144"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.71.39.145"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.71.39.146"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "Loopback0",
+                "Name": "Loopback0_Tor1",
+                "VlanId": 0,
+                "Description": "Switch Loopback assignment",
+                "IPv4": {
+                    "Name": "Loopback0_Tor1",
+                    "VlanId": 0,
+                    "Cidr": 32,
+                    "TORGroup": "",
+                    "NetworkType": "Loopback",
+                    "Subnet": "100.71.39.149/32",
+                    "Network": "100.71.39.149",
+                    "Netmask": "255.255.255.255",
+                    "Gateway": "",
+                    "BroadcastAddress": "",
+                    "FirstAddress": "",
+                    "LastAddress": "",
+                    "Assignment": [
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.71.39.149"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "Loopback0",
+                "Name": "Loopback0_Tor2",
+                "VlanId": 0,
+                "Description": "Switch Loopback assignment",
+                "IPv4": {
+                    "Name": "Loopback0_Tor2",
+                    "VlanId": 0,
+                    "Cidr": 32,
+                    "TORGroup": "",
+                    "NetworkType": "Loopback",
+                    "Subnet": "100.71.39.150/32",
+                    "Network": "100.71.39.150",
+                    "Netmask": "255.255.255.255",
+                    "Gateway": "",
+                    "BroadcastAddress": "",
+                    "FirstAddress": "",
+                    "LastAddress": "",
+                    "Assignment": [
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.71.39.150"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "BMC",
+                "Name": "BMC_Mgmt_125",
+                "VLANID": 125,
+                "Description": "BMC Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "BMC_Mgmt_125",
+                    "VLANID": 125,
+                    "Cidr": 26,
+                    "TORGroup": "",
+                    "NetworkType": "Infrastructure",
+                    "Subnet": "100.71.39.192/26",
+                    "Network": "100.71.39.192",
+                    "Netmask": "255.255.255.192",
+                    "Gateway": "100.71.39.193",
+                    "BroadcastAddress": "100.71.39.255",
+                    "FirstAddress": "100.71.39.193",
+                    "LastAddress": "100.71.39.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.71.39.192",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.71.39.193",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "HLH-BMC",
+                            "IP": "100.71.39.194",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "CL01-N01",
+                            "IP": "100.71.39.195",
+                            "ClusterID": "CL01"
+                        },
+                        {
+                            "Name": "CL02-N01",
+                            "IP": "100.71.39.196",
+                            "ClusterID": "CL02"
+                        },
+                        {
+                            "Name": "CL03-N01",
+                            "IP": "100.71.39.197",
+                            "ClusterID": "CL03"
+                        },
+                        {
+                            "Name": "CL04-N01",
+                            "IP": "100.71.39.198",
+                            "ClusterID": "CL04"
+                        },
+                        {
+                            "Name": "CL05-N01",
+                            "IP": "100.71.39.199",
+                            "ClusterID": "CL05"
+                        },
+                        {
+                            "Name": "CL06-N01",
+                            "IP": "100.71.39.200",
+                            "ClusterID": "CL06"
+                        },
+                        {
+                            "Name": "CL07-N01",
+                            "IP": "100.71.39.201",
+                            "ClusterID": "CL07"
+                        },
+                        {
+                            "Name": "CL08-N01",
+                            "IP": "100.71.39.202",
+                            "ClusterID": "CL08"
+                        },
+                        {
+                            "Name": "CL09-N01",
+                            "IP": "100.71.39.203",
+                            "ClusterID": "CL09"
+                        },
+                        {
+                            "Name": "CL10-N01",
+                            "IP": "100.71.39.204",
+                            "ClusterID": "CL10"
+                        },
+                        {
+                            "Name": "CL11-N01",
+                            "IP": "100.71.39.205",
+                            "ClusterID": "CL11"
+                        },
+                        {
+                            "Name": "CL12-N01",
+                            "IP": "100.71.39.206",
+                            "ClusterID": "CL12"
+                        },
+                        {
+                            "Name": "CL13-N01",
+                            "IP": "100.71.39.207",
+                            "ClusterID": "CL13"
+                        },
+                        {
+                            "Name": "CL14-N01",
+                            "IP": "100.71.39.208",
+                            "ClusterID": "CL14"
+                        },
+                        {
+                            "Name": "CL15-N01",
+                            "IP": "100.71.39.209",
+                            "ClusterID": "CL15"
+                        },
+                        {
+                            "Name": "CL16-N01",
+                            "IP": "100.71.39.210",
+                            "ClusterID": "CL16"
+                        },
+                        {
+                            "Name": "CL17-N01",
+                            "IP": "100.71.39.211",
+                            "ClusterID": "CL17"
+                        },
+                        {
+                            "Name": "CL18-N01",
+                            "IP": "100.71.39.212",
+                            "ClusterID": "CL18"
+                        },
+                        {
+                            "Name": "CL19-N01",
+                            "IP": "100.71.39.213",
+                            "ClusterID": "CL19"
+                        },
+                        {
+                            "Name": "CL20-N01",
+                            "IP": "100.71.39.214",
+                            "ClusterID": "CL20"
+                        },
+                        {
+                            "Name": "CL21-N01",
+                            "IP": "100.71.39.215",
+                            "ClusterID": "CL21"
+                        },
+                        {
+                            "Name": "CL22-N01",
+                            "IP": "100.71.39.216",
+                            "ClusterID": "CL22"
+                        },
+                        {
+                            "Name": "CL23-N01",
+                            "IP": "100.71.39.217",
+                            "ClusterID": "CL23"
+                        },
+                        {
+                            "Name": "CL24-N01",
+                            "IP": "100.71.39.218",
+                            "ClusterID": "CL24"
+                        },
+                        {
+                            "Name": "CL25-N01",
+                            "IP": "100.71.39.219",
+                            "ClusterID": "CL25"
+                        },
+                        {
+                            "Name": "CL26-N01",
+                            "IP": "100.71.39.220",
+                            "ClusterID": "CL26"
+                        },
+                        {
+                            "Name": "CL27-N01",
+                            "IP": "100.71.39.221",
+                            "ClusterID": "CL27"
+                        },
+                        {
+                            "Name": "CL28-N01",
+                            "IP": "100.71.39.222",
+                            "ClusterID": "CL28"
+                        },
+                        {
+                            "Name": "CL29-N01",
+                            "IP": "100.71.39.223",
+                            "ClusterID": "CL29"
+                        },
+                        {
+                            "Name": "CL30-N01",
+                            "IP": "100.71.39.224",
+                            "ClusterID": "CL30"
+                        },
+                        {
+                            "Name": "CL31-N01",
+                            "IP": "100.71.39.225",
+                            "ClusterID": "CL31"
+                        },
+                        {
+                            "Name": "CL32-N01",
+                            "IP": "100.71.39.226",
+                            "ClusterID": "CL32"
+                        },
+                        {
+                            "Name": "CL33-N01",
+                            "IP": "100.71.39.227",
+                            "ClusterID": "CL33"
+                        },
+                        {
+                            "Name": "CL34-N01",
+                            "IP": "100.71.39.228",
+                            "ClusterID": "CL34"
+                        },
+                        {
+                            "Name": "CL35-N01",
+                            "IP": "100.71.39.229",
+                            "ClusterID": "CL35"
+                        },
+                        {
+                            "Name": "CL36-N01",
+                            "IP": "100.71.39.230",
+                            "ClusterID": "CL36"
+                        },
+                        {
+                            "Name": "CL37-N01",
+                            "IP": "100.71.39.231",
+                            "ClusterID": "CL37"
+                        },
+                        {
+                            "Name": "CL38-N01",
+                            "IP": "100.71.39.232",
+                            "ClusterID": "CL38"
+                        },
+                        {
+                            "Name": "CL39-N01",
+                            "IP": "100.71.39.233",
+                            "ClusterID": "CL39"
+                        },
+                        {
+                            "Name": "CL40-N01",
+                            "IP": "100.71.39.234",
+                            "ClusterID": "CL40"
+                        },
+                        {
+                            "Name": "Tor1-Mgmt",
+                            "IP": "100.71.39.251",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "Tor2-Mgmt",
+                            "IP": "100.71.39.252",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "BMC-Mgmt",
+                            "IP": "100.71.39.253",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "HLH-OS",
+                            "IP": "100.71.39.254",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "Broadcast",
+                            "IP": "100.71.39.255",
+                            "ClusterID": null
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "Infrastructure",
+                "Name": "Infra_7",
+                "VLANID": 7,
+                "Description": "Infrastructure Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "Infra_7",
+                    "VLANID": 7,
+                    "Cidr": 24,
+                    "TORGroup": "",
+                    "NetworkType": "Infrastructure",
+                    "Subnet": "100.68.11.0/24",
+                    "Network": "100.68.11.0",
+                    "Netmask": "255.255.255.0",
+                    "Gateway": "100.68.11.1",
+                    "BroadcastAddress": "100.68.11.255",
+                    "FirstAddress": "100.68.11.1",
+                    "LastAddress": "100.68.11.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.68.11.0"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.68.11.1"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.68.11.2"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.68.11.3"
+                        },
+                        {
+                            "Name": "CL01-N01",
+                            "IP": "100.68.11.4"
+                        },
+                        {
+                            "Name": "CL02-N01",
+                            "IP": "100.68.11.5"
+                        },
+                        {
+                            "Name": "CL03-N01",
+                            "IP": "100.68.11.6"
+                        },
+                        {
+                            "Name": "CL04-N01",
+                            "IP": "100.68.11.7"
+                        },
+                        {
+                            "Name": "CL05-N01",
+                            "IP": "100.68.11.8"
+                        },
+                        {
+                            "Name": "CL06-N01",
+                            "IP": "100.68.11.9"
+                        },
+                        {
+                            "Name": "CL07-N01",
+                            "IP": "100.68.11.10"
+                        },
+                        {
+                            "Name": "CL08-N01",
+                            "IP": "100.68.11.11"
+                        },
+                        {
+                            "Name": "CL09-N01",
+                            "IP": "100.68.11.12"
+                        },
+                        {
+                            "Name": "CL10-N01",
+                            "IP": "100.68.11.13"
+                        },
+                        {
+                            "Name": "CL11-N01",
+                            "IP": "100.68.11.14"
+                        },
+                        {
+                            "Name": "CL12-N01",
+                            "IP": "100.68.11.15"
+                        },
+                        {
+                            "Name": "CL13-N01",
+                            "IP": "100.68.11.16"
+                        },
+                        {
+                            "Name": "CL14-N01",
+                            "IP": "100.68.11.17"
+                        },
+                        {
+                            "Name": "CL15-N01",
+                            "IP": "100.68.11.18"
+                        },
+                        {
+                            "Name": "CL16-N01",
+                            "IP": "100.68.11.19"
+                        },
+                        {
+                            "Name": "CL17-N01",
+                            "IP": "100.68.11.20"
+                        },
+                        {
+                            "Name": "CL18-N01",
+                            "IP": "100.68.11.21"
+                        },
+                        {
+                            "Name": "CL19-N01",
+                            "IP": "100.68.11.22"
+                        },
+                        {
+                            "Name": "CL20-N01",
+                            "IP": "100.68.11.23"
+                        },
+                        {
+                            "Name": "CL21-N01",
+                            "IP": "100.68.11.24"
+                        },
+                        {
+                            "Name": "CL22-N01",
+                            "IP": "100.68.11.25"
+                        },
+                        {
+                            "Name": "CL23-N01",
+                            "IP": "100.68.11.26"
+                        },
+                        {
+                            "Name": "CL24-N01",
+                            "IP": "100.68.11.27"
+                        },
+                        {
+                            "Name": "CL25-N01",
+                            "IP": "100.68.11.28"
+                        },
+                        {
+                            "Name": "CL26-N01",
+                            "IP": "100.68.11.29"
+                        },
+                        {
+                            "Name": "CL27-N01",
+                            "IP": "100.68.11.30"
+                        },
+                        {
+                            "Name": "CL28-N01",
+                            "IP": "100.68.11.31"
+                        },
+                        {
+                            "Name": "CL29-N01",
+                            "IP": "100.68.11.32"
+                        },
+                        {
+                            "Name": "CL30-N01",
+                            "IP": "100.68.11.33"
+                        },
+                        {
+                            "Name": "CL31-N01",
+                            "IP": "100.68.11.34"
+                        },
+                        {
+                            "Name": "CL32-N01",
+                            "IP": "100.68.11.35"
+                        },
+                        {
+                            "Name": "CL33-N01",
+                            "IP": "100.68.11.36"
+                        },
+                        {
+                            "Name": "CL34-N01",
+                            "IP": "100.68.11.37"
+                        },
+                        {
+                            "Name": "CL35-N01",
+                            "IP": "100.68.11.38"
+                        },
+                        {
+                            "Name": "CL36-N01",
+                            "IP": "100.68.11.39"
+                        },
+                        {
+                            "Name": "CL37-N01",
+                            "IP": "100.68.11.40"
+                        },
+                        {
+                            "Name": "CL38-N01",
+                            "IP": "100.68.11.41"
+                        },
+                        {
+                            "Name": "CL39-N01",
+                            "IP": "100.68.11.42"
+                        },
+                        {
+                            "Name": "CL40-N01",
+                            "IP": "100.68.11.43"
+                        },
+                        {
+                            "Name": "CL01-HLH-DVM01",
+                            "IP": "100.68.11.214",
+                            "ClusterID": "CL01"
+                        },
+                        {
+                            "Name": "CL02-HLH-DVM02",
+                            "IP": "100.68.11.215",
+                            "ClusterID": "CL02"
+                        },
+                        {
+                            "Name": "CL03-HLH-DVM03",
+                            "IP": "100.68.11.216",
+                            "ClusterID": "CL03"
+                        },
+                        {
+                            "Name": "CL04-HLH-DVM04",
+                            "IP": "100.68.11.217",
+                            "ClusterID": "CL04"
+                        },
+                        {
+                            "Name": "CL05-HLH-DVM05",
+                            "IP": "100.68.11.218",
+                            "ClusterID": "CL05"
+                        },
+                        {
+                            "Name": "CL06-HLH-DVM06",
+                            "IP": "100.68.11.219",
+                            "ClusterID": "CL06"
+                        },
+                        {
+                            "Name": "CL07-HLH-DVM07",
+                            "IP": "100.68.11.220",
+                            "ClusterID": "CL07"
+                        },
+                        {
+                            "Name": "CL08-HLH-DVM08",
+                            "IP": "100.68.11.221",
+                            "ClusterID": "CL08"
+                        },
+                        {
+                            "Name": "CL09-HLH-DVM09",
+                            "IP": "100.68.11.222",
+                            "ClusterID": "CL09"
+                        },
+                        {
+                            "Name": "CL10-HLH-DVM10",
+                            "IP": "100.68.11.223",
+                            "ClusterID": "CL10"
+                        },
+                        {
+                            "Name": "CL11-HLH-DVM11",
+                            "IP": "100.68.11.224",
+                            "ClusterID": "CL11"
+                        },
+                        {
+                            "Name": "CL12-HLH-DVM12",
+                            "IP": "100.68.11.225",
+                            "ClusterID": "CL12"
+                        },
+                        {
+                            "Name": "CL13-HLH-DVM13",
+                            "IP": "100.68.11.226",
+                            "ClusterID": "CL13"
+                        },
+                        {
+                            "Name": "CL14-HLH-DVM14",
+                            "IP": "100.68.11.227",
+                            "ClusterID": "CL14"
+                        },
+                        {
+                            "Name": "CL15-HLH-DVM15",
+                            "IP": "100.68.11.228",
+                            "ClusterID": "CL15"
+                        },
+                        {
+                            "Name": "CL16-HLH-DVM16",
+                            "IP": "100.68.11.229",
+                            "ClusterID": "CL16"
+                        },
+                        {
+                            "Name": "CL17-HLH-DVM17",
+                            "IP": "100.68.11.230",
+                            "ClusterID": "CL17"
+                        },
+                        {
+                            "Name": "CL18-HLH-DVM18",
+                            "IP": "100.68.11.231",
+                            "ClusterID": "CL18"
+                        },
+                        {
+                            "Name": "CL19-HLH-DVM19",
+                            "IP": "100.68.11.232",
+                            "ClusterID": "CL19"
+                        },
+                        {
+                            "Name": "CL20-HLH-DVM20",
+                            "IP": "100.68.11.233",
+                            "ClusterID": "CL20"
+                        },
+                        {
+                            "Name": "CL21-HLH-DVM21",
+                            "IP": "100.68.11.234",
+                            "ClusterID": "CL21"
+                        },
+                        {
+                            "Name": "CL22-HLH-DVM22",
+                            "IP": "100.68.11.235",
+                            "ClusterID": "CL22"
+                        },
+                        {
+                            "Name": "CL23-HLH-DVM23",
+                            "IP": "100.68.11.236",
+                            "ClusterID": "CL23"
+                        },
+                        {
+                            "Name": "CL24-HLH-DVM24",
+                            "IP": "100.68.11.237",
+                            "ClusterID": "CL24"
+                        },
+                        {
+                            "Name": "CL25-HLH-DVM25",
+                            "IP": "100.68.11.238",
+                            "ClusterID": "CL25"
+                        },
+                        {
+                            "Name": "CL26-HLH-DVM26",
+                            "IP": "100.68.11.239",
+                            "ClusterID": "CL26"
+                        },
+                        {
+                            "Name": "CL27-HLH-DVM27",
+                            "IP": "100.68.11.240",
+                            "ClusterID": "CL27"
+                        },
+                        {
+                            "Name": "CL28-HLH-DVM28",
+                            "IP": "100.68.11.241",
+                            "ClusterID": "CL28"
+                        },
+                        {
+                            "Name": "CL29-HLH-DVM29",
+                            "IP": "100.68.11.242",
+                            "ClusterID": "CL29"
+                        },
+                        {
+                            "Name": "CL30-HLH-DVM30",
+                            "IP": "100.68.11.243",
+                            "ClusterID": "CL30"
+                        },
+                        {
+                            "Name": "CL31-HLH-DVM31",
+                            "IP": "100.68.11.244",
+                            "ClusterID": "CL31"
+                        },
+                        {
+                            "Name": "CL32-HLH-DVM32",
+                            "IP": "100.68.11.245",
+                            "ClusterID": "CL32"
+                        },
+                        {
+                            "Name": "CL33-HLH-DVM33",
+                            "IP": "100.68.11.246",
+                            "ClusterID": "CL33"
+                        },
+                        {
+                            "Name": "CL34-HLH-DVM34",
+                            "IP": "100.68.11.247",
+                            "ClusterID": "CL34"
+                        },
+                        {
+                            "Name": "CL35-HLH-DVM35",
+                            "IP": "100.68.11.248",
+                            "ClusterID": "CL35"
+                        },
+                        {
+                            "Name": "CL36-HLH-DVM36",
+                            "IP": "100.68.11.249",
+                            "ClusterID": "CL36"
+                        },
+                        {
+                            "Name": "CL37-HLH-DVM37",
+                            "IP": "100.68.11.250",
+                            "ClusterID": "CL37"
+                        },
+                        {
+                            "Name": "CL38-HLH-DVM38",
+                            "IP": "100.68.11.251",
+                            "ClusterID": "CL38"
+                        },
+                        {
+                            "Name": "CL39-HLH-DVM39",
+                            "IP": "100.68.11.252",
+                            "ClusterID": "CL39"
+                        },
+                        {
+                            "Name": "CL40-HLH-DVM40",
+                            "IP": "100.68.11.253",
+                            "ClusterID": "CL40"
+                        },
+                        {
+                            "Name": "HLH-OS",
+                            "IP": "100.68.11.254",
+                            "ClusterID": null
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "UNUSED_VLAN",
+                "Name": "UNUSED_VLAN",
+                "VLANID": 2,
+                "Description": "UNUSED_VLAN",
+                "IPv4": {
+                    "SwitchSVI": false,
+                    "Name": "UNUSED_VLAN",
+                    "VLANID": 2,
+                    "NetworkType": "UNUSED_VLAN"
+                }
+            },
+            {
+                "GroupName": "NativeVlan",
+                "Name": "NativeVlan",
+                "VLANID": 99,
+                "Description": "NativeVlan",
+                "IPv4": {
+                    "SwitchSVI": false,
+                    "Name": "NativeVlan",
+                    "VLANID": 99,
+                    "NetworkType": "NativeVlan"
+                }
+            }
+        ],
+        "Setting": {
+            "TimeZone": "Pacific Standard Time",
+            "TimeServer": [
+                "10.10.240.20"
+            ],
+            "SyslogServer": [
+                "10.10.43.111"
+            ],
+            "DNSForwarder": [
+                "10.10.240.23",
+                "10.10.240.24"
+            ]
+        }
+    }
+}

@@ -73,6 +73,92 @@ header h1 {
     background: #5568d3;
 }
 
+/* Validation & Success Messages */
+.message {
+    max-width: 1000px;
+    margin: 0 auto 20px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    animation: slideDown 0.3s ease-out;
+}
+
+.error-message {
+    background: #fff3f3;
+    border: 2px solid #ff4444;
+    color: #cc0000;
+}
+
+.success-message {
+    background: #f0fff4;
+    border: 2px solid #22c55e;
+    color: #15803d;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Collapsible Sections */
+.collapsible {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    cursor: pointer;
+    background: #f9fafb;
+    transition: background 0.2s;
+}
+
+.collapsible-header:hover {
+    background: #f3f4f6;
+}
+
+.collapsible-header h3 {
+    margin: 0;
+    flex: 1;
+}
+
+.collapse-icon {
+    font-size: 16px;
+    transition: transform 0.3s;
+    color: #666;
+}
+
+.collapsible-header.expanded .collapse-icon {
+    transform: rotate(180deg);
+}
+
+.collapsible-content {
+    padding: 20px;
+    background: white;
+}
+
+.optional-badge {
+    font-size: 12px;
+    font-weight: normal;
+    color: #666;
+    background: #fef3c7;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
 /* Modal Styles */
 .modal {
     display: none;

@@ -19,6 +19,10 @@
             </div>
         </header>
 
+        <!-- Validation Messages -->
+        <div id="validation-error" class="message error-message" style="display: none;"></div>
+        <div id="success-message" class="message success-message" style="display: none;"></div>
+
         <!-- Template Selection Modal -->
         <div id="template-modal" class="modal">
             <div class="modal-content">
@@ -80,14 +84,22 @@
             </div>
             <div class="nav-step" data-step="3">
                 <div class="nav-number">3</div>
-                <div class="nav-label">Ports & MLAG</div>
+                <div class="nav-label">Host Ports</div>
             </div>
             <div class="nav-step" data-step="4">
                 <div class="nav-number">4</div>
-                <div class="nav-label">Routing</div>
+                <div class="nav-label">Redundancy</div>
             </div>
             <div class="nav-step" data-step="5">
                 <div class="nav-number">5</div>
+                <div class="nav-label">Uplinks</div>
+            </div>
+            <div class="nav-step" data-step="6">
+                <div class="nav-number">6</div>
+                <div class="nav-label">Routing</div>
+            </div>
+            <div class="nav-step" data-step="7">
+                <div class="nav-number">7</div>
                 <div class="nav-label">Review</div>
             </div>
         </nav>
@@ -311,33 +323,37 @@
                         </div>
                     </div>
 
-                    <!-- BMC VLAN (for BMC switch only) -->
-                    <div class="vlan-card" id="vlan-bmc-section">
-                        <h3>🖥️ BMC VLAN <span class="optional-badge">BMC Switch Only</span></h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>VLAN ID</label>
-                                <input type="number" id="vlan-bmc-id" placeholder="125" min="2" max="4094">
-                            </div>
-                            <div class="form-group">
-                                <label>VLAN Name</label>
-                                <input type="text" id="vlan-bmc-name" placeholder="BMC_125">
-                                <small>Optional - defaults to BMC_{vlan_id}</small>
-                            </div>
+                    <!-- BMC VLAN (for BMC switch only) - Optional & Collapsed -->
+                    <div class="vlan-card collapsible" id="vlan-bmc-section">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <h3>🖥️ BMC VLAN <span class="optional-badge">Optional - Lab/BMC Switch Only</span></h3>
+                            <span class="collapse-icon">▼</span>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Switch IP</label>
-                                <input type="text" id="vlan-bmc-ip" placeholder="100.71.39.251">
+                        <div class="collapsible-content" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>VLAN ID</label>
+                                    <input type="number" id="vlan-bmc-id" placeholder="125" min="2" max="4094">
+                                </div>
+                                <div class="form-group">
+                                    <label>VLAN Name</label>
+                                    <input type="text" id="vlan-bmc-name" placeholder="BMC_125">
+                                    <small>Optional - defaults to BMC_{vlan_id}</small>
+                                </div>
                             </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>CIDR</label>
-                                <input type="number" id="vlan-bmc-cidr" value="26" min="1" max="32">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Switch IP</label>
+                                    <input type="text" id="vlan-bmc-ip" placeholder="192.0.2.68">
+                                </div>
+                                <div class="form-group">
+                                    <label>CIDR</label>
+                                    <input type="number" id="vlan-bmc-cidr" value="26" min="1" max="32">
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Gateway (Virtual IP)</label>
-                                <input type="text" id="vlan-bmc-gateway" placeholder="100.71.39.193">
+                                <input type="text" id="vlan-bmc-gateway" placeholder="192.0.2.65">
                             </div>
                         </div>
                     </div>
@@ -350,73 +366,206 @@
             </section>
 
             <!-- ================================================================
-                 STEP 3: PORTS & MLAG (Design Doc Steps 2.2, 2.3, 2.4)
-                 Output: interfaces[], port_channels[], mlag{}
+                 STEP 3: HOST PORT ASSIGNMENT (Design Doc Step 2.2)
+                 Output: interfaces[] (host-facing trunks)
                  ================================================================ -->
             <section id="step3" class="step">
-                <h2>Step 3: Ports & MLAG Configuration</h2>
-                <p class="description">Host ports, uplinks, and switch redundancy (Steps 2.2-2.4)</p>
+                <h2>Step 3: Host Port Assignment</h2>
+                <p class="description">Configure host-facing trunk ports (Step 2.2)</p>
                 
                 <div class="form-container">
-                    <!-- Step 2.2: Host Port Assignment -->
-                    <div class="port-card">
-                        <h3>🖥️ Host-Facing Trunk Ports (Step 2.2)</h3>
+                    <!-- Deployment Pattern Info -->
+                    <div class="info-box" style="margin-bottom: 20px;">
+                        <strong>Deployment Pattern:</strong> <span id="deployment-pattern-display">fully_converged</span><br>
+                        <small>Port configuration adapts based on your selected deployment pattern from Step 1</small>
+                    </div>
+
+                    <!-- Fully Converged: Single port group with all VLANs -->
+                    <div class="port-card" id="port-section-converged">
+                        <h3>🖥️ Host-Facing Trunk Ports (Fully Converged)</h3>
+                        <p class="section-note">All VLANs (Management + Compute + Storage) on same ports</p>
+                        
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Start Port</label>
-                                <input type="text" id="intf-host-start" value="1/1/1" placeholder="1/1/1">
+                                <label>Start Port <span class="required">*</span></label>
+                                <input type="text" id="intf-converged-start" value="1/1/1" placeholder="1/1/1">
                             </div>
                             <div class="form-group">
-                                <label>End Port</label>
-                                <input type="text" id="intf-host-end" value="1/1/16" placeholder="1/1/16">
+                                <label>End Port <span class="required">*</span></label>
+                                <input type="text" id="intf-converged-end" value="1/1/16" placeholder="1/1/16">
                             </div>
                         </div>
+                        
                         <div class="form-group">
                             <label class="checkbox-label">
-                                <input type="checkbox" id="intf-host-qos" checked>
-                                <span>Enable QoS (for RDMA/RoCE)</span>
+                                <input type="checkbox" id="intf-converged-qos" checked>
+                                <span>Enable QoS (for RDMA/RoCE traffic)</span>
                             </label>
                         </div>
-                    </div>
-
-                    <!-- Step 2.4: Border Uplinks -->
-                    <div class="port-card">
-                        <h3>🌐 Border Uplink Ports - L3 (Step 2.4)</h3>
+                        
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Uplink 1 Port</label>
-                                <input type="text" id="intf-uplink1-port" value="1/1/47" placeholder="1/1/47">
+                                <label>Native/Untagged VLAN</label>
+                                <input type="number" id="intf-converged-native" placeholder="7" min="2" max="4094">
+                                <small>Usually management VLAN</small>
                             </div>
                             <div class="form-group">
-                                <label>Uplink 1 IP (CIDR)</label>
-                                <input type="text" id="intf-uplink1-ip" placeholder="100.71.39.130/30">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Uplink 2 Port</label>
-                                <input type="text" id="intf-uplink2-port" value="1/1/48" placeholder="1/1/48">
-                            </div>
-                            <div class="form-group">
-                                <label>Uplink 2 IP (CIDR)</label>
-                                <input type="text" id="intf-uplink2-ip" placeholder="100.71.39.138/30">
+                                <label>Tagged VLANs (comma-separated)</label>
+                                <input type="text" id="intf-converged-tagged" placeholder="7,201,711,712" style="font-family: monospace;">
+                                <small id="converged-vlans-hint" style="color: #4CAF50;">Auto-populated from Step 2</small>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Loopback Interface -->
-                    <div class="port-card">
-                        <h3>🔄 Loopback Interface</h3>
+                    <!-- Storage Switched: Separate mgmt/compute and storage ports -->
+                    <div class="port-card" id="port-section-mgmt-compute" style="display: none;">
+                        <h3>🖥️ Management + Compute Ports</h3>
+                        <p class="section-note">Ports for management and compute VLANs only</p>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Start Port <span class="required">*</span></label>
+                                <input type="text" id="intf-mgmt-compute-start" value="1/1/1" placeholder="1/1/1">
+                            </div>
+                            <div class="form-group">
+                                <label>End Port <span class="required">*</span></label>
+                                <input type="text" id="intf-mgmt-compute-end" value="1/1/16" placeholder="1/1/16">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Native/Untagged VLAN</label>
+                                <input type="number" id="intf-mgmt-compute-native" placeholder="7" min="2" max="4094">
+                                <small>Usually management VLAN</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Tagged VLANs (comma-separated)</label>
+                                <input type="text" id="intf-mgmt-compute-tagged" placeholder="7,201" style="font-family: monospace;">
+                                <small id="mgmt-compute-vlans-hint" style="color: #4CAF50;">Auto-populated from Step 2</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="port-card" id="port-section-storage" style="display: none;">
+                        <h3>💾 Storage Ports (Dedicated)</h3>
+                        <p class="section-note">Separate ports for storage VLANs only</p>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Start Port <span class="required">*</span></label>
+                                <input type="text" id="intf-storage-start" value="1/1/17" placeholder="1/1/17">
+                            </div>
+                            <div class="form-group">
+                                <label>End Port <span class="required">*</span></label>
+                                <input type="text" id="intf-storage-end" value="1/1/18" placeholder="1/1/18">
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
-                            <label>Loopback0 IP <span class="required">*</span></label>
-                            <input type="text" id="intf-loopback-ip" placeholder="100.71.39.149/32">
-                            <small>Used as BGP router_id in Step 4</small>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="intf-storage-qos" checked>
+                                <span>Enable QoS (for RDMA/RoCE traffic)</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Native/Untagged VLAN</label>
+                                <input type="number" id="intf-storage-native" placeholder="7" min="2" max="4094">
+                                <small>Usually management VLAN</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Tagged VLANs (comma-separated)</label>
+                                <input type="text" id="intf-storage-tagged" placeholder="711,712" style="font-family: monospace;">
+                                <small id="storage-vlans-hint" style="color: #4CAF50;">Storage VLANs only</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Switchless: Only mgmt/compute ports -->
+                    <div class="port-card" id="port-section-switchless" style="display: none;">
+                        <h3>🖥️ Management + Compute Ports (Switchless)</h3>
+                        <p class="section-note">No storage network - only management and compute VLANs</p>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Start Port <span class="required">*</span></label>
+                                <input type="text" id="intf-switchless-start" value="1/1/1" placeholder="1/1/1">
+                            </div>
+                            <div class="form-group">
+                                <label>End Port <span class="required">*</span></label>
+                                <input type="text" id="intf-switchless-end" value="1/1/16" placeholder="1/1/16">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Native/Untagged VLAN</label>
+                                <input type="number" id="intf-switchless-native" placeholder="7" min="2" max="4094">
+                                <small>Usually management VLAN</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Tagged VLANs (comma-separated)</label>
+                                <input type="text" id="intf-switchless-tagged" placeholder="7,201" style="font-family: monospace;">
+                                <small id="switchless-vlans-hint" style="color: #4CAF50;">Management + Compute only</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-back">← Back</button>
+                    <button class="btn-next">Continue to Redundancy →</button>
+                </div>
+            </section>
+
+            <!-- ================================================================
+                 STEP 4: REDUNDANCY CONFIGURATION (Design Doc Step 2.3)
+                 Output: port_channels[] (peer-link), mlag{}
+                 ================================================================ -->
+            <section id="step4" class="step">
+                <h2>Step 4: Redundancy Configuration</h2>
+                <p class="description">Configure MLAG/VPC for switch redundancy (Step 2.3)</p>
+                
+                <div class="form-container">
+                    <!-- MLAG/VPC Section -->
+                    <div class="port-card" id="mlag-section">
+                        <h3>🔗 Switch Redundancy - MLAG/VPC</h3>
+                        <p class="section-note">TOR1/TOR2 only. BMC switches skip this step.</p>
+                        
+                        <div class="info-box">
+                            <strong>Peer-Link Port-Channel:</strong><br>
+                            • Port-Channel ID: 101<br>
+                            • Members: 1/1/49, 1/1/50, 1/1/51, 1/1/52<br>
+                            • Type: Trunk (vpc_peer_link=true)<br>
+                            • Auto-configured from template
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Keepalive Source IP <span class="required">*</span></label>
+                                <input type="text" id="mlag-keepalive-src" placeholder="100.71.85.17">
+                                <small>This switch's management IP</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Keepalive Destination IP <span class="required">*</span></label>
+                                <input type="text" id="mlag-keepalive-dst" placeholder="100.71.85.18">
+                                <small>Peer switch's management IP</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>MLAG Domain ID</label>
+                            <input type="number" id="mlag-domain-id" value="1" min="1" max="4095">
                         </div>
                     </div>
 
                     <!-- iBGP Port-Channel (TOR only) -->
                     <div class="port-card" id="pc-ibgp-section">
                         <h3>🔗 iBGP Peer-Link Port-Channel</h3>
+                        <p class="section-note">For iBGP routing between TOR1/TOR2 pair</p>
+                        
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Port-Channel ID</label>
@@ -432,50 +581,75 @@
                             <input type="text" id="pc-ibgp-members" value="1/1/39,1/1/40" placeholder="1/1/39,1/1/40">
                         </div>
                     </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-back">← Back</button>
+                    <button class="btn-next">Continue to Uplinks →</button>
+                </div>
+            </section>
 
-                    <!-- Step 2.3: MLAG/VPC Redundancy -->
-                    <div class="port-card" id="mlag-section">
-                        <h3>🔗 Switch Redundancy - MLAG/VPC (Step 2.3)</h3>
-                        <p class="section-note">TOR1/TOR2 only. BMC switches skip this section.</p>
+            <!-- ================================================================
+                 STEP 5: UPLINK CONFIGURATION (Design Doc Step 2.4)
+                 Output: interfaces[] (uplinks + loopback)
+                 ================================================================ -->
+            <section id="step5" class="step">
+                <h2>Step 5: Uplink Configuration</h2>
+                <p class="description">Configure border uplinks and loopback (Step 2.4)</p>
+                
+                <div class="form-container">
+                    <!-- Border Uplinks -->
+                    <div class="port-card">
+                        <h3>🌐 Border Uplink Ports - L3</h3>
+                        <p class="section-note">Point-to-point links to border/spine switches</p>
                         
-                        <div class="info-box">
-                            <strong>Peer-Link Port-Channel:</strong> ID=101, vpc_peer_link=true<br>
-                            <strong>Members:</strong> 1/1/49, 1/1/50, 1/1/51, 1/1/52<br>
-                            <strong>Type:</strong> Trunk, native_vlan=99, tagged_vlans from VLANs
-                        </div>
-
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Keepalive Source IP <span class="required">*</span></label>
-                                <input type="text" id="mlag-keepalive-src" placeholder="100.71.85.17">
-                                <small>peer_keepalive.source_ip</small>
+                                <label>Uplink 1 Port</label>
+                                <input type="text" id="intf-uplink1-port" value="1/1/47" placeholder="1/1/47">
                             </div>
                             <div class="form-group">
-                                <label>Keepalive Destination IP <span class="required">*</span></label>
-                                <input type="text" id="mlag-keepalive-dst" placeholder="100.71.85.18">
-                                <small>peer_keepalive.destination_ip</small>
+                                <label>Uplink 1 IP (CIDR)</label>
+                                <input type="text" id="intf-uplink1-ip" placeholder="198.51.100.2/30">
                             </div>
                         </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Uplink 2 Port</label>
+                                <input type="text" id="intf-uplink2-port" value="1/1/48" placeholder="1/1/48">
+                            </div>
+                            <div class="form-group">
+                                <label>Uplink 2 IP (CIDR)</label>
+                                <input type="text" id="intf-uplink2-ip" placeholder="198.51.100.6/30">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loopback Interface -->
+                    <div class="port-card">
+                        <h3>🔄 Loopback Interface</h3>
+                        <p class="section-note">Used as BGP router-id in next step</p>
+                        
                         <div class="form-group">
-                            <label>Domain ID</label>
-                            <input type="number" id="mlag-domain-id" value="1" min="1">
-                            <small>Default: 1</small>
+                            <label>Loopback0 IP (CIDR) <span class="required">*</span></label>
+                            <input type="text" id="intf-loopback-ip" placeholder="203.0.113.1/32">
+                            <small>Must be /32 (single host)</small>
                         </div>
                     </div>
                 </div>
                 
                 <div class="btn-group">
                     <button class="btn-back">← Back</button>
-                    <button class="btn-next">Next: Routing →</button>
+                    <button class="btn-next">Continue to Routing →</button>
                 </div>
             </section>
 
             <!-- ================================================================
-                 STEP 4: ROUTING CONFIGURATION (Phase 3 from Design Doc)
+                 STEP 6: ROUTING CONFIGURATION (Phase 3 from Design Doc)
                  Output: bgp{}, prefix_lists{} OR static_routes[]
                  ================================================================ -->
-            <section id="step4" class="step">
-                <h2>Step 4: Routing Configuration</h2>
+            <section id="step6" class="step">
+                <h2>Step 6: Routing Configuration</h2>
                 <p class="description">Configure BGP or static routing (Phase 3)</p>
                 
                 <div class="form-container">
@@ -554,10 +728,10 @@
             </section>
 
             <!-- ================================================================
-                 STEP 5: REVIEW & EXPORT
+                 STEP 7: REVIEW & EXPORT
                  Output: Complete Standard JSON
                  ================================================================ -->
-            <section id="step5" class="step">
+            <section id="step7" class="step">
                 <h2>✅ Configuration Ready</h2>
                 <p class="description">Review your configuration and export Standard JSON</p>
                 

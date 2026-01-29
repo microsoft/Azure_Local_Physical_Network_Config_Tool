@@ -1,12 +1,22 @@
 {
-  "name": "workspace",
-  "version": "1.0.0",
-  "description": "- [Network Configuration Generation Tool](#network-configuration-generation-tool)\r   - [Overview](#overview)\r   - [Quick Navigation](#quick-navigation)\r   - [Goals](#goals)\r   - [Design Architecture](#design-architecture)\r     - [Overall Flow](#overall-flow)\r     - [Other User-Defined Input Support](#other-user-defined-input-support)\r     - [Workflow Detail](#workflow-detail)\r   - [Directory Structure](#directory-structure)\r   - [Input \\& Output Examples](#input--output-examples)\r     - [Sample Input JSON](#sample-input-json)\r     - [Sample Template (Jinja2)](#sample-template-jinja2)\r   - [Quick Start](#quick-start)\r     - [Choose Your Path](#choose-your-path)\r     - [Basic Usage](#basic-usage)\r     - [Quick Examples](#quick-examples)\r   - [What's Improved in This Version](#whats-improved-in-this-version)\r     - [Key Enhancements](#key-enhancements)",
-  "main": "index.js",
-  "scripts": {},
-  "keywords": [],
+  "name": "azure-local-network-config-tool",
+  "version": "2.0.0",
+  "description": "Generate vendor-specific switch configurations for Azure Local deployments",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "preview": "npm run preview --prefix frontend",
+    "typecheck": "npm run typecheck --prefix frontend",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "backend:test": "cd backend && python -m pytest tests/ -v",
+    "backend:generate": "cd backend && python -m src.cli generate"
+  },
+  "keywords": ["azure-local", "network", "switch", "configuration", "cisco", "dell"],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@playwright/test": "^1.58.0",
     "@types/node": "^25.1.0"

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure Local Switch Configuration Wizard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🌐 Azure Local Switch Configuration Wizard</h1>
+            <p class="subtitle">Reference configuration for Azure Local deployment - Covers critical switch configurations. Please review and validate before applying to production.</p>
+            <div class="import-section">
+                <label for="import-json" class="import-btn">📥 Import Previous Config</label>
+                <input type="file" id="import-json" accept=".json" style="display: none;">
+            </div>
+        </header>
+
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="nav-step" data-step="1">
+                <div class="nav-number">1</div>
+                <div class="nav-label">Deployment</div>
+            </div>
+            <div class="nav-step" data-step="2">
+                <div class="nav-number">2</div>
+                <div class="nav-label">Switch Identity</div>
+            </div>
+            <div class="nav-step" data-step="3">
+                <div class="nav-number">3</div>
+                <div class="nav-label">VLANs & Ports</div>
+            </div>
+            <div class="nav-step" data-step="4">
+                <div class="nav-number">4</div>
+                <div class="nav-label">Border & BGP</div>
+            </div>
+            <div class="nav-step" data-step="5">
+                <div class="nav-number">5</div>
+                <div class="nav-label">Review & Export</div>
+            </div>
+        </nav>
+
+        <!-- Validation Error Message -->
+        <div id="validation-error" class="validation-error" style="display: none;"></div>
+        
+        <!-- Success Message -->
+        <div id="success-message" class="success-message" style="display: none;"></div>
+
+        <!-- Main Content -->
+        <div class="wizard-container">
+            <!-- Step 1: Deployment Pattern -->
+            <section id="step1" class="step active">
+                <h2>Step 1: Deployment Pattern</h2>
+                <p class="description">Choose your Azure Local deployment type</p>
+                
+                <div class="cards">
+                    <div class="card" data-value="fully_converged" data-field="deployment-pattern">
+                        <div class="card-icon">🔄</div>
+                        <h3>Fully Converged</h3>
+                        <p class="card-detail">1-4 nodes</p>
+                        <p class="card-hint">Simplest setup</p>
+                    </div>
+                    <div class="card" data-value="storage_switched" data-field="deployment-pattern">
+                        <div class="card-icon">💾</div>
+                        <h3>Storage Switched ⭐</h3>
+                        <p class="card-detail">5-16 nodes</p>
+                        <p class="card-hint">Recommended for production</p>
+                    </div>
+                    <div class="card" data-value="switchless" data-field="deployment-pattern">
+                        <div class="card-icon">🔌</div>
+                        <h3>Switchless</h3>
+                        <p class="card-detail">1-4 nodes</p>
+                        <p class="card-hint">Cost effective</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 2: Switch Identity -->
+            <section id="step2" class="step">
+                <h2>Step 2: Switch Identity</h2>
+                <p class="description">Basic information about your switch</p>
+                
+                <div class="form-container">
+                    <div class="form-group">
+                        <label>Hostname <span class="required">*</span></label>
+                        <input type="text" id="hostname" value="rr1-n25-r20-5248hl-23-1a" placeholder="e.g., rr1-n25-r20-5248hl-23-1a">
+                        <small>Unique switch hostname (site name embedded here)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Switch Role <span class="required">*</span></label>
+                        <div class="cards inline">
+                            <div class="card small" data-value="TOR1" data-field="role">
+                                <h4>TOR1</h4>
+                                <small>Primary (Priority 150)</small>
+                            </div>
+                            <div class="card small" data-value="TOR2" data-field="role">
+                                <h4>TOR2</h4>
+                                <small>Secondary (Priority 140)</small>
+                            </div>
+                            <div class="card small" data-value="BMC" data-field="role">
+                                <h4>BMC</h4>
+                                <small>Management</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Vendor <span class="required">*</span></label>
+                        <div class="cards inline">
+                            <div class="card small" data-value="cisco" data-field="vendor">
+                                <div class="vendor-icon">🔷</div>
+                                <h4>Cisco NX-OS</h4>
+                            </div>
+                            <div class="card small" data-value="dellemc" data-field="vendor">
+                                <div class="vendor-icon">🔶</div>
+                                <h4>Dell OS10</h4>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="model-group" style="display: none;">
+                        <label>Model <span class="required">*</span></label>
+                        <div id="model-cards" class="cards inline"></div>
+                    </div>
+                </div>
+                
+                <button class="btn-next" onclick="goToStep(3)">Next: VLANs & Ports →</button>
+            </section>
+
+            <!-- Step 3: VLAN & Port Configuration -->
+            <section id="step3" class="step">
+                <h2>Step 3: VLAN & Port Configuration</h2>
+                <p class="description">Configure network VLANs and port assignments</p>
+                
+                <div class="form-container">
+                    <!-- Infrastructure VLAN -->
+                    <div class="vlan-card">
+                        <h3>📡 Infrastructure VLAN</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>VLAN ID <span class="required">*</span></label>
+                                <input type="number" id="infra-vlan-id" value="7" min="1" max="4094" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Subnet <span class="required">*</span></label>
+                                <input type="text" id="infra-subnet" value="100.69.176.0/24" placeholder="100.69.176.0/24" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Port Range <span class="required">*</span></label>
+                            <input type="text" id="infra-ports" value="1/1/1-1/1/18" placeholder="e.g., 1/1/1-1/1/18" required>
+                            <small>Port range for cluster nodes on Infrastructure VLAN</small>
+                        </div>
+                        <div class="form-group">
+                            <label>DHCP Relay IPs (optional)</label>
+                            <input type="text" id="dhcp-relay" value="100.71.85.107, 100.71.85.108" placeholder="100.71.85.107, 100.71.85.108">
+                        </div>
+                        <div class="auto-note">
+                            🤖 <strong>Auto-configured:</strong> SVI IPs, HSRP/VRRP (VIP: .1), MTU 9216, BGP advertisement, Trunk mode
+                        </div>
+                    </div>
+                    
+                    <!-- Storage VLANs -->
+                    <div class="vlan-card">
+                        <h3>💾 Storage VLANs (Layer 2 Only)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>TOR1 Storage VLAN <span class="required">*</span></label>
+                                <input type="number" id="storage-tor1-vlan" value="711" min="1" max="4094" required>
+                            </div>
+                            <div class="form-group">
+                                <label>TOR1 Port Range <span class="required">*</span></label>
+                                <input type="text" id="storage-tor1-ports" value="1/1/1-1/1/18" placeholder="e.g., 1/1/1-1/1/18" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>TOR2 Storage VLAN <span class="required">*</span></label>
+                                <input type="number" id="storage-tor2-vlan" value="712" min="1" max="4094" required>
+                            </div>
+                            <div class="form-group">
+                                <label>TOR2 Port Range <span class="required">*</span></label>
+                                <input type="text" id="storage-tor2-ports" value="1/1/1-1/1/18" placeholder="e.g., 1/1/1-1/1/18" required>
+                            </div>
+                        </div>
+                        <div class="auto-note">
+                            🤖 <strong>Auto-configured:</strong> MTU 9216, QoS RDMA (CoS 3, 50% BW), NO BGP (L2 only), Trunk mode
+                        </div>
+                    </div>
+                    
+                    <!-- BMC VLAN -->
+                    <div class="vlan-card">
+                        <h3>🖥️ BMC VLAN <span class="optional-badge">(Optional)</span></h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>VLAN ID</label>
+                                <input type="number" id="bmc-vlan-id" value="125" min="1" max="4094">
+                            </div>
+                            <div class="form-group">
+                                <label>Subnet</label>
+                                <input type="text" id="bmc-subnet" value="100.71.85.64/26" placeholder="100.71.85.64/26">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Port Range</label>
+                            <input type="text" id="bmc-ports" value="1/1/19-1/1/20" placeholder="e.g., 1/1/19-1/1/20">
+                            <small>Port range for BMC connections</small>
+                        </div>
+                        <div class="auto-note">
+                            🤖 <strong>Auto-configured:</strong> SVI IPs, HSRP/VRRP gateway, BGP advertisement, Trunk mode
+                        </div>
+                    </div>
+                    
+                    <!-- Compute VLAN -->
+                    <div class="vlan-card">
+                        <h3>☁️ Compute VLAN</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>VLAN ID <span class="required">*</span></label>
+                                <input type="number" id="compute-vlan-id" value="201" min="1" max="4094" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Subnet <span class="required">*</span></label>
+                                <input type="text" id="compute-subnet" value="100.69.177.0/24" placeholder="100.69.177.0/24" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Port Range <span class="required">*</span></label>
+                            <input type="text" id="compute-ports" value="1/1/1-1/1/18" placeholder="e.g., 1/1/1-1/1/18" required>
+                            <small>Port range for cluster nodes on Compute VLAN</small>
+                        </div>
+                        <div class="auto-note">
+                            🤖 <strong>Auto-configured:</strong> SVI IPs, HSRP/VRRP gateway, BGP advertisement, Trunk mode
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-back" onclick="goToStep(2)">← Back</button>
+                    <button class="btn-next" onclick="goToStep(4)">Next: Border & BGP →</button>
+                </div>
+            </section>
+
+            <!-- Step 4: Border Router & BGP Configuration -->
+            <section id="step4" class="step">
+                <h2>Step 4: Border Router & BGP Configuration</h2>
+                <p class="description">Configure routing to border routers and network controller</p>
+                
+                <div class="form-container">
+                    <!-- Border Router Connections -->
+                    <div class="port-card">
+                        <h3>🔀 Border Router Connections (L3)</h3>
+                        
+                        <h4>Border Router 1</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Port <span class="required">*</span></label>
+                                <input type="text" id="border1-port" value="1/1/47" placeholder="1/1/47" required>
+                            </div>
+                            <div class="form-group">
+                                <label>P2P IP <span class="required">*</span></label>
+                                <input type="text" id="border1-p2p-ip" value="100.71.39.130/30" placeholder="100.71.39.130/30" required>
+                            </div>
+                        </div>
+                        
+                        <h4>Border Router 2</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Port <span class="required">*</span></label>
+                                <input type="text" id="border2-port" value="1/1/48" placeholder="1/1/48" required>
+                            </div>
+                            <div class="form-group">
+                                <label>P2P IP <span class="required">*</span></label>
+                                <input type="text" id="border2-p2p-ip" value="100.71.39.138/30" placeholder="100.71.39.138/30" required>
+                            </div>
+                        </div>
+                        <div class="auto-note">
+                            🤖 <strong>Auto-configured:</strong> L3 routed ports, MTU 9216
+                        </div>
+                    </div>
+                    
+                    <!-- BGP Configuration -->
+                    <div class="bgp-card">
+                        <h3>🔧 ToR Switch BGP</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>ToR ASN <span class="required">*</span></label>
+                                <input type="number" id="tor-asn" value="65001" placeholder="65001" min="1" max="65535" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Loopback IP <span class="required">*</span></label>
+                                <input type="text" id="loopback-ip" value="100.71.39.149/32" placeholder="100.71.39.149/32" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bgp-card">
+                        <h3>🌐 BGP Neighbors</h3>
+                        <div class="form-group">
+                            <label>Border Router ASN <span class="required">*</span></label>
+                            <input type="number" id="border-asn" value="65000" placeholder="65000" min="1" max="65535" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Border 1 IP <span class="required">*</span></label>
+                                <input type="text" id="border1-neighbor-ip" value="100.71.39.129" placeholder="100.71.39.129" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Border 2 IP <span class="required">*</span></label>
+                                <input type="text" id="border2-neighbor-ip" value="100.71.39.137" placeholder="100.71.39.137" required>
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin-top: 1rem;">Network Controller</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>NC ASN <span class="required">*</span></label>
+                                <input type="number" id="nc-asn" value="65002" placeholder="65002" min="1" max="65535" required>
+                            </div>
+                            <div class="form-group">
+                                <label>NC IP <span class="required">*</span></label>
+                                <input type="text" id="nc-neighbor-ip" value="100.69.176.10" placeholder="100.69.176.10" required>
+                            </div>
+                        </div>
+                        <div class="auto-note">
+                            🤖 <strong>Auto-advertised:</strong> Infrastructure, Compute, BMC subnets | <strong>NOT advertised:</strong> Storage VLANs (L2 only)
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-back" onclick="goToStep(3)">← Back</button>
+                    <button class="btn-next" onclick="generateAndReview()">Review & Export →</button>
+                </div>
+            </section>
+
+            <!-- Step 5: Review & Export -->
+            <section id="step5" class="step">
+                <h2>✅ Configuration Ready</h2>
+                <p class="description">Review and export your configuration</p>
+                
+                <div class="summary-container">
+                    <div id="config-summary"></div>
+                    
+                    <div class="preview-container">
+                        <h3>JSON Preview</h3>
+                        <pre id="json-output"></pre>
+                    </div>
+                </div>
+                
+                <div class="export-buttons">
+                    <button class="btn-export" onclick="exportJSON()">📥 Export JSON</button>
+                    <button class="btn-export" onclick="exportConfig()">⚙️ Export Config (.cfg)</button>
+                    <button class="btn-reset" onclick="startOver()">🔄 Start Over</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="custom-confirm-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modal-title">Confirm</h3>
+            <p id="modal-message">Are you sure?</p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal(false)">Cancel</button>
+                <button class="btn-confirm" onclick="closeModal(true)">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
