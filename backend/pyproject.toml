@@ -1,0 +1,30 @@
+[project]
+name = "azure-local-network-config-backend"
+version = "1.0.0"
+description = "Backend CLI for Azure Local network switch configuration generation"
+requires-python = ">=3.9"
+dependencies = [
+    "jinja2>=3.1.0",
+    "jsonschema>=4.20.0",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --cov=src --cov-report=term-missing"
+
+[project.scripts]
+azlocal-netconfig = "src.cli:main"

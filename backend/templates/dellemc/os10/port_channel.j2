@@ -1,0 +1,49 @@
+{% if has_port_channels -%}
+! Port-Channel Configuration
+
+{% for pc in port_channels %}
+interface port-channel{{ pc.id }}
+  description {{ pc.description }}
+{% if pc.type | lower == 'trunk' %}
+  switchport
+  switchport mode trunk
+  switchport trunk native vlan {{ pc.native_vlan }}
+{% if pc.tagged_vlans is defined and pc.tagged_vlans %}
+  switchport trunk allowed vlan {{ pc.tagged_vlans }}
+{% endif %}
+  priority-flow-control mode on
+  spanning-tree port type network
+  logging event port link-status
+{% if pc.vpc_peer_link is defined and pc.vpc_peer_link %}
+  vlt-port-channel {{ pc.id }}
+{% endif %}
+{% elif pc.type | lower == 'l3' %}
+  no switchport
+  priority-flow-control mode on
+{% if pc.ipv4 is defined %}
+  ip address {{ pc.ipv4 }}
+{% endif %}
+{% endif %}
+  mtu 9216
+  no shutdown
+
+{% for member in pc.members %}
+interface ethernet {{ member }}
+  description {{ pc.description }}
+  mtu 9216
+  flowcontrol receive off
+  priority-flow-control mode on
+{% if pc.type | lower == 'trunk' %}
+  switchport
+  switchport mode trunk
+  switchport trunk native vlan {{ pc.native_vlan }}
+{% if pc.tagged_vlans is defined and pc.tagged_vlans %}
+  switchport trunk allowed vlan {{ pc.tagged_vlans }}
+{% endif %}
+  spanning-tree port type network
+{% endif %}
+  channel-group {{ pc.id }} mode active
+  no shutdown
+{% endfor %}
+{% endfor %}
+{%- endif %}

@@ -44,6 +44,11 @@
           "virtual_ip": "100.71.39.193"
         }
       }
+    },
+    {
+      "vlan_id": 99,
+      "name": "Native_VLAN",
+      "purpose": "native"
     }
   ],
   "interfaces": [

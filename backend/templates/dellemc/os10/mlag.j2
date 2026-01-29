@@ -1,0 +1,19 @@
+{% if has_mlag -%}
+! MLAG (VLT) Configuration
+
+vlt domain {{ mlag.domain_id }}
+  peer-routing
+{% if mlag.peer_gateway is defined and mlag.peer_gateway %}
+  peer-gateway
+{% endif %}
+  primary-priority {{ _computed.mlag_role_priority if _computed is defined and _computed.mlag_role_priority is not none else 32768 }}
+{% if mlag.delay_restore is defined %}
+  delay-restore {{ mlag.delay_restore }}
+{% endif %}
+{% if mlag.auto_recovery is defined and mlag.auto_recovery %}
+  auto-recovery enable
+{% endif %}
+{% if mlag.peer_keepalive is defined %}
+  back-up destination {{ mlag.peer_keepalive.destination_ip }}
+{% endif %}
+{%- endif %}

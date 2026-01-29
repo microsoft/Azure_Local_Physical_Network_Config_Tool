@@ -1,0 +1,33 @@
+! System Configuration - {{ switch.hostname }}
+! Vendor: {{ switch.vendor }}
+! Model: {{ switch.model }}
+! Role: {{ switch.role }}
+! Firmware: {{ switch.firmware }}
+
+hostname {{ switch.hostname }}
+
+banner motd #
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+
+hostname {{ switch.hostname }}
+Unauthorized access and/or use prohibited.
+All access and/or use subject to monitoring.
+
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+#
+
+! Feature Enablement
+lldp enable
+dcbx enable
+
+! Global System Settings
+ztd cancel
+mac address-table aging-time 1000000
+
+no ip dhcp-relay information-option
+no ip dhcp snooping
+
+{% if has_mlag -%}
+vrrp version 3
+vrrp delay reload 180
+{% endif %}
