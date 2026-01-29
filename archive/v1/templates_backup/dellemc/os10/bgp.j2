@@ -1,0 +1,53 @@
+{% if bgp is defined -%}
+! bgp.j2
+{# -------- BGP Global Settings -------- #}
+router bgp {{ bgp.asn }}
+  router-id {{ bgp.router_id }}
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+  maximum-paths 8
+  maximum-paths ibgp 8
+  address-family ipv4 unicast
+    {%- for network in bgp.networks %}
+    network {{ network }}
+    {%- endfor %}
+
+{#- -------- BGP Neighbors Configuration -------- #}
+{%- for neighbor in bgp.neighbors %}
+
+  {%- if '/' in neighbor.ip %}
+  {# -------- Peer-group Template for Subnet-based Neighbors -------- #}
+  template TO_{{ neighbor.description }}
+    ebgp-multihop {{ neighbor.ebgp_multihop }}
+    listen {{ neighbor.ip }} limit 5
+    remote-as {{ neighbor.remote_as }}
+    update-source {{ neighbor.update_source }}
+
+    {%- else %}
+    {# -------- Standard BGP Neighbor Configuration -------- #}
+  neighbor {{ neighbor.ip }}
+    description {{ neighbor.description }}
+    remote-as {{ neighbor.remote_as }}
+    no shutdown
+      {%- if neighbor.update_source is defined %}
+    update-source {{ neighbor.update_source }}
+      {%- endif %}
+      {%- if neighbor.ebgp_multihop is defined %}
+    ebgp-multihop {{ neighbor.ebgp_multihop }}
+      {%- endif %}
+    address-family ipv4 unicast
+      activate
+      sender-side-loop-detection
+      {%- if neighbor.af_ipv4_unicast is defined %}
+        {%- if neighbor.af_ipv4_unicast.prefix_list_in is defined %}
+      prefix-list {{ neighbor.af_ipv4_unicast.prefix_list_in }} in
+        {%- endif %}
+        {%- if neighbor.af_ipv4_unicast.prefix_list_out is defined %}
+      prefix-list {{ neighbor.af_ipv4_unicast.prefix_list_out }} out
+        {%- endif %}
+      {%- endif %}
+  {%- endif %}
+
+{%- endfor %}
+
+{% endif %}

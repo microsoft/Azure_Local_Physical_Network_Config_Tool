@@ -1,0 +1,9 @@
+{% if prefix_lists is defined -%}
+! prefix_list.j2
+{#- -------- Prefix Lists: Define Named Prefix Filters -------- #}
+{%- for name, entries in prefix_lists.items() %}
+  {% for entry in entries %}
+ip prefix-list {{ name }} seq {{ entry.seq }} {{ entry.action }} {{ entry.prefix }}{% if entry.prefix_filter is defined %} {{ entry.prefix_filter }}{% endif %}
+  {%- endfor %}
+{%- endfor %}
+{%- endif %}

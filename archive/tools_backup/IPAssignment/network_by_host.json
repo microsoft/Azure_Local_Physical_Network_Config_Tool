@@ -1,0 +1,11 @@
+{
+  "network": "192.168.1.0/24",
+  "subnets": [
+    { "name": "csu-edge-transport-compute", "vlan": "203", "hosts": "10" },
+    { "name": "csu-exchange-compute","vlan": "102", "hosts": "30" },
+    { "name": "msu-compute","vlan": "302", "hosts": "30" },
+    { "name": "csu-edge-transport-management","vlan": "101", "hosts": "30" },
+    { "name": "msu-management","vlan": "201", "hosts": "20" },
+    { "name": "csu-exchange-management","vlan": "301", "hosts": "60" }
+  ]
+}

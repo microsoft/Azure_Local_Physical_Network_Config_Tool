@@ -1,0 +1,49 @@
+{% if vlans is defined -%}
+! vlan.j2
+{# -------- VLAN Definitions -------- #}
+{% for vlan in vlans -%}
+vlan {{ vlan.vlan_id }}
+  name {{ vlan.name }}
+  {% if vlan.shutdown is defined and vlan.shutdown -%}
+  shutdown
+  {%- endif %}
+{% endfor %}
+
+{# -------- VLAN Interfaces (SVIs) -------- #}
+{%- for vlan in vlans if vlan.interface is defined -%}
+interface vlan{{ vlan.vlan_id }}
+  description {{ vlan.name }}
+  mtu {{ vlan.interface.mtu }}
+  {% if vlan.shutdown is defined and vlan.shutdown -%}
+  shutdown
+  {%- else -%}
+  no shutdown
+  {%- endif %}
+  ip address {{ vlan.interface.ip }}/{{ vlan.interface.cidr }}
+  no ip redirects
+  no ipv6 redirects
+
+  {#- -------- DHCP Relay Configuration -------- #}
+  {%- if vlan.interface.dhcp_relay is defined %}
+    {%- for ip in vlan.interface.dhcp_relay %}
+  ip dhcp relay address {{ ip }}
+    {%- endfor %}
+  {%- endif %}
+
+  {#- -------- Redundancy Configuration (HSRP / VRRP) -------- #}
+  {%- if vlan.interface.redundancy is defined %}
+    {%- if vlan.interface.redundancy.type == "hsrp" %}
+  hsrp version 2
+  hsrp {{ vlan.interface.redundancy.group }}
+    priority {{ vlan.interface.redundancy.priority }}
+    ip {{ vlan.interface.redundancy.virtual_ip }}
+    {%- elif vlan.interface.redundancy.type == "vrrp" %}
+  vrrp-group {{ vlan.interface.redundancy.group }}
+    virtual-address {{ vlan.interface.redundancy.virtual_ip }}
+    no preempt
+    priority {{ vlan.interface.redundancy.priority }}
+    {%- endif %}
+  {%- endif %}
+
+{% endfor %}
+{%- endif %}

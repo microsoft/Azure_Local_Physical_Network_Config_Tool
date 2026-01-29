@@ -1,0 +1,568 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/azure-local/network-config-tool/schema/standard.json",
+  "title": "Azure Local Network Switch Configuration",
+  "description": "Standard JSON schema for network switch configurations in Azure Local deployments",
+  "type": "object",
+  "required": ["switch"],
+  "properties": {
+    "switch": {
+      "type": "object",
+      "description": "Hardware identification and role configuration",
+      "required": ["vendor", "model", "hostname", "role", "firmware"],
+      "properties": {
+        "vendor": {
+          "type": "string",
+          "description": "Switch manufacturer",
+          "enum": ["cisco", "dellemc"]
+        },
+        "model": {
+          "type": "string",
+          "description": "Switch model identifier",
+          "examples": ["93108TC-FX3P", "s5248f-on", "n3248te-on"]
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Switch hostname",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "maxLength": 64
+        },
+        "role": {
+          "type": "string",
+          "description": "Switch role in the deployment",
+          "enum": ["TOR1", "TOR2", "BMC"]
+        },
+        "firmware": {
+          "type": "string",
+          "description": "Firmware/OS type",
+          "enum": ["nxos", "os10"]
+        },
+        "version": {
+          "type": "string",
+          "description": "Firmware version",
+          "examples": ["10.5.5.5", "10.2(3)"]
+        },
+        "deployment_pattern": {
+          "type": "string",
+          "description": "Deployment pattern for port layout defaults",
+          "enum": ["fully_converged", "switched", "switchless"],
+          "default": "fully_converged"
+        },
+        "template_set": {
+          "type": "string",
+          "description": "Template set for configuration generation",
+          "default": "default"
+        }
+      },
+      "additionalProperties": false
+    },
+    "vlans": {
+      "type": "array",
+      "description": "VLAN definitions",
+      "items": {
+        "type": "object",
+        "required": ["vlan_id", "name"],
+        "properties": {
+          "vlan_id": {
+            "type": "integer",
+            "description": "VLAN identifier (avoid VLAN 1)",
+            "minimum": 2,
+            "maximum": 4094
+          },
+          "name": {
+            "type": "string",
+            "description": "VLAN name",
+            "maxLength": 32,
+            "pattern": "^[a-zA-Z0-9_-]+$"
+          },
+          "purpose": {
+            "type": "string",
+            "description": "VLAN purpose for Azure Local",
+            "enum": ["management", "compute", "storage_1", "storage_2", "native", "parking"]
+          },
+          "shutdown": {
+            "type": "boolean",
+            "description": "Whether VLAN is administratively down",
+            "default": false
+          },
+          "interface": {
+            "type": "object",
+            "description": "L3 interface configuration (SVI)",
+            "properties": {
+              "ip": {
+                "type": "string",
+                "description": "IPv4 address without CIDR",
+                "format": "ipv4"
+              },
+              "cidr": {
+                "type": "integer",
+                "description": "Prefix length",
+                "minimum": 1,
+                "maximum": 32
+              },
+              "mtu": {
+                "type": "integer",
+                "description": "Maximum transmission unit",
+                "minimum": 1280,
+                "maximum": 9216,
+                "default": 9216
+              },
+              "dhcp_relay": {
+                "type": "array",
+                "description": "DHCP helper IP addresses",
+                "items": {
+                  "type": "string",
+                  "format": "ipv4"
+                }
+              },
+              "redundancy": {
+                "type": "object",
+                "description": "Gateway redundancy (HSRP/VRRP)",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Redundancy protocol type",
+                    "enum": ["hsrp", "vrrp"]
+                  },
+                  "group": {
+                    "type": "integer",
+                    "description": "HSRP/VRRP group number",
+                    "minimum": 1,
+                    "maximum": 4094
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "description": "Priority value (higher = preferred)",
+                    "minimum": 1,
+                    "maximum": 255
+                  },
+                  "virtual_ip": {
+                    "type": "string",
+                    "description": "Virtual gateway IP for hosts",
+                    "format": "ipv4"
+                  },
+                  "preempt": {
+                    "type": "boolean",
+                    "description": "Enable preemption",
+                    "default": true
+                  }
+                },
+                "required": ["type", "group", "priority", "virtual_ip"]
+              }
+            },
+            "required": ["ip", "cidr"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "interfaces": {
+      "type": "array",
+      "description": "Physical and logical interface configurations",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "intf_type"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Human-readable interface description"
+          },
+          "description": {
+            "type": "string",
+            "description": "Extended description"
+          },
+          "type": {
+            "type": "string",
+            "description": "Interface mode",
+            "enum": ["Access", "Trunk", "L3"]
+          },
+          "intf_type": {
+            "type": "string",
+            "description": "Physical interface type",
+            "enum": ["Ethernet", "loopback"]
+          },
+          "intf": {
+            "type": "string",
+            "description": "Single interface identifier",
+            "examples": ["1/1/1", "1/1/48", "loopback0"]
+          },
+          "start_intf": {
+            "type": "string",
+            "description": "Start of interface range",
+            "examples": ["1/1/1"]
+          },
+          "end_intf": {
+            "type": "string",
+            "description": "End of interface range",
+            "examples": ["1/1/16"]
+          },
+          "shutdown": {
+            "type": "boolean",
+            "description": "Administrative shutdown state",
+            "default": false
+          },
+          "mtu": {
+            "type": "integer",
+            "description": "Maximum transmission unit",
+            "minimum": 1280,
+            "maximum": 9216,
+            "default": 9216
+          },
+          "access_vlan": {
+            "type": "string",
+            "description": "Access VLAN ID (for Access type)",
+            "pattern": "^[0-9]+$"
+          },
+          "native_vlan": {
+            "type": "string",
+            "description": "Native/untagged VLAN ID (for Trunk type)",
+            "pattern": "^[0-9]+$"
+          },
+          "tagged_vlans": {
+            "type": "string",
+            "description": "Comma-separated tagged VLAN IDs (for Trunk type)",
+            "pattern": "^[0-9,]*$"
+          },
+          "ipv4": {
+            "type": "string",
+            "description": "IPv4 address with CIDR (for L3 type)",
+            "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+          },
+          "qos": {
+            "type": "boolean",
+            "description": "Enable QoS for RDMA/RoCE traffic",
+            "default": false
+          },
+          "service_policy": {
+            "type": "object",
+            "description": "QoS service policy configuration",
+            "properties": {
+              "qos_input": {
+                "type": "string",
+                "description": "Input QoS policy name"
+              },
+              "qos_output": {
+                "type": "string",
+                "description": "Output QoS policy name"
+              }
+            }
+          }
+        },
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": { "type": { "const": "Access" } }
+            },
+            "then": {
+              "required": ["access_vlan"]
+            }
+          },
+          {
+            "if": {
+              "properties": { "type": { "const": "Trunk" } }
+            },
+            "then": {
+              "required": ["native_vlan"]
+            }
+          },
+          {
+            "if": {
+              "properties": { "type": { "const": "L3" } }
+            },
+            "then": {
+              "required": ["ipv4"]
+            }
+          }
+        ]
+      }
+    },
+    "port_channels": {
+      "type": "array",
+      "description": "Port aggregation (LAG) configurations",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "type", "members"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Port-channel ID",
+            "minimum": 1,
+            "maximum": 4096
+          },
+          "description": {
+            "type": "string",
+            "description": "Port-channel purpose"
+          },
+          "type": {
+            "type": "string",
+            "description": "Port-channel mode",
+            "enum": ["Trunk", "L3", "Access"]
+          },
+          "members": {
+            "type": "array",
+            "description": "Physical port members",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "native_vlan": {
+            "type": "string",
+            "description": "Native VLAN (for Trunk type)",
+            "pattern": "^[0-9]+$"
+          },
+          "tagged_vlans": {
+            "type": "string",
+            "description": "Tagged VLANs (for Trunk type)",
+            "pattern": "^[0-9,]*$"
+          },
+          "ipv4": {
+            "type": "string",
+            "description": "IPv4 address (for L3 type)",
+            "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}(/[0-9]{1,2})?$"
+          },
+          "vpc_peer_link": {
+            "type": "boolean",
+            "description": "Mark as VPC/MLAG peer-link",
+            "default": false
+          },
+          "vpc_id": {
+            "type": "integer",
+            "description": "VPC ID for host-facing port-channels",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "mlag": {
+      "type": "object",
+      "description": "Multi-Chassis LAG (MLAG/VPC) configuration",
+      "properties": {
+        "domain_id": {
+          "type": "integer",
+          "description": "MLAG domain identifier",
+          "minimum": 1,
+          "default": 1
+        },
+        "peer_keepalive": {
+          "type": "object",
+          "description": "Keepalive link configuration",
+          "required": ["source_ip", "destination_ip"],
+          "properties": {
+            "source_ip": {
+              "type": "string",
+              "description": "Local keepalive IP",
+              "format": "ipv4"
+            },
+            "destination_ip": {
+              "type": "string",
+              "description": "Peer switch keepalive IP",
+              "format": "ipv4"
+            },
+            "vrf": {
+              "type": "string",
+              "description": "VRF for keepalive",
+              "default": "default"
+            }
+          }
+        },
+        "delay_restore": {
+          "type": "integer",
+          "description": "Restore delay in seconds",
+          "minimum": 0,
+          "default": 150
+        },
+        "peer_gateway": {
+          "type": "boolean",
+          "description": "Enable peer-gateway feature",
+          "default": true
+        },
+        "auto_recovery": {
+          "type": "boolean",
+          "description": "Enable auto-recovery",
+          "default": true
+        }
+      }
+    },
+    "static_routes": {
+      "type": "array",
+      "description": "Static route configurations (alternative to BGP)",
+      "items": {
+        "type": "object",
+        "required": ["destination", "next_hop"],
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Target network in CIDR notation",
+            "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+          },
+          "next_hop": {
+            "type": "string",
+            "description": "Gateway IP address",
+            "format": "ipv4"
+          },
+          "name": {
+            "type": "string",
+            "description": "Route description"
+          },
+          "admin_distance": {
+            "type": "integer",
+            "description": "Administrative distance",
+            "minimum": 1,
+            "maximum": 255,
+            "default": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "prefix_lists": {
+      "type": "object",
+      "description": "BGP prefix list definitions",
+      "additionalProperties": {
+        "type": "array",
+        "description": "Prefix list entries",
+        "items": {
+          "type": "object",
+          "required": ["seq", "action", "prefix"],
+          "properties": {
+            "seq": {
+              "type": "integer",
+              "description": "Sequence number",
+              "minimum": 1
+            },
+            "action": {
+              "type": "string",
+              "description": "Permit or deny",
+              "enum": ["permit", "deny"]
+            },
+            "prefix": {
+              "type": "string",
+              "description": "IP prefix in CIDR notation",
+              "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+            },
+            "prefix_filter": {
+              "type": "string",
+              "description": "Additional prefix filter (le/ge)",
+              "pattern": "^(le|ge)\\s+[0-9]+(\\s+(le|ge)\\s+[0-9]+)?$"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "bgp": {
+      "type": "object",
+      "description": "BGP routing configuration",
+      "required": ["asn", "router_id", "neighbors"],
+      "properties": {
+        "asn": {
+          "type": "integer",
+          "description": "Local AS number",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "router_id": {
+          "type": "string",
+          "description": "BGP router ID (should match Loopback0 IP)",
+          "format": "ipv4"
+        },
+        "networks": {
+          "type": "array",
+          "description": "Networks to advertise",
+          "items": {
+            "type": "string",
+            "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+          }
+        },
+        "neighbors": {
+          "type": "array",
+          "description": "BGP neighbor configurations",
+          "items": {
+            "type": "object",
+            "required": ["ip", "description", "remote_as", "af_ipv4_unicast"],
+            "properties": {
+              "ip": {
+                "type": "string",
+                "description": "Neighbor IP address",
+                "format": "ipv4"
+              },
+              "description": {
+                "type": "string",
+                "description": "Neighbor description"
+              },
+              "remote_as": {
+                "type": "integer",
+                "description": "Neighbor's AS number",
+                "minimum": 1,
+                "maximum": 4294967295
+              },
+              "update_source": {
+                "type": "string",
+                "description": "Source interface for BGP session"
+              },
+              "ebgp_multihop": {
+                "type": "integer",
+                "description": "TTL for eBGP multihop",
+                "minimum": 1,
+                "maximum": 255
+              },
+              "af_ipv4_unicast": {
+                "type": "object",
+                "description": "IPv4 unicast address family configuration",
+                "properties": {
+                  "prefix_list_in": {
+                    "type": "string",
+                    "description": "Inbound prefix list name"
+                  },
+                  "prefix_list_out": {
+                    "type": "string",
+                    "description": "Outbound prefix list name"
+                  },
+                  "route_map_in": {
+                    "type": "string",
+                    "description": "Inbound route map name"
+                  },
+                  "route_map_out": {
+                    "type": "string",
+                    "description": "Outbound route map name"
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "qos": {
+      "type": "boolean",
+      "description": "Enable QoS globally (for RDMA/RoCE)",
+      "default": false
+    },
+    "_metadata": {
+      "type": "object",
+      "description": "Auto-generated tracking information",
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "description": "Schema version",
+          "default": "1.0"
+        },
+        "generated_by": {
+          "type": "string",
+          "description": "Tool that generated this config"
+        },
+        "generated_at": {
+          "type": "string",
+          "description": "Generation timestamp",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

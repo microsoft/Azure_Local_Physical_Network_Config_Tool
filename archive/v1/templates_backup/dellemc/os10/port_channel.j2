@@ -1,0 +1,66 @@
+{% if port_channels is defined -%}
+! port-channel.j2
+
+{%- for pc in port_channels %}
+  {# -------- Port-Channel Interface Config -------- #}
+interface port-channel{{ pc.id }}
+  description {{ pc.description }}
+  
+  {%- if pc.type | lower == 'trunk' %}
+  switchport
+  switchport mode trunk
+  switchport trunk native vlan {{ pc.native_vlan }}
+    {%- if pc.tagged_vlans is defined %}
+  switchport trunk allowed vlan {{ pc.tagged_vlans }}
+    {%- endif %}
+  priority-flow-control mode on
+  spanning-tree port type network
+  logging event port link-status
+
+    {%- if pc.vpc_peer_link is defined and pc.vpc_peer_link %}
+  vpc peer-link
+    {%- endif %}
+    {%- if pc.vpc_id is defined %}
+  vpc {{ pc.vpc_id }}
+    {%- endif %}
+
+  {%- elif pc.type | lower == 'l3' %}
+  no switchport
+  priority-flow-control mode on
+  ip address {{ pc.ipv4 }}
+  {%- endif %}
+  mtu 9216
+  no shutdown
+
+  {# -------- Member Interfaces -------- #}
+  {%- for member in pc.members %}
+interface Ethernet {{ member }}
+  description {{ pc.description }}
+  mtu 9216
+  flowcontrol receive off
+  priority-flow-control mode on
+
+    {%- if pc.type | lower == 'trunk' %}
+  switchport
+  switchport mode trunk
+  switchport trunk native vlan {{ pc.native_vlan }}
+      {%- if pc.tagged_vlans is defined %}
+  switchport trunk allowed vlan {{ pc.tagged_vlans }}
+      {%- endif %}
+  spanning-tree port type network
+    {%- endif %}
+
+    {#- -------- QoS Policy -------- #}
+    {%- if pc['service-policy'] is defined %}
+  service-policy input type network-qos {{ pc['service-policy'].ingress }}
+  service-policy output type queuing {{ pc['service-policy'].egress }}
+  qos-map traffic-class AZS_SERVICES_TrafficClass
+  ets mode on
+    {%- endif %}
+    
+  channel-group {{ pc.id }} mode active
+  no shutdown
+  {% endfor %}
+
+{%- endfor %}
+{%- endif %}

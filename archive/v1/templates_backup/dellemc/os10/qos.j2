@@ -1,0 +1,59 @@
+{% if qos is defined -%}
+! qos.j2
+{# -------- ECN (Explicit Congestion Notification) -------- #}
+wred ecn
+  random-detect color green minimum-threshold 150 maximum-threshold 1500 drop-probability 100
+  random-detect ecn
+
+{# -------- Network QoS Class Maps (match qos-group by COS) -------- #}
+class-map type network-qos AZLOCAL_COS3
+  match qos-group 3
+
+class-map type network-qos AZLOCAL_COS7
+  match qos-group 7
+
+{# -------- Queuing Class Maps (based on traffic-class / queue ID) -------- #}
+class-map type queuing AZLOCAL_QUEUE0
+  match queue 0
+
+class-map type queuing AZLOCAL_QUEUE3
+  match queue 3
+
+class-map type queuing AZLOCAL_QUEUE7
+  match queue 7
+
+{# -------- Trust Dot1p Mapping -------- #}
+trust dot1p-map AZLOCAL_DOT1P_TRUST
+  qos-group 0 dot1p 0-2,4-6
+  qos-group 3 dot1p 3
+  qos-group 7 dot1p 7
+
+{# -------- QoS Group to Queue Mapping -------- #}
+qos-map traffic-class AZLOCAL_QOS_MAP
+  queue 0 qos-group 0-2,4-6
+  queue 3 qos-group 3
+  queue 7 qos-group 7
+
+{# -------- Priority Flow Control (PFC) Policy -------- #}
+policy-map type network-qos AZLOCAL_PFC
+  class AZLOCAL_COS3
+    pause
+    pfc-cos 3
+
+{# -------- Enhanced Transmission Selection (ETS) Policy -------- #}
+policy-map type queuing AZLOCAL_ETS
+  class AZLOCAL_QUEUE0
+    bandwidth percent 48
+
+  class AZLOCAL_QUEUE3
+    bandwidth percent 50
+    random-detect ecn
+
+  class AZLOCAL_QUEUE7
+    bandwidth percent 2
+
+{# -------- System-Level QoS Configuration -------- #}
+system qos
+  trust-map dot1p AZLOCAL_DOT1P_TRUST
+  ets mode on
+{%- endif %}

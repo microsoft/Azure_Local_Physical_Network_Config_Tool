@@ -1,0 +1,89 @@
+{% if interfaces is defined -%}
+! interface.j2 - dell
+
+{#- -------- Access Interfaces -------- #}
+{% for iface in interfaces if iface.type == "Access" %}
+{%- set intf_range = iface.intf if iface.intf is defined else iface.start_intf ~ (('-' ~ iface.end_intf) if iface.end_intf is defined and iface.end_intf != iface.start_intf else '') %}
+{%- set intf_name = iface.intf_type ~ ' ' ~ intf_range %}
+interface {{ intf_name }}
+  description {{ iface.name }}
+  switchport
+  switchport mode access
+  switchport access vlan {{ iface.access_vlan }}
+  spanning-tree bpduguard enable
+  spanning-tree guard root
+  mtu 9216
+  {%- if iface.service_policy is defined and iface.service_policy.qos_input is defined %}
+  service-policy type qos input {{ iface.service_policy.qos_input }}
+  {%- endif %}
+  {%- if iface.shutdown is defined and iface.shutdown %}
+  shutdown
+  {%- else %}
+  no shutdown
+  {%- endif %}
+{% endfor %}
+
+{#- -------- Trunk Interfaces -------- #}
+{% for iface in interfaces if iface.type == "Trunk" %}
+{%- set intf_range = iface.intf if iface.intf is defined else iface.start_intf ~ (('-' ~ iface.end_intf) if iface.end_intf is defined and iface.end_intf != iface.start_intf else '') %}
+{%- set intf_name = iface.intf_type ~ ' ' ~ intf_range %}
+interface {{ intf_name }}
+  description {{ iface.name }}
+  switchport
+  switchport mode trunk
+  switchport access vlan {{ iface.native_vlan }}
+  switchport trunk allowed vlan {{ iface.tagged_vlans }}
+  {%- if iface.pfc is defined and iface.pfc %}
+  flowcontrol receive off
+  priority-flow-control mode on
+  ets mode on
+  {%- endif %}
+  spanning-tree bpduguard enable
+  spanning-tree guard root
+  spanning-tree port type edge
+  mtu 9216
+  {%- if iface.service_policy is defined and iface.service_policy.qos_input is defined %}
+  service-policy input type network-qos {{ iface.service_policy.qos_input }}
+  {%- endif %}
+  {%- if iface.service_policy is defined and iface.service_policy.qos_output is defined %}
+  service-policy output type queuing {{ iface.service_policy.qos_output }}
+  {%- endif %}
+  {%- if iface.qos_map is defined %}
+  qos-map traffic-class {{ iface.qos_map }}
+  {%- endif %}
+  {%- if iface.shutdown is defined and iface.shutdown %}
+  shutdown
+  {%- else %}
+  no shutdown
+  {%- endif %}
+{% endfor %}
+
+{#- -------- L3 Interfaces (Ethernet only) -------- #}
+{% for iface in interfaces if iface.type == "L3" and iface.intf_type | lower == "ethernet" %}
+{%- set intf_range = iface.intf if iface.intf is defined else iface.start_intf ~ (('-' ~ iface.end_intf) if iface.end_intf is defined and iface.end_intf != iface.start_intf else '') %}
+{%- set intf_name = iface.intf_type ~ ' ' ~ intf_range %}
+interface {{ intf_name }}
+  description {{ iface.name }}
+  no switchport
+  ip address {{ iface.ipv4 }}
+  mtu 9216
+  {%- if iface.shutdown is defined and iface.shutdown %}
+  shutdown
+  {%- else %}
+  no shutdown
+  {%- endif %}
+{% endfor %}
+
+{#- -------- Loopback Interfaces -------- #}
+{% for iface in interfaces if iface.intf_type | lower == "loopback" %}
+interface {{ iface.intf_type }}{{ iface.intf }}
+  description {{ iface.name }}
+  ip address {{ iface.ipv4 }}
+  mtu 9216
+  {%- if iface.shutdown is defined and iface.shutdown %}
+  shutdown
+  {%- else %}
+  no shutdown
+  {%- endif %}
+{% endfor %}
+{% endif %}

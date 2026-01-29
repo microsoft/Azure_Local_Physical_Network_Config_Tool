@@ -1,0 +1,11 @@
+{
+  "network": "192.168.1.0/24",
+  "subnets": [
+    { "name": "csu-edge-transport-compute", "vlan": "203", "cidr": "28" },
+    { "name": "csu-exchange-compute","vlan": "102", "cidr": "27" },
+    { "name": "msu-compute","vlan": "302", "cidr": "27" },
+    { "name": "csu-edge-transport-management","vlan": "101", "cidr": "27" },
+    { "name": "msu-management","vlan": "201", "cidr": "27" },
+    { "name": "csu-exchange-management","vlan": "301", "cidr": "26" }
+  ]
+}

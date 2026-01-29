@@ -1,0 +1,41 @@
+{%- if bgp is defined -%}
+
+{#- -------- BGP Configuration -------- #}
+! bgp.j2
+router bgp {{ bgp.asn }}
+  router-id {{ bgp.router_id }}
+  bestpath as-path multipath-relax
+  log-neighbor-changes
+
+  {#- -------- BGP Networks (Advertised Routes) -------- #}
+  address-family ipv4 unicast
+    {%- for network in bgp.networks %}
+    network {{ network }}
+    {%- endfor %}
+    maximum-paths 8
+    maximum-paths ibgp 8
+
+  {#- -------- BGP Neighbors -------- #}
+  {% for neighbor in bgp.neighbors %}
+  neighbor {{ neighbor.ip }}
+    description {{ neighbor.description }}
+    remote-as {{ neighbor.remote_as }}
+    {%- if neighbor.update_source is defined %}
+    update-source {{ neighbor.update_source }}
+    {%- endif %}
+    {%- if neighbor.ebgp_multihop is defined %}
+    ebgp-multihop {{ neighbor.ebgp_multihop }}
+    {%- endif %}
+
+    {#- -------- Address-Family Settings for Neighbor -------- #}
+    address-family ipv4 unicast
+      maximum-prefix 12000 warning-only
+      {%- if neighbor.af_ipv4_unicast.prefix_list_out is defined %}
+      prefix-list {{ neighbor.af_ipv4_unicast.prefix_list_out }} out
+      {%- endif %}
+      {%- if neighbor.af_ipv4_unicast.prefix_list_in is defined %}
+      prefix-list {{ neighbor.af_ipv4_unicast.prefix_list_in }} in
+      {%- endif %}
+  {% endfor %}
+
+{%- endif %}

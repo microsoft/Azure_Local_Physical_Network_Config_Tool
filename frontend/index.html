@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure Local Switch Configuration Wizard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🌐 Azure Local Switch Configuration Wizard</h1>
+            <p class="subtitle">Generate Standard JSON and Sample Switch Configs for Azure Local. Save for reference and debugging — always review before applying to production.</p>
+            <div class="import-section">
+                <button class="import-btn" onclick="showTemplateModal()">📋 Load Example Configuration Template</button>
+                <label for="import-json" class="import-btn secondary">📥 Import Config</label>
+                <input type="file" id="import-json" accept=".json" style="display: none;">
+            </div>
+        </header>
+
+        <!-- Template Selection Modal -->
+        <div id="template-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>📋 Example Configuration Templates</h2>
+                    <button class="modal-close" onclick="closeTemplateModal()">×</button>
+                </div>
+                <p class="modal-description">Select a pre-configured example template to quickly set up common deployment scenarios. These templates include all required settings.</p>
+                
+                <div class="template-grid">
+                    <!-- Dell TOR1 Template -->
+                    <div class="template-card" onclick="loadTemplate('dell-tor1')">
+                        <h3>🔵 Dell TOR1 (Top of Rack 1)</h3>
+                        <p>Primary ToR switch with BGP routing and MLAG redundancy</p>
+                        <div class="template-tags">
+                            <span class="tag">Dell EMC</span>
+                            <span class="tag">S5248F-ON</span>
+                            <span class="tag">BGP</span>
+                            <span class="tag">MLAG</span>
+                        </div>
+                    </div>
+
+                    <!-- Dell TOR2 Template -->
+                    <div class="template-card" onclick="loadTemplate('dell-tor2')">
+                        <h3>🟢 Dell TOR2 (Top of Rack 2)</h3>
+                        <p>Secondary ToR switch paired with TOR1 for high availability</p>
+                        <div class="template-tags">
+                            <span class="tag">Dell EMC</span>
+                            <span class="tag">S5248F-ON</span>
+                            <span class="tag">BGP</span>
+                            <span class="tag">MLAG</span>
+                        </div>
+                    </div>
+
+                    <!-- Dell BMC Template -->
+                    <div class="template-card" onclick="loadTemplate('dell-bmc')">
+                        <h3>🟠 Dell BMC (Management Switch)</h3>
+                        <p>Baseboard Management Controller switch for server IPMI access</p>
+                        <div class="template-tags">
+                            <span class="tag">Dell EMC</span>
+                            <span class="tag">S3248TE-ON</span>
+                            <span class="tag">L2 Only</span>
+                            <span class="tag">Lab/Optional</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="nav-step active" data-step="1">
+                <div class="nav-number">1</div>
+                <div class="nav-label">Switch</div>
+            </div>
+            <div class="nav-step" data-step="2">
+                <div class="nav-number">2</div>
+                <div class="nav-label">VLANs</div>
+            </div>
+            <div class="nav-step" data-step="3">
+                <div class="nav-number">3</div>
+                <div class="nav-label">Ports & MLAG</div>
+            </div>
+            <div class="nav-step" data-step="4">
+                <div class="nav-number">4</div>
+                <div class="nav-label">Routing</div>
+            </div>
+            <div class="nav-step" data-step="5">
+                <div class="nav-number">5</div>
+                <div class="nav-label">Review</div>
+            </div>
+        </nav>
+
+        <!-- Wizard Container -->
+        <div class="wizard-container">
+            <!-- ================================================================
+                 STEP 1: SWITCH IDENTITY (Phase 1 from Design Doc)
+                 Output: switch{}
+                 ================================================================ -->
+            <section id="step1" class="step active">
+                <h2>Step 1: Switch Identity</h2>
+                <p class="description">Select your switch vendor, model, and role</p>
+                
+                <div class="form-container">
+                    <!-- Vendor Selection -->
+                    <div class="form-group">
+                        <label>Vendor <span class="required">*</span></label>
+                        <div class="cards inline">
+                            <div class="card small vendor-card" data-vendor="dellemc">
+                                <h4>Dell EMC</h4>
+                            </div>
+                            <div class="card small vendor-card" data-vendor="cisco">
+                                <h4>Cisco</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Selection -->
+                    <div class="form-group" id="model-group">
+                        <label>Model <span class="required">*</span></label>
+                        <div id="model-cards" class="cards inline">
+                            <!-- Dell models -->
+                            <div class="card small model-card" data-model="s5248f-on" data-vendor="dellemc">
+                                <h4>S5248F-ON</h4>
+                            </div>
+                            <div class="card small model-card" data-model="s5232f-on" data-vendor="dellemc">
+                                <h4>S5232F-ON</h4>
+                            </div>
+                            <!-- Cisco models -->
+                            <div class="card small model-card" data-model="93180yc-fx" data-vendor="cisco" style="display:none;">
+                                <h4>93180YC-FX</h4>
+                            </div>
+                            <div class="card small model-card" data-model="9336c-fx2" data-vendor="cisco" style="display:none;">
+                                <h4>9336C-FX2</h4>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Role Selection -->
+                    <div class="form-group">
+                        <label>Switch Role <span class="required">*</span></label>
+                        <div class="cards inline">
+                            <div class="card small role-card" data-role="TOR1">
+                                <h4>🔵 TOR1</h4>
+                            </div>
+                            <div class="card small role-card" data-role="TOR2">
+                                <h4>🟢 TOR2</h4>
+                            </div>
+                            <div class="card small role-card" data-role="BMC">
+                                <h4>🟠 BMC</h4>
+                                <span class="optional-badge">Lab/Optional</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hostname -->
+                    <div class="form-group">
+                        <label>Hostname <span class="required">*</span></label>
+                        <input type="text" id="hostname" placeholder="e.g., rr1-n25-r20-5248hl-23-1a">
+                    </div>
+
+                    <!-- Deployment Pattern -->
+                    <div class="form-group">
+                        <label>Deployment Pattern</label>
+                        <div class="cards inline">
+                            <div class="card small pattern-card selected" data-pattern="fully_converged">
+                                <h4>🔄 Fully Converged</h4>
+                            </div>
+                            <div class="card small pattern-card" data-pattern="switched">
+                                <h4>💾 Storage Switched</h4>
+                            </div>
+                            <div class="card small pattern-card" data-pattern="switchless">
+                                <h4>🔌 Switchless</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <div></div>
+                    <button class="btn-next">Next: VLANs →</button>
+                </div>
+            </section>
+
+            <!-- ================================================================
+                 STEP 2: VLAN CONFIGURATION (Design Doc Step 2.1)
+                 Output: vlans[]
+                 ================================================================ -->
+            <section id="step2" class="step">
+                <h2>Step 2: VLAN Configuration</h2>
+                <p class="description">Define your network VLANs</p>
+                
+                <div class="form-container">
+                    <!-- Unused Port VLAN (Static) -->
+                    <div class="vlan-card">
+                        <h3>🚫 Unused Port VLAN (Shutdown)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>VLAN ID</label>
+                                <input type="number" id="vlan-parking-id" value="2" min="2" max="4094">
+                                <small>Unused ports assigned here (shutdown=true)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Management VLANs (Dynamic) -->
+                    <div class="vlan-section">
+                        <div class="section-header">
+                            <h3>📡 Management VLANs <span class="required">*</span></h3>
+                            <button type="button" class="btn-add-small" id="btn-add-mgmt">+ Add Management VLAN</button>
+                        </div>
+                        <div id="mgmt-vlans-container">
+                            <div class="vlan-card dynamic-vlan" data-vlan-type="management" data-vlan-index="0">
+                                <div class="card-header">
+                                    <h4>Management VLAN #1</h4>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>VLAN ID <span class="required">*</span></label>
+                                        <input type="number" class="vlan-mgmt-id" value="7" min="2" max="4094" onchange="updateVlanName(this, 'mgmt', 'Infra')">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>VLAN Name</label>
+                                        <input type="text" class="vlan-mgmt-name" value="Infra_7" placeholder="Infra_7" style="color: #666;">
+                                        <small>Optional - defaults to Infra_{vlan_id}</small>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Switch IP</label>
+                                        <input type="text" class="vlan-mgmt-ip" placeholder="100.69.176.2/24">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Gateway VIP (HSRP/VRRP)</label>
+                                        <input type="text" class="vlan-mgmt-gateway" placeholder="100.69.176.1/24">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>DHCP Relay (optional, comma-separated)</label>
+                                    <input type="text" class="vlan-mgmt-dhcp" placeholder="100.71.85.107,100.71.85.108">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compute VLANs (Dynamic) -->
+                    <div class="vlan-section">
+                        <div class="section-header">
+                            <h3>💻 Compute VLANs <span class="required">*</span></h3>
+                            <button type="button" class="btn-add-small" id="btn-add-compute">+ Add Compute VLAN</button>
+                        </div>
+                        <div id="compute-vlans-container">
+                            <div class="vlan-card dynamic-vlan" data-vlan-type="compute" data-vlan-index="0">
+                                <div class="card-header">
+                                    <h4>Compute VLAN #1</h4>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>VLAN ID <span class="required">*</span></label>
+                                        <input type="number" class="vlan-compute-id" value="201" min="2" max="4094" onchange="updateVlanName(this, 'compute', 'Compute')">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>VLAN Name</label>
+                                        <input type="text" class="vlan-compute-name" value="Compute_201" placeholder="Compute_201" style="color: #666;">
+                                        <small>Optional - defaults to Compute_{vlan_id}</small>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Switch IP</label>
+                                        <input type="text" class="vlan-compute-ip" placeholder="10.1.0.2/24">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Gateway VIP (HSRP/VRRP)</label>
+                                        <input type="text" class="vlan-compute-gateway" placeholder="10.1.0.1/24">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>DHCP Relay (optional, comma-separated)</label>
+                                    <input type="text" class="vlan-compute-dhcp" placeholder="100.71.85.107,100.71.85.108">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Storage VLANs (Static) -->
+                    <div class="vlan-card">
+                        <h3>💾 Storage VLANs <span class="optional-badge">L2 Only</span></h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Storage 1 VLAN ID</label>
+                                <input type="number" id="vlan-storage1-id" placeholder="711" min="2" max="4094" onchange="updateStorageVlanName(1)">
+                            </div>
+                            <div class="form-group">
+                                <label>Storage 1 Name</label>
+                                <input type="text" id="vlan-storage1-name" value="Storage1_711" placeholder="Storage1_711" style="color: #666;">
+                                <small>Optional - defaults to Storage1_{vlan_id}</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Storage 2 VLAN ID</label>
+                                <input type="number" id="vlan-storage2-id" placeholder="712" min="2" max="4094" onchange="updateStorageVlanName(2)">
+                            </div>
+                            <div class="form-group">
+                                <label>Storage 2 Name</label>
+                                <input type="text" id="vlan-storage2-name" value="Storage2_712" placeholder="Storage2_712" style="color: #666;">
+                                <small>Optional - defaults to Storage2_{vlan_id}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BMC VLAN (for BMC switch only) -->
+                    <div class="vlan-card" id="vlan-bmc-section">
+                        <h3>🖥️ BMC VLAN <span class="optional-badge">BMC Switch Only</span></h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>VLAN ID</label>
+                                <input type="number" id="vlan-bmc-id" placeholder="125" min="2" max="4094">
+                            </div>
+                            <div class="form-group">
+                                <label>VLAN Name</label>
+                                <input type="text" id="vlan-bmc-name" placeholder="BMC_125">
+                                <small>Optional - defaults to BMC_{vlan_id}</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Switch IP</label>
+                                <input type="text" id="vlan-bmc-ip" placeholder="100.71.39.251">
+                            </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>CIDR</label>
+                                <input type="number" id="vlan-bmc-cidr" value="26" min="1" max="32">
+                            </div>
+                            <div class="form-group">
+                                <label>Gateway (Virtual IP)</label>
+                                <input type="text" id="vlan-bmc-gateway" placeholder="100.71.39.193">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-back">← Back</button>
+                    <button class="btn-next">Next: Ports & MLAG →</button>
+                </div>
+            </section>
+
+            <!-- ================================================================
+                 STEP 3: PORTS & MLAG (Design Doc Steps 2.2, 2.3, 2.4)
+                 Output: interfaces[], port_channels[], mlag{}
+                 ================================================================ -->
+            <section id="step3" class="step">
+                <h2>Step 3: Ports & MLAG Configuration</h2>
+                <p class="description">Host ports, uplinks, and switch redundancy (Steps 2.2-2.4)</p>
+                
+                <div class="form-container">
+                    <!-- Step 2.2: Host Port Assignment -->
+                    <div class="port-card">
+                        <h3>🖥️ Host-Facing Trunk Ports (Step 2.2)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Start Port</label>
+                                <input type="text" id="intf-host-start" value="1/1/1" placeholder="1/1/1">
+                            </div>
+                            <div class="form-group">
+                                <label>End Port</label>
+                                <input type="text" id="intf-host-end" value="1/1/16" placeholder="1/1/16">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="intf-host-qos" checked>
+                                <span>Enable QoS (for RDMA/RoCE)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Step 2.4: Border Uplinks -->
+                    <div class="port-card">
+                        <h3>🌐 Border Uplink Ports - L3 (Step 2.4)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Uplink 1 Port</label>
+                                <input type="text" id="intf-uplink1-port" value="1/1/47" placeholder="1/1/47">
+                            </div>
+                            <div class="form-group">
+                                <label>Uplink 1 IP (CIDR)</label>
+                                <input type="text" id="intf-uplink1-ip" placeholder="100.71.39.130/30">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Uplink 2 Port</label>
+                                <input type="text" id="intf-uplink2-port" value="1/1/48" placeholder="1/1/48">
+                            </div>
+                            <div class="form-group">
+                                <label>Uplink 2 IP (CIDR)</label>
+                                <input type="text" id="intf-uplink2-ip" placeholder="100.71.39.138/30">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loopback Interface -->
+                    <div class="port-card">
+                        <h3>🔄 Loopback Interface</h3>
+                        <div class="form-group">
+                            <label>Loopback0 IP <span class="required">*</span></label>
+                            <input type="text" id="intf-loopback-ip" placeholder="100.71.39.149/32">
+                            <small>Used as BGP router_id in Step 4</small>
+                        </div>
+                    </div>
+
+                    <!-- iBGP Port-Channel (TOR only) -->
+                    <div class="port-card" id="pc-ibgp-section">
+                        <h3>🔗 iBGP Peer-Link Port-Channel</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Port-Channel ID</label>
+                                <input type="number" id="pc-ibgp-id" value="50" min="1" max="4096">
+                            </div>
+                            <div class="form-group">
+                                <label>Port-Channel IP (CIDR)</label>
+                                <input type="text" id="pc-ibgp-ip" placeholder="100.71.39.145/30">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Member Ports (comma-separated)</label>
+                            <input type="text" id="pc-ibgp-members" value="1/1/39,1/1/40" placeholder="1/1/39,1/1/40">
+                        </div>
+                    </div>
+
+                    <!-- Step 2.3: MLAG/VPC Redundancy -->
+                    <div class="port-card" id="mlag-section">
+                        <h3>🔗 Switch Redundancy - MLAG/VPC (Step 2.3)</h3>
+                        <p class="section-note">TOR1/TOR2 only. BMC switches skip this section.</p>
+                        
+                        <div class="info-box">
+                            <strong>Peer-Link Port-Channel:</strong> ID=101, vpc_peer_link=true<br>
+                            <strong>Members:</strong> 1/1/49, 1/1/50, 1/1/51, 1/1/52<br>
+                            <strong>Type:</strong> Trunk, native_vlan=99, tagged_vlans from VLANs
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Keepalive Source IP <span class="required">*</span></label>
+                                <input type="text" id="mlag-keepalive-src" placeholder="100.71.85.17">
+                                <small>peer_keepalive.source_ip</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Keepalive Destination IP <span class="required">*</span></label>
+                                <input type="text" id="mlag-keepalive-dst" placeholder="100.71.85.18">
+                                <small>peer_keepalive.destination_ip</small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Domain ID</label>
+                            <input type="number" id="mlag-domain-id" value="1" min="1">
+                            <small>Default: 1</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-back">← Back</button>
+                    <button class="btn-next">Next: Routing →</button>
+                </div>
+            </section>
+
+            <!-- ================================================================
+                 STEP 4: ROUTING CONFIGURATION (Phase 3 from Design Doc)
+                 Output: bgp{}, prefix_lists{} OR static_routes[]
+                 ================================================================ -->
+            <section id="step4" class="step">
+                <h2>Step 4: Routing Configuration</h2>
+                <p class="description">Configure BGP or static routing (Phase 3)</p>
+                
+                <div class="form-container">
+                    <!-- Routing Type Selection -->
+                    <div class="form-group">
+                        <label>Routing Type</label>
+                        <div class="cards inline">
+                            <div class="card small routing-card selected" data-routing="bgp">
+                                <h4>📡 BGP</h4>
+                            </div>
+                            <div class="card small routing-card" data-routing="static">
+                                <h4>📋 Static</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BGP Configuration -->
+                    <div id="bgp-section" class="bgp-card">
+                        <h3>🔧 BGP Configuration</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Local ASN <span class="required">*</span></label>
+                                <input type="number" id="bgp-asn" placeholder="4200003501">
+                            </div>
+                            <div class="form-group">
+                                <label>Router ID</label>
+                                <input type="text" id="bgp-router-id" placeholder="Auto from Loopback" readonly>
+                                <small>Auto-filled from Loopback0 IP</small>
+                            </div>
+                        </div>
+
+                        <h4>BGP Neighbors</h4>
+                        <div id="bgp-neighbors">
+                            <div class="neighbor-entry">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Neighbor IP</label>
+                                        <input type="text" class="bgp-neighbor-ip" placeholder="100.71.39.129">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Description</label>
+                                        <input type="text" class="bgp-neighbor-desc" placeholder="TO_Border1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Remote ASN</label>
+                                        <input type="number" class="bgp-neighbor-asn" placeholder="64811">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-add" id="btn-add-neighbor">+ Add Neighbor</button>
+                    </div>
+
+                    <!-- Static Routes Configuration -->
+                    <div id="static-section" class="bgp-card" style="display: none;">
+                        <h3>📋 Static Routes</h3>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="static-default-enabled" checked>
+                                <span>Add default route (0.0.0.0/0)</span>
+                            </label>
+                        </div>
+                        <div class="form-group" id="static-default-group">
+                            <label>Default Route Next-Hop</label>
+                            <input type="text" id="static-default-nexthop" placeholder="100.71.39.1">
+                        </div>
+                        <div id="static-routes-list"></div>
+                        <button type="button" class="btn-add" id="btn-add-route">+ Add Route</button>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-back">← Back</button>
+                    <button class="btn-next">Review & Export →</button>
+                </div>
+            </section>
+
+            <!-- ================================================================
+                 STEP 5: REVIEW & EXPORT
+                 Output: Complete Standard JSON
+                 ================================================================ -->
+            <section id="step5" class="step">
+                <h2>✅ Configuration Ready</h2>
+                <p class="description">Review your configuration and export Standard JSON</p>
+                
+                <div class="summary-container">
+                    <div id="config-summary" class="config-summary"></div>
+                </div>
+
+                <div class="preview-container">
+                    <h3>📄 Standard JSON Preview</h3>
+                    <pre id="json-preview"></pre>
+                </div>
+                
+                <div class="export-buttons">
+                    <button class="btn-export" id="btn-export">💾 Export JSON</button>
+                    <button class="btn-export secondary" id="btn-copy">📋 Copy to Clipboard</button>
+                    <button class="btn-reset" id="btn-reset">🔄 Start Over</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="schema.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

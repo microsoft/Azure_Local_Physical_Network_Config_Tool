@@ -1,0 +1,45 @@
+! system.j2 - hostname
+! Name: {{ switch.hostname }}
+! Make: {{ switch.make }}
+! Model: {{ switch.model }}
+hostname {{ switch.hostname }}
+
+banner motd #
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+
+hostname {{ switch.hostname }}
+Unauthorized access and/or use prohibited.
+All access and/or use subject to monitoring.
+
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+#
+
+{# -------- Feature Enablement -------- #}
+! system.j2 - features
+lldp enable
+dcbx enable
+
+{# -------- NTP Configuration -------- #}
+! system.j2 - ntp
+clock timezone standard-timezone America/Los_Angeles
+ntp server [NTP_SERVER_IP]
+ntp source [MGMT_VLAN]
+
+{# -------- Syslog Settings -------- #}
+! system.j2 - syslog
+logging server [LOG_SERVER_IP]
+logging source-interface [MGMT_VLAN]
+logging source-interface vlan125
+logging audit enable
+logging console disable
+
+{# -------- Global System Settings -------- #}
+! system.j2 - global_settings
+ztd cancel
+mac address-table aging-time 1000000
+
+no ip dhcp-relay information-option
+no ip dhcp snooping
+
+vrrp version 3
+vrrp delay reload 180

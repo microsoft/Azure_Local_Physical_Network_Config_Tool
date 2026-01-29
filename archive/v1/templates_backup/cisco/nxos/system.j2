@@ -1,0 +1,68 @@
+! system.j2
+{# -------- System Identity: Hostname and Banner -------- #}
+! Name: {{ switch.hostname }}
+! Make: {{ switch.make }}
+! Model: {{ switch.model }}
+hostname {{ switch.hostname }}
+
+banner motd #
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+
+hostname {{ switch.hostname }}
+Unauthorized access and/or use prohibited.
+All access and/or use subject to monitoring.
+
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+#
+
+{# -------- System Features -------- #}
+no feature telnet
+feature scp-server
+feature bgp
+feature interface-vlan
+feature lldp
+feature dhcp
+feature vpc
+feature hsrp
+feature lacp
+feature ssh
+feature tacacs+
+
+{# -------- Time and NTP Settings -------- #}
+clock timezone PST -8 0
+clock summer-time PDT 2 Sun Apr 02:00 1 Sun Nov 02:00 60
+ntp server [NTP_SERVER_IP]
+ntp source-interface [MGMT_VLAN]
+
+{# -------- Syslog and Logging Settings -------- #}
+logging server [LOG_SERVER_IP] 7 facility local7 use-vrf default
+logging source-interface [MGMT_VLAN]
+logging level local7 7
+no logging console
+login on-success log
+logging origin-id hostname
+
+logging level acllog 7
+logging level aclmgr 7
+logging level eth_port_channel 7
+logging level hsrp 7
+logging level icam 7
+logging level interface-vlan 7
+logging level ipqosmgr 7
+logging level vlan_mgr 7
+logging level vpc 7
+logging level netstack 7
+logging level bgp 7
+
+{# -------- Global System Settings -------- #}
+no cdp enable
+lldp tlv-select dcbxp egress-queuing
+
+service dhcp
+ip dhcp relay
+
+ip load-sharing address source-destination port source-destination
+
+ip icmp-errors source-interface [MGMT_VLAN]
+
+cli alias name wr copy running-config startup-config

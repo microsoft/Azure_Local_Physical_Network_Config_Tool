@@ -1,0 +1,30 @@
+! login.j2
+{# -------- Password Attributes -------- #}
+password-attributes character-restriction upper 1 lower 1 numeric 1 special-char 1 min-length 15 lockout-period 15 max-retry 3
+password-attributes lockout-period 5
+
+{# -------- Local User Accounts -------- #}
+enable password 0 $CREDENTIAL_PLACEHOLDER$ priv-lvl 15
+username admin password $CREDENTIAL_PLACEHOLDER$ role sysadmin
+username $CREDENTIAL_PLACEHOLDER$ password $CREDENTIAL_PLACEHOLDER$ role sysadmin
+
+{# -------- SSH Server Configuration -------- #}
+ip ssh server enable
+ip ssh server cipher aes256-ctr aes192-ctr aes128-ctr
+ip ssh server mac hmac-sha1 hmac-sha2-256
+ip ssh server max-auth-tries 3
+no ip telnet server enable
+
+{# -------- Login and Session Controls -------- #}
+login concurrent-session limit 3
+login statistics enable
+
+{# -------- TACACS+ Authentication Configuration -------- #}
+! Replace [TACACS_SERVER1], [TACACS_SERVER2], [TACACS_KEY], and [MGMT_VLAN] with actual values.
+ip tacacs source-interface [MGMT_VLAN]
+tacacs-server host [TACACS_SERVER1] key [TACACS_KEY]
+tacacs-server host [TACACS_SERVER2] key [TACACS_KEY]
+
+aaa authentication login default group tacacs+
+aaa authentication login console group tacacs+ local
+aaa accounting commands all default start-stop group tacacs+

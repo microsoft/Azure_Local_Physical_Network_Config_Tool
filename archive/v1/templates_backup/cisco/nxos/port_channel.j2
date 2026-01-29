@@ -1,0 +1,50 @@
+{% if port_channels is defined -%}
+! port-channel.j2
+
+{# -------- Port-Channel Interfaces -------- #}
+{%- for pc in port_channels %}
+interface port-channel{{ pc.id }}
+  description {{ pc.description }}
+  {%- if pc.type | lower == 'trunk' %}
+  switchport
+  switchport mode trunk
+  switchport trunk native vlan {{ pc.native_vlan }}
+    {%- if pc.tagged_vlans is defined %}
+  switchport trunk allowed vlan {{ pc.tagged_vlans }}
+    {%- endif %}
+  spanning-tree port type network
+  logging event port link-status
+  {%- elif pc.type | lower == 'l3' %}
+  no switchport
+  ip address {{ pc.ipv4 }}
+  logging event port link-status
+  {%- endif %}
+  mtu 9216
+  no shutdown
+
+{# -------- Member Interfaces -------- #}
+  {%- for member in pc.members %}
+interface Ethernet {{ member }}
+  description {{ pc.description }}
+  no cdp enable
+    {%- if pc.type | lower == 'trunk' %}
+  switchport
+  switchport mode trunk
+  switchport trunk native vlan {{ pc.native_vlan }}
+      {%- if pc.tagged_vlans is defined %}
+  switchport trunk allowed vlan {{ pc.tagged_vlans }}
+      {%- endif %}
+  spanning-tree port type network
+  logging event port link-status
+  mtu 9216
+  channel-group {{ pc.id }} mode active
+    {%- elif pc.type | lower == 'l3' %}
+  logging event port link-status
+  mtu 9216
+  channel-group {{ pc.id }} mode active
+    {%- endif %}
+  no shutdown
+  {% endfor %}
+
+{% endfor %}
+{%- endif %}
