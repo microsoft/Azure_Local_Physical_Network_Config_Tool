@@ -12,7 +12,9 @@ import type {
   Vendor,
   Role,
   VLANPurpose,
-  RedundancyType
+  RedundancyType,
+  Firmware,
+  DeploymentPattern
 } from './types';
 import {
   DISPLAY_NAMES,
@@ -85,9 +87,10 @@ const state: WizardState = {
   }
 };
 
-// ============================================================================
-// VLAN CONFIGURATION
-// ============================================================================
+// MLAG constants
+const MLAG_PEER_LINK_ID = 101;
+const MLAG_NATIVE_VLAN = '99';
+const MLAG_PEER_LINK_MEMBERS = ['1/1/49', '1/1/50', '1/1/51', '1/1/52'];
 
 const VLAN_CONFIGS: Record<'management' | 'compute', VLANConfig> = {
   management: {
@@ -125,7 +128,7 @@ export function initializeWizard(): void {
 function initializeCardSelections(): void {
   initializeCardGroup('.vendor-card', 'vendor', (value) => {
     state.config.switch.vendor = value as Vendor;
-    state.config.switch.firmware = VENDOR_FIRMWARE_MAP[value as Vendor] as any;
+    state.config.switch.firmware = VENDOR_FIRMWARE_MAP[value as Vendor] as Firmware;
     updateModelCards();
   }, 'dellemc');
 
@@ -140,7 +143,7 @@ function initializeCardSelections(): void {
   }, 'TOR1');
 
   initializeCardGroup('.pattern-card', 'pattern', (value) => {
-    state.config.switch.deployment_pattern = value as any;
+    state.config.switch.deployment_pattern = value as DeploymentPattern;
   }, 'fully_converged');
 
   initializeCardGroup('.routing-card', 'routing', (value) => {
@@ -341,7 +344,7 @@ function collectStepData(): void {
 
 function collectSwitchData(): void {
   state.config.switch.hostname = getInputValue('#hostname');
-  state.config.switch.firmware = VENDOR_FIRMWARE_MAP[state.config.switch.vendor] as any;
+  state.config.switch.firmware = VENDOR_FIRMWARE_MAP[state.config.switch.vendor] as Firmware;
 }
 
 function collectVlanData(): void {
@@ -547,14 +550,15 @@ function collectPortsData(): void {
       });
     }
 
+    // MLAG Peer-Link Port-Channel (auto-configured)
     portChannels.push({
-      id: 101,
+      id: MLAG_PEER_LINK_ID,
       description: 'MLAG_Peer_Link_To_TOR2',
       type: 'Trunk',
-      native_vlan: '99',
+      native_vlan: MLAG_NATIVE_VLAN,
       tagged_vlans: taggedVlans,
       vpc_peer_link: true,
-      members: ['1/1/49', '1/1/50', '1/1/51', '1/1/52']
+      members: MLAG_PEER_LINK_MEMBERS
     });
 
     const keepaliveSrc = getInputValue('#mlag-keepalive-src');
@@ -846,7 +850,7 @@ function addBgpNeighbor(): void {
         <label>Remote ASN</label>
         <input type="number" class="bgp-neighbor-asn" placeholder="65000">
       </div>
-      <button type="button" class="btn-remove" onclick="this.parentElement.parentElement.remove()">Remove</button>
+      <button type="button" class="btn-remove" data-remove-entry="neighbor">Remove</button>
     </div>
   `;
   container.appendChild(entry);
@@ -872,10 +876,22 @@ function addStaticRoute(): void {
         <label>Name (optional)</label>
         <input type="text" class="route-name" placeholder="To_Datacenter">
       </div>
-      <button type="button" class="btn-remove" onclick="this.parentElement.parentElement.remove()">Remove</button>
+      <button type="button" class="btn-remove" data-remove-entry="route">Remove</button>
     </div>
   `;
   container.appendChild(entry);
+}
+
+export function setupRouteDelegation(): void {
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.dataset.removeEntry) {
+      const entry = target.closest('.neighbor-entry, .static-route-entry');
+      if (entry) {
+        entry.remove();
+      }
+    }
+  });
 }
 
 // ============================================================================

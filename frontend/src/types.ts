@@ -58,6 +58,7 @@ export interface Interface {
   tagged_vlans?: string;
   ipv4?: string;
   shutdown?: boolean;
+  qos?: boolean;
   service_policy?: ServicePolicy;
 }
 
