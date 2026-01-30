@@ -11,13 +11,17 @@ import type {
   MLAG, 
   BGP,
   PrefixLists,
-  StandardConfig 
+  StandardConfig,
+  DeploymentPattern 
 } from './types';
 
-export type WizardStep = 1 | 2 | 3 | 4;
+export type WizardPhase = 1 | 2 | 3 | 'review';
+export type Phase2Substep = '2.1' | '2.2' | '2.3' | '2.4';
 
 export interface WizardState {
-  currentStep: WizardStep;
+  currentPhase: WizardPhase;
+  currentSubstep: Phase2Substep | null;
+  selectedPattern: DeploymentPattern | null;
   switch: Partial<SwitchConfig>;
   vlans: VLAN[];
   interfaces: Interface[];
@@ -30,7 +34,9 @@ export interface WizardState {
 
 // Initialize default state
 const initialState: WizardState = {
-  currentStep: 1,
+  currentPhase: 1,
+  currentSubstep: null,
+  selectedPattern: null,
   switch: {},
   vlans: [],
   interfaces: [],
@@ -68,15 +74,15 @@ export function resetState(): void {
 /**
  * Get current step
  */
-export function getCurrentStep(): WizardStep {
-  return state.currentStep;
+export function getCurrentPhase(): WizardPhase {
+  return state.currentPhase;
 }
 
 /**
  * Set current step
  */
-export function setCurrentStep(step: WizardStep): void {
-  state.currentStep = step;
+export function setCurrentPhase(phase: WizardPhase): void {
+  state.currentPhase = phase;
 }
 
 /**

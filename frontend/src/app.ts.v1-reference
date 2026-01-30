@@ -116,337 +116,16 @@ const VLAN_CONFIGS: Record<'management' | 'compute', VLANConfig> = {
 };
 
 // ============================================================================
-// PATTERN-FIRST FUNCTIONS
-// ============================================================================
-
-/**
- * Select deployment pattern - Phase 1.1
- */
-export function selectPattern(pattern: DeploymentPattern): void {
-  // Update state
-  state.config.switch.deployment_pattern = pattern;
-  
-  // Update UI - mark selected
-  getElements('.pattern-card').forEach(card => {
-    card.classList.remove('selected');
-    if (card.dataset.pattern === pattern) {
-      card.classList.add('selected');
-    }
-  });
-  
-  // Show sidebar
-  showPatternSidebar(pattern);
-  
-  // Reveal hardware selection section
-  const hardwareSection = getElement('.hardware-selection');
-  if (hardwareSection) {
-    hardwareSection.style.display = 'block';
-  }
-
-  // Sync host port sections with selected pattern
-  updateHostPortsSections();
-  
-  // Enable next button when all Phase 1 fields are filled
-  updatePhase1NextButton();
-}
-
-/**
- * Show persistent pattern sidebar
- */
-function showPatternSidebar(pattern: DeploymentPattern): void {
-  const sidebar = getElement('#pattern-sidebar');
-  const img = getElement<HTMLImageElement>('#sidebar-pattern-img');
-  const name = getElement('#sidebar-pattern-name');
-  
-  if (!sidebar || !img || !name) return;
-  
-  const patterns = {
-    switchless: { name: '🔌 Switchless', img: 'media/pattern-switchless.png' },
-    switched: { name: '💾 Switched', img: 'media/pattern-switched.png' },
-    fully_converged: { name: '🔄 Fully Converged', img: 'media/pattern-fully-converged.png' }
-  };
-  
-  const selected = patterns[pattern];
-  img.src = selected.img;
-  img.alt = selected.name;
-  name.textContent = selected.name;
-  sidebar.style.display = 'block';
-}
-
-/**
- * Expand pattern image in lightbox
- */
-export function expandPatternImage(): void {
-  const sidebarImg = getElement<HTMLImageElement>('#sidebar-pattern-img');
-  const lightbox = getElement('#pattern-lightbox');
-  const lightboxImg = getElement<HTMLImageElement>('#lightbox-img');
-  
-  if (!sidebarImg || !lightbox || !lightboxImg) return;
-  
-  lightboxImg.src = sidebarImg.src;
-  lightboxImg.alt = sidebarImg.alt;
-  lightbox.style.display = 'flex';
-}
-
-/**
- * Expand pattern preview image from selection cards
- */
-export function expandPatternPreview(src: string, alt: string): void {
-  const lightbox = getElement('#pattern-lightbox');
-  const lightboxImg = getElement<HTMLImageElement>('#lightbox-img');
-  
-  if (!lightbox || !lightboxImg) return;
-  
-  lightboxImg.src = src;
-  lightboxImg.alt = alt;
-  lightbox.style.display = 'flex';
-}
-
-/**
- * Close lightbox
- */
-export function closeLightbox(): void {
-  const lightbox = getElement('#pattern-lightbox');
-  if (lightbox) lightbox.style.display = 'none';
-}
-
-/**
- * Change pattern (return to Phase 1.1)
- */
-export function changePattern(): void {
-  if (confirm('Changing the pattern will reset your configuration. Continue?')) {
-    showPhase(1);
-    // Reset pattern selection
-    getElements('.pattern-card').forEach(card => card.classList.remove('selected'));
-    // Hide sidebar
-    const sidebar = getElement('#pattern-sidebar');
-    if (sidebar) sidebar.style.display = 'none';
-    // Hide later sections
-    getElement('.hardware-selection')?.setAttribute('style', 'display: none');
-    getElement('#role-selection-section')?.setAttribute('style', 'display: none');
-    getElement('#hostname-section')?.setAttribute('style', 'display: none');
-  }
-}
-
-/**
- * Vendor change handler for dropdown
- */
-export function onVendorChange(): void {
-  const vendorSelect = getElement<HTMLSelectElement>('#vendor-select');
-  const modelSelect = getElement<HTMLSelectElement>('#model-select');
-  
-  if (!vendorSelect || !modelSelect) return;
-  
-  const vendor = vendorSelect.value as Vendor;
-  
-  // Clear and populate model dropdown
-  modelSelect.innerHTML = '<option value="">-- Select Model --</option>';
-  
-  const models: Record<Vendor, Array<{value: string; label: string}>> = {
-    cisco: [
-      { value: '93180yc-fx3', label: 'Nexus 93180YC-FX3' },
-      { value: '9336c-fx2', label: 'Nexus 9336C-FX2' }
-    ],
-    dellemc: [
-      { value: 's5248f-on', label: 'S5248F-ON' },
-      { value: 's5232f-on', label: 'S5232F-ON' }
-    ]
-  };
-  
-  if (vendor && models[vendor]) {
-    modelSelect.disabled = false;
-    models[vendor].forEach(model => {
-      const option = document.createElement('option');
-      option.value = model.value;
-      option.textContent = model.label;
-      modelSelect.appendChild(option);
-    });
-    
-    // Update state
-    state.config.switch.vendor = vendor;
-    state.config.switch.firmware = VENDOR_FIRMWARE_MAP[vendor] as Firmware;
-  } else {
-    modelSelect.disabled = true;
-  }
-  
-  updatePhase1NextButton();
-}
-
-/**
- * Handle model selection change
- */
-export function onModelChange(): void {
-  const modelSelect = getElement<HTMLSelectElement>('#model-select');
-  if (!modelSelect) {
-    console.error('Model select not found');
-    return;
-  }
-  
-  console.log('onModelChange called, model value:', modelSelect.value);
-  
-  state.config.switch.model = modelSelect.value;
-  
-  // Show role selection AND hostname section when model is selected
-  if (modelSelect.value) {
-    const roleSection = getElement('#role-selection-section');
-    console.log('Role section found:', !!roleSection);
-    if (roleSection) {
-      roleSection.style.display = 'block';
-      console.log('Role section visible');
-    }
-    
-    // Also show hostname section
-    const hostnameSection = getElement('#hostname-section');
-    if (hostnameSection) {
-      hostnameSection.style.display = 'block';
-      console.log('Hostname section visible');
-    }
-  }
-  
-  updatePhase1NextButton();
-}
-
-/**
- * Role selection handler
- */
-export function selectRole(role: Role): void {
-  console.log('selectRole called with:', role);
-  
-  // Update state
-  state.config.switch.role = role;
-  
-  // Update UI
-  getElements('.role-card').forEach(card => {
-    card.classList.remove('selected');
-    if (card.dataset.role === role) {
-      card.classList.add('selected');
-    }
-  });
-  
-  // Auto-generate hostname
-  const hostname = `sample-${role.toLowerCase()}`;
-  
-  const hostnameInput = getElement<HTMLInputElement>('#hostname');
-  if (hostnameInput) {
-    hostnameInput.value = hostname;
-    state.config.switch.hostname = hostname;
-    // Re-apply in next tick to override any stale value
-    setTimeout(() => {
-      hostnameInput.value = hostname;
-      state.config.switch.hostname = hostname;
-    }, 0);
-  }
-  
-  // Show hostname section
-  const hostnameSection = getElement('#hostname-section');
-  console.log('Hostname section found:', !!hostnameSection);
-  if (hostnameSection) {
-    hostnameSection.style.display = 'block';
-    console.log('Hostname section display set to block');
-  } else {
-    console.error('Hostname section element not found!');
-  }
-
-  updateHostPortsSections();
-  
-  updatePhase1NextButton();
-}
-
-/**
- * Update hostname in state when user edits it
- */
-export function updateHostname(): void {
-  const hostnameInput = getElement<HTMLInputElement>('#hostname');
-  if (hostnameInput) {
-    state.config.switch.hostname = hostnameInput.value;
-    updatePhase1NextButton();
-  }
-}
-
-/**
- * Update Phase 1 next button state
- */
-function updatePhase1NextButton(): void {
-  const nextBtn = getElement<HTMLButtonElement>('#phase1-next-btn');
-  if (!nextBtn) return;
-  
-  const pattern = state.config.switch.deployment_pattern;
-  const vendor = state.config.switch.vendor;
-  const model = state.config.switch.model;
-  const role = state.config.switch.role;
-  const hostname = getElement<HTMLInputElement>('#hostname')?.value;
-  
-  const allFilled = pattern && vendor && model && role && hostname;
-  nextBtn.disabled = !allFilled;
-  
-  if (allFilled) {
-    nextBtn.style.opacity = '1';
-    nextBtn.style.cursor = 'pointer';
-  } else {
-    nextBtn.style.opacity = '0.5';
-    nextBtn.style.cursor = 'not-allowed';
-  }
-}
-
-/**
- * Get VLANs allowed for a pattern
- */
-export function getPatternVlans(pattern: DeploymentPattern, role?: Role): VLANPurpose[] {
-  switch (pattern) {
-    case 'switchless':
-      return ['management', 'compute'];
-    case 'switched':
-      return role === 'TOR1' 
-        ? ['management', 'compute', 'storage_1'] 
-        : ['management', 'compute', 'storage_2'];
-    case 'fully_converged':
-      return ['management', 'compute', 'storage_1', 'storage_2'];
-    default:
-      return ['management', 'compute'];
-  }
-}
-
-/**
- * Get host port tagged VLANs string for pattern
- */
-export function getPatternHostVlans(pattern: DeploymentPattern, role?: Role): string {
-  // These are the default VLAN IDs - user can override
-  switch (pattern) {
-    case 'switchless':
-      return '7,201';
-    case 'switched':
-      return role === 'TOR1' ? '7,201,711' : '7,201,712';
-    case 'fully_converged':
-      return '7,201,711,712';
-    default:
-      return '7,201';
-  }
-}
-
-// ============================================================================
 // INITIALIZATION
 // ============================================================================
 
 export function initializeWizard(): void {
-  try {
-    console.log('Initializing wizard...');
-    renderTemplateList();
-    
-    // Phase1 already has 'active' class in HTML, just update the navigation
-    updatePhaseNavigationUI(1);
-    
-    console.log('Wizard initialized successfully');
-  } catch (error) {
-    console.error('Error initializing wizard:', error);
-  }
+  updateNavigationUI();
+  showStep(1);
+  initializeCardSelections();
 }
 
-// ============================================================================
-// LEGACY CARD SELECTION (unused in pattern-first approach)
-// Kept for reference - cards now use onclick handlers in HTML
-// ============================================================================
-
-/* function initializeCardSelections(): void {
+function initializeCardSelections(): void {
   initializeCardGroup('.vendor-card', 'vendor', (value) => {
     state.config.switch.vendor = value as Vendor;
     state.config.switch.firmware = VENDOR_FIRMWARE_MAP[value as Vendor] as Firmware;
@@ -496,7 +175,7 @@ function initializeCardGroup(
       if (onChange) onChange(defaultValue);
     }
   }
-} */
+}
 
 export function setupEventListeners(): void {
   const importInput = getElement<HTMLInputElement>('#import-json');
@@ -509,33 +188,6 @@ export function setupEventListeners(): void {
   });
   getElements('.btn-back').forEach(btn => {
     btn.addEventListener('click', () => prevStep());
-  });
-
-  // Phase navigation tabs
-  getElements('.nav-phase').forEach(phase => {
-    phase.addEventListener('click', () => {
-      const phaseId = phase.dataset.phase;
-      if (!phaseId) return;
-      if (phaseId === 'review') {
-        showPhase('review');
-        populateReviewStep();
-        return;
-      }
-      const numericPhase = parseInt(phaseId, 10);
-      if (!Number.isNaN(numericPhase)) {
-        showPhase(numericPhase);
-      }
-    });
-  });
-
-  // Phase 2 substep tabs
-  getElements<HTMLButtonElement>('.sub-nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const substep = btn.dataset.substep;
-      if (substep) {
-        showPhase(2, substep);
-      }
-    });
   });
 
   getElements('.nav-step').forEach(step => {
@@ -611,14 +263,13 @@ export async function loadTemplate(templateName: string): Promise<void> {
   closeTemplateModal(); // Close modal immediately
   
   try {
-    // templateName is now like "fully-converged/sample-tor1" 
-    const response = await fetch(resolveTemplateUrl(templateName));
+    const response = await fetch(`/examples/${templateName}.json`);
     if (!response.ok) {
       throw new Error(`Failed to load template: ${response.statusText}`);
     }
     const config = await response.json() as Partial<StandardConfig>;
     loadConfig(config);
-    showSuccessMessage(`Loaded template: ${templateName.split('/').pop()}`);
+    showSuccessMessage(`Loaded template: ${templateName}`);
   } catch (error) {
     showValidationError(`Failed to load template: ${(error as Error).message}`);
   }
@@ -643,187 +294,9 @@ export function updateStorageVlanName(storageNum: number): void {
   }
 }
 
-// ============================================================================
-// NAVIGATION (Phase-based)
-// ============================================================================
-
-/**
- * Show a specific phase
- */
-export function showPhase(phase: number | string, substep?: string): void {
-  try {
-    console.log('showPhase called with:', phase, substep);
-    
-    // Hide all phases
-    const phases = getElements('.phase');
-    console.log('Found phases:', phases.length);
-    phases.forEach(p => p.classList.remove('active'));
-    
-    // Show target phase
-    const phaseId = phase === 'review' ? 'review' : `phase${phase}`;
-    const targetPhase = getElement(`#${phaseId}`);
-    console.log('Target phase:', phaseId, 'found:', !!targetPhase);
-    
-    if (targetPhase) {
-      targetPhase.classList.add('active');
-      
-      // For Phase 2, handle substeps
-      if (phase === 2 && substep) {
-        showSubstep(substep);
-      } else if (phase === 2) {
-        showSubstep('2.1'); // Default to first substep
-      }
-      
-      updatePhaseNavigationUI(phase);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      console.error('Could not find phase element:', phaseId);
-    }
-  } catch (error) {
-    console.error('Error in showPhase:', error);
-  }
-}
-
-/**
- * Show substep within Phase 2
- */
-function showSubstep(substep: string): void {
-  // Hide all substeps
-  getElements('.substep').forEach(s => s.classList.remove('active'));
-  
-  // Show target substep
-  getElements(`.substep[data-substep="${substep}"]`).forEach(s => {
-    s.classList.add('active');
-  });
-  
-  // Update sub-navigation
-  getElements('.sub-nav-btn').forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.dataset.substep === substep) {
-      btn.classList.add('active');
-    }
-  });
-
-  if (substep === '2.2') {
-    updateHostPortsSections();
-  }
-}
-
-/**
- * Navigate to next phase or substep
- */
-export function nextPhase(): void {
-  const currentPhase = getCurrentPhase();
-  
-  if (currentPhase === 1) {
-    // Phase 1 → Phase 2.1
-    showPhase(2, '2.1');
-  } else if (currentPhase === 2) {
-    // Phase 2 → Phase 3
-    showPhase(3);
-  } else if (currentPhase === 3) {
-    // Phase 3 → Review
-    showPhase('review');
-    populateReviewStep();
-  }
-}
-
-/**
- * Navigate to next substep within Phase 2
- */
-export function nextSubstep(): void {
-  const substeps = ['2.1', '2.2', '2.3', '2.4'];
-  const currentSubstep = getCurrentSubstep();
-  const currentIndex = substeps.indexOf(currentSubstep);
-  
-  if (currentIndex >= 0 && currentIndex < substeps.length - 1) {
-    const nextSubstep = substeps[currentIndex + 1];
-    if (nextSubstep) showSubstep(nextSubstep);
-  } else if (currentIndex === substeps.length - 1) {
-    // Last substep → go to Phase 3
-    nextPhase();
-  }
-}
-
-/**
- * Navigate to previous substep or phase
- */
-export function previousSubstep(): void {
-  const substeps = ['2.1', '2.2', '2.3', '2.4'];
-  const currentSubstep = getCurrentSubstep();
-  const currentIndex = substeps.indexOf(currentSubstep);
-  
-  if (currentIndex > 0) {
-    const prevSubstep = substeps[currentIndex - 1];
-    if (prevSubstep) showSubstep(prevSubstep);
-  } else {
-    // First substep → go back to Phase 1
-    previousPhase();
-  }
-}
-
-/**
- * Navigate to previous phase
- */
-export function previousPhase(): void {
-  const currentPhase = getCurrentPhase();
-  
-  if (currentPhase === 2) {
-    showPhase(1);
-  } else if (currentPhase === 3) {
-    showPhase(2, '2.4'); // Go to last substep of Phase 2
-  } else if (currentPhase === 'review') {
-    showPhase(3);
-  }
-}
-
-/**
- * Get current active phase
- */
-function getCurrentPhase(): number | string {
-  const activePhase = getElement('.phase.active');
-  if (!activePhase) return 1;
-  
-  const id = activePhase.id;
-  if (id === 'review') return 'review';
-  if (id === 'phase1') return 1;
-  if (id === 'phase2') return 2;
-  if (id === 'phase3') return 3;
-  return 1;
-}
-
-/**
- * Get current active substep
- */
-function getCurrentSubstep(): string {
-  const activeSubstep = getElement('.substep.active');
-  return activeSubstep?.dataset.substep || '2.1';
-}
-
-/**
- * Update phase navigation UI
- */
-function updatePhaseNavigationUI(activePhase: number | string): void {
-  try {
-    const navPhases = getElements('.nav-phase');
-    console.log('Updating navigation UI for phase:', activePhase, 'found nav elements:', navPhases.length);
-    
-    navPhases.forEach(phase => {
-      phase.classList.remove('active');
-      const phaseData = phase.dataset.phase;
-      
-      if (phaseData === String(activePhase)) {
-        phase.classList.add('active');
-        console.log('Activated nav phase:', phaseData);
-      }
-    });
-  } catch (error) {
-    console.error('Error updating phase navigation UI:', error);
-  }
-}
 
 // ============================================================================
-// LEGACY NAVIGATION (to be removed/refactored)
+// NAVIGATION
 // ============================================================================
 
 function showStep(stepNum: number): void {
@@ -877,7 +350,6 @@ function updateNavigationUI(): void {
 
 function updateHostPortsSections(): void {
   const deploymentPattern = state.config.switch.deployment_pattern || 'fully_converged';
-  const storagePurposes = ['storage_1', 'storage_2'];
   const displayElem = getElement('#deployment-pattern-display');
   if (displayElem) {
     displayElem.textContent = deploymentPattern.replace('_', ' ').toUpperCase();
@@ -887,8 +359,7 @@ function updateHostPortsSections(): void {
   const sections = [
     '#port-section-converged',
     '#port-section-mgmt-compute',
-    '#port-section-storage1',
-    '#port-section-storage2',
+    '#port-section-storage',
     '#port-section-switchless'
   ];
   sections.forEach(id => {
@@ -900,19 +371,15 @@ function updateHostPortsSections(): void {
   if (deploymentPattern === 'fully_converged') {
     const section = getElement('#port-section-converged');
     if (section) (section as HTMLElement).style.display = '';
-    updateVlanDisplay('#converged-vlans-display', ['management', 'compute', ...storagePurposes]);
+    updateVlanDisplay('#converged-vlans-display', ['management', 'compute', 'storage_1', 'storage_2']);
   } else if (deploymentPattern === 'switched') {
     const section = getElement('#port-section-mgmt-compute');
     if (section) (section as HTMLElement).style.display = '';
-    updateVlanDisplay('#mgmt-compute-vlans-display', ['management', 'compute']);
+    updateVlanDisplay('#mgmt-compute-vlans-display', ['management', 'compute', 'storage_1', 'storage_2']);
     
-    const storage1Section = getElement('#port-section-storage1');
-    if (storage1Section) (storage1Section as HTMLElement).style.display = '';
-    updateVlanDisplay('#storage1-vlans-display', ['storage_1']);
-    
-    const storage2Section = getElement('#port-section-storage2');
-    if (storage2Section) (storage2Section as HTMLElement).style.display = '';
-    updateVlanDisplay('#storage2-vlans-display', ['storage_2']);
+    const storageSection = getElement('#port-section-storage');
+    if (storageSection) (storageSection as HTMLElement).style.display = '';
+    updateVlanDisplay('#storage-vlans-display', ['storage_1', 'storage_2']);
   } else if (deploymentPattern === 'switchless') {
     const section = getElement('#port-section-switchless');
     if (section) (section as HTMLElement).style.display = '';
@@ -934,12 +401,10 @@ function updateVlanDisplay(containerId: string, purposes: string[]): void {
     nativeFieldId = '#intf-mgmt-compute-native';
     taggedFieldId = '#intf-mgmt-compute-tagged';
     hintId = '#mgmt-compute-vlans-hint';
-  } else if (containerId === '#storage1-vlans-display') {
-    taggedFieldId = '#intf-storage1-tagged';
-    hintId = '#storage1-vlans-hint';
-  } else if (containerId === '#storage2-vlans-display') {
-    taggedFieldId = '#intf-storage2-tagged';
-    hintId = '#storage2-vlans-hint';
+  } else if (containerId === '#storage-vlans-display') {
+    nativeFieldId = '#intf-storage-native';
+    taggedFieldId = '#intf-storage-tagged';
+    hintId = '#storage-vlans-hint';
   } else if (containerId === '#switchless-vlans-display') {
     nativeFieldId = '#intf-switchless-native';
     taggedFieldId = '#intf-switchless-tagged';
@@ -955,34 +420,28 @@ function updateVlanDisplay(containerId: string, purposes: string[]): void {
   const vlanNames = vlans.map(v => `${v.vlan_id} (${v.name})`).join(', ');
 
   // Populate native VLAN (default to management VLAN)
-  if (nativeFieldId) {
-    const nativeField = getElement<HTMLInputElement>(nativeFieldId);
-    if (nativeField && mgmtVlan) {
-      nativeField.value = String(mgmtVlan.vlan_id);
-      nativeField.placeholder = String(mgmtVlan.vlan_id);
-    }
+  const nativeField = getElement<HTMLInputElement>(nativeFieldId);
+  if (nativeField && mgmtVlan) {
+    nativeField.value = String(mgmtVlan.vlan_id);
+    nativeField.placeholder = String(mgmtVlan.vlan_id);
   }
 
   // Populate tagged VLANs
-  if (taggedFieldId) {
-    const taggedField = getElement<HTMLInputElement>(taggedFieldId);
-    if (taggedField) {
-      taggedField.value = vlanIds;
-      taggedField.placeholder = vlanIds || 'No VLANs configured';
-    }
+  const taggedField = getElement<HTMLInputElement>(taggedFieldId);
+  if (taggedField) {
+    taggedField.value = vlanIds;
+    taggedField.placeholder = vlanIds || 'No VLANs configured';
   }
 
   // Update hint with human-readable names
-  if (hintId) {
-    const hint = getElement(hintId);
-    if (hint) {
-      if (vlans.length === 0) {
-        hint.textContent = 'Complete Step 2 to configure VLANs';
-        (hint as HTMLElement).style.color = '#999';
-      } else {
-        hint.textContent = vlanNames;
-        (hint as HTMLElement).style.color = '#4CAF50';
-      }
+  const hint = getElement(hintId);
+  if (hint) {
+    if (vlans.length === 0) {
+      hint.textContent = 'Complete Step 2 to configure VLANs';
+      (hint as HTMLElement).style.color = '#999';
+    } else {
+      hint.textContent = vlanNames;
+      (hint as HTMLElement).style.color = '#4CAF50';
     }
   }
 }
@@ -1031,7 +490,7 @@ function markCompletedSteps(): void {
 // UI UPDATES
 // ============================================================================
 
-export function updateModelCards(): void {
+function updateModelCards(): void {
   const vendor = state.config.switch.vendor;
   getElements('.model-card').forEach(card => {
     if (card.dataset.vendor === vendor) {
@@ -1049,7 +508,7 @@ export function updateModelCards(): void {
   }
 }
 
-export function updateRoleBasedSections(): void {
+function updateRoleBasedSections(): void {
   const role = state.config.switch.role;
   
   toggleElement('#section-mlag', role !== 'BMC');
@@ -1057,7 +516,7 @@ export function updateRoleBasedSections(): void {
   toggleElement('#section-bmc-vlan', role === 'BMC');
 }
 
-export function updateRoutingSection(): void {
+function updateRoutingSection(): void {
   const routingType = state.config.routing_type;
   toggleElement('#section-bgp', routingType === 'bgp');
   toggleElement('#section-static-routes', routingType === 'static');
@@ -1345,21 +804,15 @@ function collectRedundancyData(): void {
       });
     }
 
-    // MLAG Peer-Link Port-Channel (editable)
-    const peerLinkId = parseIntSafe(getInputValue('#mlag-peerlink-id'), MLAG_PEER_LINK_ID);
-    const peerLinkMembersInput = getInputValue('#mlag-peerlink-members');
-    const peerLinkMembers = peerLinkMembersInput
-      ? peerLinkMembersInput.split(',').map(s => s.trim()).filter(Boolean)
-      : MLAG_PEER_LINK_MEMBERS;
-
+    // MLAG Peer-Link Port-Channel (auto-configured)
     portChannels.push({
-      id: peerLinkId,
+      id: MLAG_PEER_LINK_ID,
       description: 'MLAG_Peer_Link_To_TOR2',
       type: 'Trunk',
       native_vlan: MLAG_NATIVE_VLAN,
       tagged_vlans: taggedVlans,
       vpc_peer_link: true,
-      members: peerLinkMembers
+      members: MLAG_PEER_LINK_MEMBERS
     });
 
     const keepaliveSrc = getInputValue('#mlag-keepalive-src');
@@ -1674,7 +1127,7 @@ export function updateVlanName(idInput: HTMLInputElement, type?: string, prefix?
 }
 
 function addBgpNeighbor(): void {
-  const container = getElement('#bgp-neighbors');
+  const container = getElement('#bgp-neighbors-container');
   if (!container) return;
 
   const entry = document.createElement('div');
@@ -1697,128 +1150,6 @@ function addBgpNeighbor(): void {
     </div>
   `;
   container.appendChild(entry);
-}
-
-// ============================================================================
-// TEMPLATE LIST RENDERING (dynamic)
-// ============================================================================
-
-const EXAMPLE_TEMPLATES = import.meta.glob('../examples/**/*.json', { eager: true, as: 'url' });
-
-type TemplateCard = {
-  key: string;
-  pattern: string;
-  name: string;
-};
-
-function getTemplateCards(): TemplateCard[] {
-  return Object.keys(EXAMPLE_TEMPLATES).map((path) => {
-    const rel = path.split('/examples/')[1] || path.split('examples/')[1] || '';
-    const [pattern, filename] = rel.split('/');
-    const name = (filename || '').replace(/\.json$/i, '');
-    return {
-      key: `${pattern}/${name}`,
-      pattern: pattern || '',
-      name
-    };
-  }).filter(card => card.pattern && card.name);
-}
-
-function resolveTemplateUrl(templateName: string): string {
-  const matchKey = Object.keys(EXAMPLE_TEMPLATES).find((key) =>
-    key.endsWith(`/examples/${templateName}.json`) || key.endsWith(`examples/${templateName}.json`)
-  );
-  if (matchKey) return EXAMPLE_TEMPLATES[matchKey] as string;
-  return `${import.meta.env.BASE_URL}examples/${templateName}.json`;
-}
-
-function getPatternLabel(pattern: string): string {
-  switch (pattern) {
-    case 'fully-converged':
-      return '🔄 Fully Converged';
-    case 'switched':
-      return '💾 Switched';
-    case 'switchless':
-      return '🔌 Switchless';
-    default:
-      return pattern;
-  }
-}
-
-function getTemplateTitle(name: string): string {
-  if (name.includes('tor1')) return '🔵 TOR1 (Primary)';
-  if (name.includes('tor2')) return '🟢 TOR2 (Secondary)';
-  return name;
-}
-
-function getTemplateDescription(pattern: string, name: string): string {
-  if (pattern === 'switchless') return 'Management + Compute only (no storage)';
-  if (pattern === 'switched' && name.includes('tor1')) return 'Storage on dedicated ports (S1 only)';
-  if (pattern === 'switched' && name.includes('tor2')) return 'Storage on dedicated ports (S2 only)';
-  if (pattern === 'fully-converged' && name.includes('tor1')) return 'All VLANs (M, C, S1, S2) on shared ports';
-  if (pattern === 'fully-converged' && name.includes('tor2')) return 'Paired with TOR1 for high availability';
-  return 'Pre-configured example template';
-}
-
-function getTemplateTags(pattern: string): string[] {
-  const tags = [] as string[];
-  if (pattern === 'fully-converged') tags.push('Fully Converged');
-  if (pattern === 'switched') tags.push('Switched');
-  if (pattern === 'switchless') tags.push('Switchless');
-  tags.push('BGP');
-  if (pattern !== 'switchless') tags.push('MLAG');
-  return tags;
-}
-
-function renderTemplateList(): void {
-  const container = getElement('#template-list');
-  if (!container) return;
-
-  const cards = getTemplateCards();
-  const patterns = ['fully-converged', 'switched', 'switchless'];
-
-  container.innerHTML = '';
-
-  patterns.forEach(pattern => {
-    const patternCards = cards.filter(card => card.pattern === pattern);
-    if (patternCards.length === 0) return;
-
-    const title = document.createElement('h3');
-    title.className = 'template-category';
-    title.textContent = getPatternLabel(pattern);
-    container.appendChild(title);
-
-    const grid = document.createElement('div');
-    grid.className = 'template-grid';
-
-    patternCards.forEach(card => {
-      const cardEl = document.createElement('div');
-      cardEl.className = 'template-card';
-      cardEl.addEventListener('click', () => loadTemplate(card.key));
-
-      const h4 = document.createElement('h4');
-      h4.textContent = getTemplateTitle(card.name);
-
-      const desc = document.createElement('p');
-      desc.textContent = getTemplateDescription(pattern, card.name);
-
-      const tagsWrap = document.createElement('div');
-      tagsWrap.className = 'template-tags';
-      getTemplateTags(pattern).forEach(tag => {
-        const span = document.createElement('span');
-        span.className = 'tag';
-        span.textContent = tag;
-        tagsWrap.appendChild(span);
-      });
-
-      cardEl.appendChild(h4);
-      cardEl.appendChild(desc);
-      cardEl.appendChild(tagsWrap);
-      grid.appendChild(cardEl);
-    });
-
-    container.appendChild(grid);
-  });
 }
 
 function addStaticRoute(): void {
@@ -2029,71 +1360,47 @@ function populateReviewStep(): void {
     const vendorDisplay = DISPLAY_NAMES.vendors[state.config.switch.vendor];
     const modelDisplay = DISPLAY_NAMES.models[state.config.switch.model as keyof typeof DISPLAY_NAMES.models] || state.config.switch.model;
     const patternDisplay = DISPLAY_NAMES.patterns[state.config.switch.deployment_pattern as keyof typeof DISPLAY_NAMES.patterns];
-    const routingSummary = state.config.routing_type === 'bgp'
-      ? `BGP ASN ${state.config.bgp?.asn || 'N/A'}`
-      : `Static Routes (${state.config.static_routes?.length || 0})`;
     
     summary.innerHTML = `
-      <div class="summary-grid">
-        <div class="summary-card">
-          <h4>Switch</h4>
-          <div class="summary-row">
-            <span class="summary-label">Hostname</span>
-            <span class="summary-value">${state.config.switch.hostname || 'Not set'}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Vendor / Model</span>
-            <span class="summary-value">${vendorDisplay} ${modelDisplay}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Role</span>
-            <span class="summary-value">${state.config.switch.role || 'Not set'}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Firmware</span>
-            <span class="summary-value">${state.config.switch.firmware || 'Not set'}</span>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <h4>Pattern</h4>
-          <div class="summary-row">
-            <span class="summary-label">Deployment</span>
-            <span class="summary-value">${patternDisplay || 'Not set'}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">VLANs</span>
-            <span class="summary-value">${state.config.vlans?.length || 0} configured</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Interfaces</span>
-            <span class="summary-value">${state.config.interfaces?.length || 0} configured</span>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <h4>Redundancy</h4>
-          <div class="summary-row">
-            <span class="summary-label">Port Channels</span>
-            <span class="summary-value">${state.config.port_channels?.length || 0} configured</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">MLAG</span>
-            <span class="summary-value">${state.config.mlag ? 'Enabled' : 'Disabled'}</span>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <h4>Routing</h4>
-          <div class="summary-row">
-            <span class="summary-label">Type</span>
-            <span class="summary-value">${state.config.routing_type === 'bgp' ? 'BGP' : 'Static'}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Details</span>
-            <span class="summary-value">${routingSummary}</span>
-          </div>
-        </div>
+      <div class="summary-item">
+        <span class="summary-label">Hostname</span>
+        <span class="summary-value">${state.config.switch.hostname || 'Not set'}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Vendor / Model</span>
+        <span class="summary-value">${vendorDisplay} ${modelDisplay}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Role</span>
+        <span class="summary-value">${state.config.switch.role}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Firmware</span>
+        <span class="summary-value">${state.config.switch.firmware}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Deployment Pattern</span>
+        <span class="summary-value">${patternDisplay}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">VLANs</span>
+        <span class="summary-value">${state.config.vlans?.length || 0} configured</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Interfaces</span>
+        <span class="summary-value">${state.config.interfaces?.length || 0} configured</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Port Channels</span>
+        <span class="summary-value">${state.config.port_channels?.length || 0} configured</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">MLAG</span>
+        <span class="summary-value">${state.config.mlag ? 'Enabled' : 'Disabled'}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Routing</span>
+        <span class="summary-value">${state.config.routing_type === 'bgp' ? `BGP ASN ${state.config.bgp?.asn || 'N/A'}` : 'Static Routes'}</span>
       </div>
     `;
   }
@@ -2155,7 +1462,7 @@ async function copyJSON(): Promise<void> {
   }
 }
 
-export function startOver(): void {
+function startOver(): void {
   if (confirm('Are you sure you want to reset all configuration?')) {
     location.reload();
   }
@@ -2187,58 +1494,24 @@ function handleFileImport(event: Event): void {
 }
 
 function loadConfig(config: Partial<StandardConfig>): void {
-  console.log('Loading config:', config);
-  
-  // Phase 1: Switch config
+  // Step 1: Switch config
   if (config.switch) {
     state.config.switch = { ...state.config.switch, ...config.switch };
-    
-    // Load pattern first (new pattern-first approach)
-    if (config.switch.deployment_pattern) {
-      console.log('Loading pattern:', config.switch.deployment_pattern);
-      selectPattern(config.switch.deployment_pattern);
-    }
-    
-    // Load vendor
+    setInputValue('#hostname', config.switch.hostname || '');
+
     if (config.switch.vendor) {
-      console.log('Loading vendor:', config.switch.vendor);
-      const vendorSelect = getElement<HTMLSelectElement>('#vendor-select');
-      if (vendorSelect) {
-        vendorSelect.value = config.switch.vendor;
-        onVendorChange(); // This will populate model dropdown
-      }
+      selectCard('.vendor-card', 'vendor', config.switch.vendor);
+      updateModelCards();
     }
-    
-    // Load model
     if (config.switch.model) {
-      console.log('Loading model:', config.switch.model);
-      const modelValue = config.switch.model;
-      setTimeout(() => {
-        const modelSelect = getElement<HTMLSelectElement>('#model-select');
-        if (modelSelect) {
-          modelSelect.value = modelValue;
-          onModelChange(); // This will show role section
-        }
-      }, 100);
+      selectCard('.model-card', 'model', config.switch.model);
     }
-    
-    // Load role
     if (config.switch.role) {
-      console.log('Loading role:', config.switch.role);
-      const roleValue = config.switch.role;
-      setTimeout(() => {
-        selectRole(roleValue);
-      }, 200);
+      selectCard('.role-card', 'role', config.switch.role);
+      updateRoleBasedSections();
     }
-    
-    // Load hostname
-    if (config.switch.hostname) {
-      console.log('Loading hostname:', config.switch.hostname);
-      const hostnameValue = config.switch.hostname;
-      setTimeout(() => {
-        setInputValue('#hostname', hostnameValue);
-        state.config.switch.hostname = hostnameValue;
-      }, 300);
+    if (config.switch.deployment_pattern) {
+      selectCard('.pattern-card', 'pattern', config.switch.deployment_pattern);
     }
   }
 
@@ -2260,8 +1533,6 @@ function loadConfig(config: Partial<StandardConfig>): void {
       setInputValue('#vlan-storage2-name', storage2.name || `Storage2_${storage2.vlan_id}`);
     }
   }
-
-  updateHostPortsSections();
 
   // Step 3: Host ports - adapt to deployment pattern
   if (Array.isArray(config.interfaces)) {
@@ -2323,17 +1594,6 @@ function loadConfig(config: Partial<StandardConfig>): void {
     }
   }
 
-  // Step 4: Redundancy (peer-link editable fields)
-  if (Array.isArray(config.port_channels)) {
-    const peerLink = config.port_channels.find(pc => pc.vpc_peer_link);
-    if (peerLink) {
-      setInputValue('#mlag-peerlink-id', String(peerLink.id));
-      if (peerLink.members && peerLink.members.length > 0) {
-        setInputValue('#mlag-peerlink-members', peerLink.members.join(','));
-      }
-    }
-  }
-
   // Step 4: Redundancy (MLAG)
   if (config.mlag) {
     state.config.mlag = config.mlag; // Update state
@@ -2387,37 +1647,11 @@ function loadConfig(config: Partial<StandardConfig>): void {
 
   // Mark all steps with populated data as completed
   markCompletedSteps();
-  updatePhaseCompletionFromConfig();
   
-  showPhase(1);
+  showStep(1);
 }
 
-function updatePhaseCompletionFromConfig(): void {
-  const hasSwitch = Boolean(
-    state.config.switch.vendor &&
-    state.config.switch.model &&
-    state.config.switch.role &&
-    state.config.switch.hostname
-  );
-  const hasNetwork = Array.isArray(state.config.vlans) && state.config.vlans.length > 0;
-  const hasRouting = Boolean(
-    (state.config.bgp && Object.keys(state.config.bgp).length > 0) ||
-    (state.config.static_routes && state.config.static_routes.length > 0)
-  );
-  const hasReview = hasSwitch && hasNetwork;
-
-  const phases = getElements('.nav-phase');
-  phases.forEach(phase => {
-    const phaseId = phase.dataset.phase;
-    phase.classList.remove('completed');
-    if (phaseId === '1' && hasSwitch) phase.classList.add('completed');
-    if (phaseId === '2' && hasNetwork) phase.classList.add('completed');
-    if (phaseId === '3' && hasRouting) phase.classList.add('completed');
-    if (phaseId === 'review' && hasReview) phase.classList.add('completed');
-  });
-}
-
-export function selectCard(selector: string, dataAttr: string, value: string): void {
+function selectCard(selector: string, dataAttr: string, value: string): void {
   const card = getElement(`${selector}[data-${dataAttr}="${value}"]`);
   if (card) {
     card.click();
