@@ -4,21 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Azure Local Switch Configuration Wizard</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style-odin.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <h1>🌐 Azure Local Switch Configuration Wizard</h1>
-            <p class="subtitle">Generate Standard JSON and Sample Switch Configs for Azure Local. Save for reference and debugging — always review before applying to production.</p>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div>
+                <h1>Azure Local Switch Configuration</h1>
+                <p class="subtitle">Generate Standard JSON configurations for Azure Local ToR switches. Pattern-driven wizard with real-time validation.</p>
+            </div>
             <div class="import-section">
-                <button class="import-btn" onclick="showTemplateModal()">📋 Load Example Configuration Template</button>
-                <label for="import-json" class="import-btn secondary">📥 Import JSON</label>
+                <button class="import-btn" onclick="showTemplateModal()">📋 Load Template</button>
+                <label for="import-json" class="import-btn">📥 Import JSON</label>
                 <input type="file" id="import-json" accept=".json" style="display: none;">
             </div>
-        </header>
+        </div>
+    </header>
 
+    <div class="container">
         <!-- Validation Messages -->
         <div id="validation-error" class="message error-message" style="display: none;"></div>
         <div id="success-message" class="message success-message" style="display: none;"></div>

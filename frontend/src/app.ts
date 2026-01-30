@@ -69,12 +69,12 @@ const state: WizardState = {
   totalSteps: 7,
   config: {
     switch: {
-      vendor: 'dellemc',
-      model: 's5248f-on',
-      firmware: 'os10',
+      vendor: '' as Vendor,
+      model: '',
+      firmware: '' as Firmware,
       hostname: '',
-      role: 'TOR1',
-      deployment_pattern: 'fully_converged'
+      role: '' as Role,
+      deployment_pattern: '' as DeploymentPattern
     },
     vlans: [],
     interfaces: [],
