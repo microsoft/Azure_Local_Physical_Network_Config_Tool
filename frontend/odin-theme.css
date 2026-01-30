@@ -61,9 +61,31 @@ body {
     font-size: var(--font-size-base);
 }
 
-/* Font size variations */
-body.font-small { --font-size-base: 13px; --font-size-small: 11px; --font-size-large: 15px; }
-body.font-large { --font-size-base: 16px; --font-size-small: 14px; --font-size-large: 18px; }
+/* Font size variations - scale everything */
+body.font-small {
+    --font-size-base: 12px;
+    --font-size-small: 10px;
+    --font-size-large: 14px;
+}
+body.font-small h1, body.font-small h2, body.font-small h3, body.font-small h4 {
+    font-size: 90%;
+}
+
+body.font-large {
+    --font-size-base: 16px;
+    --font-size-small: 14px;
+    --font-size-large: 20px;
+}
+body.font-large h1, body.font-large h2, body.font-large h3, body.font-large h4 {
+    font-size: 115%;
+}
+body.font-large .form-group label,
+body.font-large .form-group input,
+body.font-large .form-group select,
+body.font-large p,
+body.font-large span {
+    font-size: var(--font-size-base);
+}
 
 /* ================================================================
    HEADER BAR WITH THEME/FONT CONTROLS (Odin Style)
@@ -1246,15 +1268,28 @@ body.light-theme .section-link:hover {
     padding: 0 40px 40px;
 }
 
-.phase {
+/* Single-page scroll layout - all sections visible */
+.phase,
+.wizard-step {
+    display: block;
+    margin-bottom: 24px;
+}
+
+/* Hide old top-nav since we use breadcrumbs only */
+.top-nav {
     display: none;
 }
 
-.phase.active {
+/* Hide old sub-nav since sections are separate */
+.sub-nav {
+    display: none;
+}
+
+.substep {
     display: block;
 }
 
-.top-nav {
+.old-top-nav {
     display: flex;
     justify-content: center;
     gap: 8px;

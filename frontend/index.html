@@ -63,32 +63,6 @@
             </div>
         </div>
 
-        <!-- Top Navigation Bar (3-Phase) -->
-        <nav class="top-nav">
-            <div class="nav-phase active" data-phase="1">
-                <div class="phase-number">1</div>
-                <div class="phase-label">Pattern & Switch</div>
-            </div>
-            <div class="nav-phase" data-phase="2">
-                <div class="phase-number">2</div>
-                <div class="phase-label">Network</div>
-                <div class="sub-steps">
-                    <span class="sub-step" data-step="2.1">VLANs</span>
-                    <span class="sub-step" data-step="2.2">Ports</span>
-                    <span class="sub-step" data-step="2.3">Redundancy</span>
-                    <span class="sub-step" data-step="2.4">Uplinks</span>
-                </div>
-            </div>
-            <div class="nav-phase" data-phase="3">
-                <div class="phase-number">3</div>
-                <div class="phase-label">Routing</div>
-            </div>
-            <div class="nav-phase" data-phase="review">
-                <div class="phase-number">✓</div>
-                <div class="phase-label">Review</div>
-            </div>
-        </nav>
-
 
         <!-- Lightbox for Pattern Image -->
         <div id="pattern-lightbox" class="lightbox" style="display: none;" onclick="closeLightbox()">
@@ -189,40 +163,23 @@
                         </div>
                     </div>
                 </section>
-                
-                <div class="btn-group">
-                    <div></div>
-                    <button class="btn-next" id="phase1-next-btn" onclick="nextPhase()">Next: Network Configuration →</button>
-                </div>
                 </div> <!-- End step-content -->
             </section>
 
             <!--================================================================
-                 PHASE 2: NETWORK CONFIGURATION  
-                 Consolidates former Steps 2-5 into sub-steps 2.1-2.4
+                 SECTION 02: VLANs
                  ================================================================ -->
             <section id="phase2" class="phase wizard-step">
                 <div class="step-header">
                     <div class="step-number">02</div>
                     <div class="step-title">
-                        <h2>Network Configuration</h2>
-                        <p>Configure VLANs, ports, and redundancy</p>
+                        <h2>VLANs</h2>
+                        <p>Define your network VLANs</p>
                     </div>
                 </div>
                 <div class="step-content">
-                
-                <!-- Sub-navigation for Phase 2 -->
-                <div class="sub-nav">
-                    <button class="sub-nav-btn active" data-substep="2.1">2.1 VLANs</button>
-                    <button class="sub-nav-btn" data-substep="2.2">2.2 Host Ports</button>
-                    <button class="sub-nav-btn" data-substep="2.3">2.3 Redundancy</button>
-                </div>
 
-                <!-- 2.1 VLANs -->
-                <div class="substep active" data-substep="2.1">
-                    <h3>2.1 VLANs</h3>
-                    <p class="substep-description">Define your network VLANs</p>
-                
+                <!-- VLANs Section (formerly 2.1) -->
                 <div class="form-container">
                     <!-- Unused Port VLAN (Static) -->
                     <div class="vlan-card">
@@ -378,19 +335,22 @@
                         </div>
                     </div>
                 </div>
-                <!-- End 2.1 VLANs -->
-                
-                <div class="btn-group">
-                    <button class="btn-back" onclick="previousPhase()">← Back</button>
-                    <button class="btn-next" onclick="nextSubstep()">Next: Host Ports →</button>
-                </div>
-                </div>
+                <!-- End VLANs -->
+                </div> <!-- End step-content -->
+            </section>
 
-                <!-- 2.2 Host Ports -->
-                <div class="substep" data-substep="2.2">
-                    <h3>2.2 Host Port Assignment</h3>
-                    <p class="substep-description">Configure host-facing trunk ports</p>
-                
+            <!-- ================================================================
+                 SECTION 03: HOST PORTS
+                 ================================================================ -->
+            <section id="phase2-ports" class="phase wizard-step">
+                <div class="step-header">
+                    <div class="step-number">03</div>
+                    <div class="step-title">
+                        <h2>Host Ports</h2>
+                        <p>Configure host-facing trunk ports</p>
+                    </div>
+                </div>
+                <div class="step-content">
                 <div class="form-container">
                     <!-- Deployment Pattern Info -->
                     <div class="info-box" style="margin-bottom: 20px;">
@@ -567,18 +527,21 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="btn-group">
-                    <button class="btn-back" onclick="previousSubstep()">← Back</button>
-                    <button class="btn-next" onclick="nextSubstep()">Next: Redundancy →</button>
-                </div>
-                </div>
+                </div> <!-- End step-content -->
+            </section>
 
-                <!-- 2.3 Redundancy -->
-                <div class="substep" data-substep="2.3">
-                    <h3>2.3 Redundancy Configuration</h3>
-                    <p class="substep-description">Configure MLAG/VPC for switch redundancy</p>
-                
+            <!-- ================================================================
+                 SECTION 04: REDUNDANCY
+                 ================================================================ -->
+            <section id="phase2-redundancy" class="phase wizard-step">
+                <div class="step-header">
+                    <div class="step-number">04</div>
+                    <div class="step-title">
+                        <h2>Redundancy</h2>
+                        <p>Configure MLAG/VPC for switch redundancy</p>
+                    </div>
+                </div>
+                <div class="step-content">
                 <div class="form-container">
                     <!-- MLAG/VPC Section -->
                     <div class="port-card" id="mlag-section">
@@ -641,24 +604,18 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="btn-group">
-                    <button class="btn-back" onclick="previousSubstep()">← Back</button>
-                    <button class="btn-next" onclick="nextPhase()">Next: Routing →</button>
-                </div>
-                </div>
                 </div> <!-- End step-content -->
             </section>
 
             <!-- ================================================================
-                 PHASE 3: ROUTING CONFIGURATION
+                 SECTION 05: ROUTING CONFIGURATION
                  Includes Uplinks (border links + loopback) and BGP/Static routing
                  ================================================================ -->
             <section id="phase3" class="phase wizard-step">
                 <div class="step-header">
-                    <div class="step-number">03</div>
+                    <div class="step-number">05</div>
                     <div class="step-title">
-                        <h2>Routing Configuration</h2>
+                        <h2>Routing</h2>
                         <p>Configure uplinks, loopback, and routing protocol</p>
                     </div>
                 </div>
@@ -758,21 +715,16 @@
                         <button type="button" class="btn-add" id="btn-add-route">+ Add Route</button>
                     </div>
                 </div>
-                
-                <div class="btn-group">
-                    <button class="btn-back" onclick="previousPhase()">← Back</button>
-                    <button class="btn-next" onclick="nextPhase()">Review & Export →</button>
-                </div>
                 </div> <!-- End step-content -->
             </section>
 
             <!-- ================================================================
-                 REVIEW & EXPORT
-                 Final step - unchanged
+                 SECTION 06: REVIEW & EXPORT
+                 Final step
                  ================================================================ -->
             <section id="review" class="phase wizard-step">
                 <div class="step-header">
-                    <div class="step-number">04</div>
+                    <div class="step-number">06</div>
                     <div class="step-title">
                         <h2>Review & Export</h2>
                         <p>Review your configuration and export Standard JSON</p>
@@ -818,13 +770,19 @@
                             <span class="nav-number">01</span> Pattern & Switch
                         </button>
                         <button class="sidebar-nav-link" onclick="scrollToSection('phase2')">
-                            <span class="nav-number">02</span> Network
+                            <span class="nav-number">02</span> VLANs
+                        </button>
+                        <button class="sidebar-nav-link" onclick="scrollToSection('phase2-ports')">
+                            <span class="nav-number">03</span> Host Ports
+                        </button>
+                        <button class="sidebar-nav-link" onclick="scrollToSection('phase2-redundancy')">
+                            <span class="nav-number">04</span> Redundancy
                         </button>
                         <button class="sidebar-nav-link" onclick="scrollToSection('phase3')">
-                            <span class="nav-number">03</span> Routing
+                            <span class="nav-number">05</span> Routing
                         </button>
                         <button class="sidebar-nav-link" onclick="scrollToSection('review')">
-                            <span class="nav-number">04</span> Review
+                            <span class="nav-number">06</span> Review
                         </button>
                     </div>
                 </nav>
