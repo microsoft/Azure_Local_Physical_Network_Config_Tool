@@ -7,20 +7,43 @@
     <link rel="stylesheet" href="/odin-theme.css">
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <div>
-                <h1>Azure Local Switch Configuration</h1>
-                <p class="subtitle">Generate Standard JSON configurations for Azure Local ToR switches. Pattern-driven wizard with real-time validation.</p>
-            </div>
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Header Bar with Theme/Font Controls (Odin Style) -->
+    <header class="header-bar">
+        <div class="header-left">
+            <h1 class="header-title">Azure Local Switch Configuration</h1>
+            <span class="header-subtitle">Generate Standard JSON configurations for ToR switches</span>
+        </div>
+        <div class="header-right">
             <div class="import-section">
                 <button class="import-btn" onclick="showTemplateModal()">📋 Load Template</button>
                 <label for="import-json" class="import-btn">📥 Import JSON</label>
                 <input type="file" id="import-json" accept=".json" style="display: none;">
             </div>
+            <div class="font-controls">
+                <button class="font-btn" onclick="decreaseFontSize()" title="Decrease font size">A-</button>
+                <button class="font-btn" onclick="increaseFontSize()" title="Increase font size">A+</button>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light theme">🌙</button>
         </div>
     </header>
+
+    <!-- Breadcrumb Navigation (Odin Style) -->
+    <nav class="breadcrumb-nav" id="breadcrumb-nav">
+        <a href="#phase1" class="breadcrumb-item active" data-section="phase1">01 Pattern & Switch</a>
+        <span class="breadcrumb-separator">→</span>
+        <a href="#phase2" class="breadcrumb-item" data-section="phase2">02 VLANs</a>
+        <span class="breadcrumb-separator">→</span>
+        <a href="#phase2-ports" class="breadcrumb-item" data-section="phase2-ports">03 Ports</a>
+        <span class="breadcrumb-separator">→</span>
+        <a href="#phase2-redundancy" class="breadcrumb-item" data-section="phase2-redundancy">04 Redundancy</a>
+        <span class="breadcrumb-separator">→</span>
+        <a href="#phase3" class="breadcrumb-item" data-section="phase3">05 Routing</a>
+        <span class="breadcrumb-separator">→</span>
+        <a href="#review" class="breadcrumb-item" data-section="review">06 Review</a>
+    </nav>
 
     <div class="container">
         <!-- Validation Messages -->
@@ -92,9 +115,16 @@
                  PHASE 1: PATTERN & SWITCH
                  Pattern FIRST with visual cards, then hardware, role, hostname
                  ================================================================ -->
-            <section id="phase1" class="phase active">
-                <h2>Phase 1: Pattern & Switch</h2>
-                <p class="description">Start by selecting your deployment pattern</p>
+            <section id="phase1" class="phase active wizard-step">
+                <div class="step-header">
+                    <div class="step-number">01</div>
+                    <div class="step-title">
+                        <h2>Pattern & Switch</h2>
+                        <p>Select your deployment pattern, vendor, model, and role</p>
+                    </div>
+                    <a href="https://github.com/Azure/AzureLocal-Supportability/blob/main/TSG/Networking/Top-Of-Rack-Switch/Overview-Azure-Local-Deployment-Pattern.md" target="_blank" class="step-help">📖 Deployment Guide</a>
+                </div>
+                <div class="step-content">
                 
                 <!-- 1.1 Pattern Selection (FIRST - Visual Cards) -->
                 <section class="form-section pattern-selection">
@@ -175,15 +205,22 @@
                     <div></div>
                     <button class="btn-next" id="phase1-next-btn" onclick="nextPhase()">Next: Network Configuration →</button>
                 </div>
+                </div> <!-- End step-content -->
             </section>
 
             <!--================================================================
                  PHASE 2: NETWORK CONFIGURATION  
                  Consolidates former Steps 2-5 into sub-steps 2.1-2.4
                  ================================================================ -->
-            <section id="phase2" class="phase">
-                <h2>Phase 2: Network Configuration</h2>
-                <p class="description">Configure VLANs, ports, and redundancy</p>
+            <section id="phase2" class="phase wizard-step">
+                <div class="step-header">
+                    <div class="step-number">02</div>
+                    <div class="step-title">
+                        <h2>Network Configuration</h2>
+                        <p>Configure VLANs, ports, and redundancy</p>
+                    </div>
+                </div>
+                <div class="step-content">
                 
                 <!-- Sub-navigation for Phase 2 -->
                 <div class="sub-nav">
@@ -621,15 +658,22 @@
                     <button class="btn-next" onclick="nextPhase()">Next: Routing →</button>
                 </div>
                 </div>
+                </div> <!-- End step-content -->
             </section>
 
             <!-- ================================================================
                  PHASE 3: ROUTING CONFIGURATION
                  Includes Uplinks (border links + loopback) and BGP/Static routing
                  ================================================================ -->
-            <section id="phase3" class="phase">
-                <h2>Phase 3: Routing Configuration</h2>
-                <p class="description">Configure uplinks, loopback, and routing protocol</p>
+            <section id="phase3" class="phase wizard-step">
+                <div class="step-header">
+                    <div class="step-number">03</div>
+                    <div class="step-title">
+                        <h2>Routing Configuration</h2>
+                        <p>Configure uplinks, loopback, and routing protocol</p>
+                    </div>
+                </div>
+                <div class="step-content">
                 
                 <div class="form-container">
                     <!-- Border Uplinks -->
@@ -730,15 +774,22 @@
                     <button class="btn-back" onclick="previousPhase()">← Back</button>
                     <button class="btn-next" onclick="nextPhase()">Review & Export →</button>
                 </div>
+                </div> <!-- End step-content -->
             </section>
 
             <!-- ================================================================
                  REVIEW & EXPORT
                  Final step - unchanged
                  ================================================================ -->
-            <section id="review" class="phase">
-                <h2>✅ Configuration Ready</h2>
-                <p class="description">Review your configuration and export Standard JSON</p>
+            <section id="review" class="phase wizard-step">
+                <div class="step-header">
+                    <div class="step-number">04</div>
+                    <div class="step-title">
+                        <h2>Review & Export</h2>
+                        <p>Review your configuration and export Standard JSON</p>
+                    </div>
+                </div>
+                <div class="step-content">
                 
                 <div class="summary-container">
                     <div id="config-summary" class="config-summary"></div>
@@ -754,10 +805,11 @@
                     <button class="btn-export secondary" id="btn-copy">📋 Copy to Clipboard</button>
                     <button class="btn-reset" id="btn-reset">🔄 Start Over</button>
                 </div>
+                </div> <!-- End step-content -->
             </section>
         </div>
 
-            <!-- Configuration Summary Sidebar -->
+            <!-- Configuration Summary Sidebar (Odin Style) -->
             <aside id="config-summary-sidebar" class="config-summary-sidebar">
                 <div class="sidebar-header">
                     <h3>📋 Configuration Summary</h3>
@@ -768,6 +820,25 @@
                         <span class="progress-text" id="progress-text">0%</span>
                     </div>
                 </div>
+                
+                <!-- Section Quick Links -->
+                <nav class="sidebar-nav">
+                    <div class="sidebar-nav-title">Sections</div>
+                    <div class="sidebar-nav-links">
+                        <button class="sidebar-nav-link active" onclick="scrollToSection('phase1')">
+                            <span class="nav-number">01</span> Pattern & Switch
+                        </button>
+                        <button class="sidebar-nav-link" onclick="scrollToSection('phase2')">
+                            <span class="nav-number">02</span> Network
+                        </button>
+                        <button class="sidebar-nav-link" onclick="scrollToSection('phase3')">
+                            <span class="nav-number">03</span> Routing
+                        </button>
+                        <button class="sidebar-nav-link" onclick="scrollToSection('review')">
+                            <span class="nav-number">04</span> Review
+                        </button>
+                    </div>
+                </nav>
                 
                 <div class="sidebar-content">
                     <!-- Switch Section -->

@@ -492,16 +492,20 @@ test.describe('13. Critical Business Rules', () => {
 
 test.describe('14. UI Components', () => {
   
-  test('lightbox opens on pattern image click', async ({ page }) => {
+  test('pattern cards show selected state', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.pattern-card[data-pattern="fully_converged"] h4').click();
     
-    await expect(page.locator('#pattern-lightbox')).not.toBeVisible();
-    await page.click('#sidebar-pattern-img');
-    await expect(page.locator('#pattern-lightbox')).toBeVisible();
+    // Click a pattern card
+    await page.locator('.pattern-card[data-pattern="switched"]').click();
     
-    await page.click('#pattern-lightbox');
-    await expect(page.locator('#pattern-lightbox')).not.toBeVisible();
+    // Verify selected state
+    await expect(page.locator('.pattern-card[data-pattern="switched"]')).toHaveClass(/selected/);
+    await expect(page.locator('.pattern-card[data-pattern="fully_converged"]')).not.toHaveClass(/selected/);
+    
+    // Click different pattern
+    await page.locator('.pattern-card[data-pattern="fully_converged"]').click();
+    await expect(page.locator('.pattern-card[data-pattern="fully_converged"]')).toHaveClass(/selected/);
+    await expect(page.locator('.pattern-card[data-pattern="switched"]')).not.toHaveClass(/selected/);
   });
 
   test('collapsible BMC section toggles', async ({ page }) => {

@@ -540,11 +540,11 @@ function updateProgressIndicator(): void {
   const total = 10; // Total checkpoints
   
   // Phase 1 checks - must have actual non-empty values
-  if (config.switch.deployment_pattern && config.switch.deployment_pattern !== '') completed++;
-  if (config.switch.vendor && config.switch.vendor !== '') completed++;
-  if (config.switch.model && config.switch.model !== '') completed++;
-  if (config.switch.role && config.switch.role !== '') completed++;
-  if (config.switch.hostname && config.switch.hostname !== '') completed++;
+  if (config.switch.deployment_pattern) completed++;
+  if (config.switch.vendor) completed++;
+  if (config.switch.model) completed++;
+  if (config.switch.role) completed++;
+  if (config.switch.hostname) completed++;
   
   // Phase 2 checks
   if (config.vlans && config.vlans.length > 0) completed++;
