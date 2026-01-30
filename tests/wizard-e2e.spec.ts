@@ -185,17 +185,17 @@ test.describe('5. Summary Sidebar', () => {
   
   test('sidebar or summary panel exists', async ({ page }) => {
     await page.goto('/');
-    const hasSidebar = await page.locator('#pattern-sidebar, #summary-panel, .summary-column').count() > 0;
+    // Config summary sidebar should exist
+    const hasSidebar = await page.locator('#config-summary-sidebar, .config-summary-sidebar').count() > 0;
     expect(hasSidebar).toBeTruthy();
   });
 
-  test('sidebar updates on pattern selection', async ({ page }) => {
+  test('pattern selection updates config summary', async ({ page }) => {
     await page.goto('/');
     await page.locator('.pattern-card[data-pattern="fully_converged"] h4').click();
     
-    // Pattern sidebar should be visible with pattern name
-    await expect(page.locator('#pattern-sidebar')).toBeVisible();
-    await expect(page.locator('#sidebar-pattern-name')).toContainText(/Converged/i);
+    // Config summary should update with pattern
+    await expect(page.locator('#sum-pattern')).toContainText(/converged/i);
   });
 
   test('config summary updates on selection', async ({ page }) => {
@@ -347,7 +347,8 @@ test.describe('9. Template Loading', () => {
     await loadTemplate(page, 'Fully Converged', 'TOR1');
     
     await expect(page.locator('#hostname')).toHaveValue('sample-tor1');
-    await expect(page.locator('#pattern-sidebar')).toBeVisible();
+    // Config summary should update
+    await expect(page.locator('#sum-pattern')).toContainText(/converged/i);
   });
 
   test('switched template loads correct VLANs', async ({ page }) => {
@@ -437,12 +438,17 @@ test.describe('12. Start Over', () => {
     await page.goto('/');
     await loadTemplate(page);
     
+    // Navigate to review phase where reset button is visible
+    await page.click('.nav-phase[data-phase="review"]');
+    await page.waitForTimeout(200);
+    
     page.on('dialog', dialog => dialog.accept());
     
-    await page.click('button:has-text("Start Over"), #btn-reset');
+    await page.click('#btn-reset');
     await page.waitForTimeout(300);
     
-    await expect(page.locator('#hostname')).toHaveValue('');
+    // Check that form is reset (back to phase 1)
+    await expect(page.locator('.pattern-card.selected')).toHaveCount(0);
   });
 });
 

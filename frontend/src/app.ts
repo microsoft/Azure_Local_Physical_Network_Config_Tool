@@ -134,9 +134,6 @@ export function selectPattern(pattern: DeploymentPattern): void {
     }
   });
   
-  // Show sidebar
-  showPatternSidebar(pattern);
-  
   // Reveal hardware selection section
   const hardwareSection = getElement('.hardware-selection');
   if (hardwareSection) {
@@ -151,29 +148,6 @@ export function selectPattern(pattern: DeploymentPattern): void {
   
   // Update config summary sidebar
   updateConfigSummary();
-}
-
-/**
- * Show persistent pattern sidebar
- */
-function showPatternSidebar(pattern: DeploymentPattern): void {
-  const sidebar = getElement('#pattern-sidebar');
-  const img = getElement<HTMLImageElement>('#sidebar-pattern-img');
-  const name = getElement('#sidebar-pattern-name');
-  
-  if (!sidebar || !img || !name) return;
-  
-  const patterns = {
-    switchless: { name: '🔌 Switchless', img: 'media/pattern-switchless.png' },
-    switched: { name: '💾 Switched', img: 'media/pattern-switched.png' },
-    fully_converged: { name: '🔄 Fully Converged', img: 'media/pattern-fully-converged.png' }
-  };
-  
-  const selected = patterns[pattern];
-  img.src = selected.img;
-  img.alt = selected.name;
-  name.textContent = selected.name;
-  sidebar.style.display = 'block';
 }
 
 /**

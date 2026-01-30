@@ -46,24 +46,48 @@ function toggleTheme(): void {
 
 function increaseFontSize(): void {
   const body = document.body;
-  if (body.classList.contains('font-small')) {
-    body.classList.remove('font-small');
-  } else if (!body.classList.contains('font-large')) {
+  const currentSize = body.classList.contains('font-large') ? 'large' : 
+                      body.classList.contains('font-small') ? 'small' : 'normal';
+  
+  body.classList.remove('font-small', 'font-large');
+  
+  if (currentSize === 'small') {
+    // small -> normal (no class needed)
+  } else if (currentSize === 'normal') {
     body.classList.add('font-large');
   }
-  localStorage.setItem('fontSize', body.classList.contains('font-large') ? 'large' : 
-                                    body.classList.contains('font-small') ? 'small' : 'normal');
+  // large stays large (max)
+  else {
+    body.classList.add('font-large');
+  }
+  
+  const newSize = body.classList.contains('font-large') ? 'large' : 
+                  body.classList.contains('font-small') ? 'small' : 'normal';
+  localStorage.setItem('fontSize', newSize);
+  showToast(`Font size: ${newSize}`, 'info');
 }
 
 function decreaseFontSize(): void {
   const body = document.body;
-  if (body.classList.contains('font-large')) {
-    body.classList.remove('font-large');
-  } else if (!body.classList.contains('font-small')) {
+  const currentSize = body.classList.contains('font-large') ? 'large' : 
+                      body.classList.contains('font-small') ? 'small' : 'normal';
+  
+  body.classList.remove('font-small', 'font-large');
+  
+  if (currentSize === 'large') {
+    // large -> normal (no class needed)
+  } else if (currentSize === 'normal') {
     body.classList.add('font-small');
   }
-  localStorage.setItem('fontSize', body.classList.contains('font-large') ? 'large' : 
-                                    body.classList.contains('font-small') ? 'small' : 'normal');
+  // small stays small (min)
+  else {
+    body.classList.add('font-small');
+  }
+  
+  const newSize = body.classList.contains('font-large') ? 'large' : 
+                  body.classList.contains('font-small') ? 'small' : 'normal';
+  localStorage.setItem('fontSize', newSize);
+  showToast(`Font size: ${newSize}`, 'info');
 }
 
 function scrollToSection(sectionId: string): void {
