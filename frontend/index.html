@@ -80,8 +80,10 @@
             <img id="lightbox-img" src="" alt="Pattern topology">
         </div>
 
-        <!-- Wizard Container -->
-        <div class="wizard-container">
+        <!-- Main Content + Config Summary Layout -->
+        <div class="main-layout">
+            <!-- Wizard Container -->
+            <div class="wizard-container">
             <!-- ================================================================
                  PHASE 1: PATTERN & SWITCH
                  Pattern FIRST with visual cards, then hardware, role, hostname
@@ -750,6 +752,91 @@
                 </div>
             </section>
         </div>
+
+            <!-- Configuration Summary Sidebar -->
+            <aside id="config-summary-sidebar" class="config-summary-sidebar">
+                <div class="sidebar-header">
+                    <h3>📋 Configuration Summary</h3>
+                    <div class="progress-indicator">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <span class="progress-text" id="progress-text">0%</span>
+                    </div>
+                </div>
+                
+                <div class="sidebar-content">
+                    <!-- Switch Section -->
+                    <div class="summary-section" id="summary-switch">
+                        <h4>🔧 SWITCH</h4>
+                        <div class="summary-grid">
+                            <span class="summary-label">Pattern</span>
+                            <span class="summary-value" id="sum-pattern">—</span>
+                            <span class="summary-label">Vendor</span>
+                            <span class="summary-value" id="sum-vendor">—</span>
+                            <span class="summary-label">Model</span>
+                            <span class="summary-value" id="sum-model">—</span>
+                            <span class="summary-label">Role</span>
+                            <span class="summary-value" id="sum-role">—</span>
+                            <span class="summary-label">Hostname</span>
+                            <span class="summary-value" id="sum-hostname">—</span>
+                        </div>
+                    </div>
+
+                    <!-- VLANs Section -->
+                    <div class="summary-section" id="summary-vlans">
+                        <h4>🏷️ VLANS</h4>
+                        <div class="summary-grid">
+                            <span class="summary-label">Management</span>
+                            <span class="summary-value" id="sum-vlan-mgmt">—</span>
+                            <span class="summary-label">Compute</span>
+                            <span class="summary-value" id="sum-vlan-compute">—</span>
+                            <span class="summary-label">Storage 1</span>
+                            <span class="summary-value" id="sum-vlan-storage1">—</span>
+                            <span class="summary-label">Storage 2</span>
+                            <span class="summary-value" id="sum-vlan-storage2">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Host Ports Section -->
+                    <div class="summary-section" id="summary-ports">
+                        <h4>🔌 HOST PORTS</h4>
+                        <div class="summary-grid">
+                            <span class="summary-label">Port Range</span>
+                            <span class="summary-value" id="sum-port-range">—</span>
+                            <span class="summary-label">Tagged VLANs</span>
+                            <span class="summary-value" id="sum-tagged-vlans">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Redundancy Section -->
+                    <div class="summary-section" id="summary-redundancy">
+                        <h4>🔗 REDUNDANCY</h4>
+                        <div class="summary-grid">
+                            <span class="summary-label">Peer-Link PC</span>
+                            <span class="summary-value" id="sum-peerlink">—</span>
+                            <span class="summary-label">Keepalive</span>
+                            <span class="summary-value" id="sum-keepalive">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Routing Section -->
+                    <div class="summary-section" id="summary-routing">
+                        <h4>📡 ROUTING</h4>
+                        <div class="summary-grid">
+                            <span class="summary-label">Type</span>
+                            <span class="summary-value" id="sum-routing-type">—</span>
+                            <span class="summary-label">ASN</span>
+                            <span class="summary-value" id="sum-asn">—</span>
+                            <span class="summary-label">Router ID</span>
+                            <span class="summary-value" id="sum-router-id">—</span>
+                            <span class="summary-label">Neighbors</span>
+                            <span class="summary-value" id="sum-neighbors">—</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div> <!-- End main-layout -->
     </div>
 
     <script type="module" src="/src/main.ts"></script>

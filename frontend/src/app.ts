@@ -148,6 +148,9 @@ export function selectPattern(pattern: DeploymentPattern): void {
   
   // Enable next button when all Phase 1 fields are filled
   updatePhase1NextButton();
+  
+  // Update config summary sidebar
+  updateConfigSummary();
 }
 
 /**
@@ -265,6 +268,9 @@ export function onVendorChange(): void {
     // Update state
     state.config.switch.vendor = vendor;
     state.config.switch.firmware = VENDOR_FIRMWARE_MAP[vendor] as Firmware;
+    
+    // Update config summary
+    updateConfigSummary();
   } else {
     modelSelect.disabled = true;
   }
@@ -301,6 +307,9 @@ export function onModelChange(): void {
       hostnameSection.style.display = 'block';
       console.log('Hostname section visible');
     }
+    
+    // Update config summary
+    updateConfigSummary();
   }
   
   updatePhase1NextButton();
@@ -350,6 +359,9 @@ export function selectRole(role: Role): void {
   updateHostPortsSections();
   
   updatePhase1NextButton();
+  
+  // Update config summary
+  updateConfigSummary();
 }
 
 /**
@@ -360,6 +372,7 @@ export function updateHostname(): void {
   if (hostnameInput) {
     state.config.switch.hostname = hostnameInput.value;
     updatePhase1NextButton();
+    updateConfigSummary();
   }
 }
 
@@ -424,6 +437,134 @@ export function getPatternHostVlans(pattern: DeploymentPattern, role?: Role): st
 }
 
 // ============================================================================
+// CONFIGURATION SUMMARY SIDEBAR
+// ============================================================================
+
+/**
+ * Update the configuration summary sidebar with current state
+ * Called whenever state changes
+ */
+export function updateConfigSummary(): void {
+  const config = state.config;
+  
+  // Switch section
+  const patternDisplay = config.switch.deployment_pattern?.replace('_', ' ') || '—';
+  setTextContent('#sum-pattern', patternDisplay ? capitalize(patternDisplay) : '—');
+  setTextContent('#sum-vendor', config.switch.vendor ? DISPLAY_NAMES.vendors[config.switch.vendor] || config.switch.vendor : '—');
+  setTextContent('#sum-model', config.switch.model?.toUpperCase() || '—');
+  setTextContent('#sum-role', config.switch.role || '—');
+  setTextContent('#sum-hostname', config.switch.hostname || '—');
+  
+  // VLANs section
+  const vlans = config.vlans || [];
+  const mgmtVlan = vlans.find(v => v.purpose === 'management');
+  const computeVlan = vlans.find(v => v.purpose === 'compute');
+  const storage1Vlan = vlans.find(v => v.purpose === 'storage_1');
+  const storage2Vlan = vlans.find(v => v.purpose === 'storage_2');
+  
+  setTextContent('#sum-vlan-mgmt', mgmtVlan ? `${mgmtVlan.vlan_id}` : '—');
+  setTextContent('#sum-vlan-compute', computeVlan ? `${computeVlan.vlan_id}` : '—');
+  setTextContent('#sum-vlan-storage1', storage1Vlan ? `${storage1Vlan.vlan_id}` : '—');
+  setTextContent('#sum-vlan-storage2', storage2Vlan ? `${storage2Vlan.vlan_id}` : '—');
+  
+  // Host Ports section
+  const hostTrunk = (config.interfaces || []).find(i => 
+    i.name?.includes('Host') || i.name?.includes('Converged') || i.name?.includes('Trunk')
+  );
+  if (hostTrunk) {
+    const range = hostTrunk.start_intf && hostTrunk.end_intf 
+      ? `${hostTrunk.start_intf}-${hostTrunk.end_intf}` 
+      : hostTrunk.intf || '—';
+    setTextContent('#sum-port-range', range);
+    setTextContent('#sum-tagged-vlans', hostTrunk.tagged_vlans || '—');
+  } else {
+    setTextContent('#sum-port-range', '—');
+    setTextContent('#sum-tagged-vlans', '—');
+  }
+  
+  // Redundancy section
+  const peerLink = (config.port_channels || []).find(pc => pc.vpc_peer_link);
+  if (peerLink) {
+    setTextContent('#sum-peerlink', `PC${peerLink.id}`);
+  } else {
+    setTextContent('#sum-peerlink', '—');
+  }
+  
+  const mlag = config.mlag;
+  if (mlag?.peer_keepalive) {
+    setTextContent('#sum-keepalive', `${mlag.peer_keepalive.source_ip || '—'}`);
+  } else {
+    setTextContent('#sum-keepalive', '—');
+  }
+  
+  // Routing section
+  const routingType = config.routing_type || 'bgp';
+  setTextContent('#sum-routing-type', routingType.toUpperCase());
+  
+  if (config.bgp) {
+    setTextContent('#sum-asn', config.bgp.asn ? String(config.bgp.asn) : '—');
+    setTextContent('#sum-router-id', config.bgp.router_id || '—');
+    const neighborCount = config.bgp.neighbors?.length || 0;
+    setTextContent('#sum-neighbors', neighborCount > 0 ? `${neighborCount} configured` : '—');
+  } else {
+    setTextContent('#sum-asn', '—');
+    setTextContent('#sum-router-id', '—');
+    setTextContent('#sum-neighbors', '—');
+  }
+  
+  // Update progress
+  updateProgressIndicator();
+}
+
+/**
+ * Helper to set text content safely
+ */
+function setTextContent(selector: string, text: string): void {
+  const elem = getElement(selector);
+  if (elem) elem.textContent = text;
+}
+
+/**
+ * Helper to capitalize first letter
+ */
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * Update the progress indicator
+ */
+function updateProgressIndicator(): void {
+  const config = state.config;
+  let completed = 0;
+  const total = 10; // Total checkpoints
+  
+  // Phase 1 checks
+  if (config.switch.deployment_pattern) completed++;
+  if (config.switch.vendor) completed++;
+  if (config.switch.model) completed++;
+  if (config.switch.role) completed++;
+  if (config.switch.hostname) completed++;
+  
+  // Phase 2 checks
+  if (config.vlans && config.vlans.length > 0) completed++;
+  if (config.interfaces && config.interfaces.length > 0) completed++;
+  if (config.port_channels && config.port_channels.length > 0) completed++;
+  
+  // Phase 3 checks
+  if (config.bgp?.asn || config.static_routes?.length) completed++;
+  if (config.bgp?.neighbors?.length || config.static_routes?.length) completed++;
+  
+  const percentage = Math.round((completed / total) * 100);
+  
+  const fill = getElement('#progress-fill');
+  const text = getElement('#progress-text');
+  
+  if (fill) (fill as HTMLElement).style.width = `${percentage}%`;
+  if (text) text.textContent = `${percentage}%`;
+}
+
+// ============================================================================
 // INITIALIZATION
 // ============================================================================
 
@@ -434,6 +575,9 @@ export function initializeWizard(): void {
     
     // Phase1 already has 'active' class in HTML, just update the navigation
     updatePhaseNavigationUI(1);
+    
+    // Initialize config summary
+    updateConfigSummary();
     
     console.log('Wizard initialized successfully');
   } catch (error) {
@@ -2482,6 +2626,9 @@ function loadConfig(config: Partial<StandardConfig>): void {
   // Mark all steps with populated data as completed
   markCompletedSteps();
   updatePhaseCompletionFromConfig();
+  
+  // Update config summary sidebar
+  updateConfigSummary();
   
   showPhase(1);
 }

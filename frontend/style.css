@@ -31,8 +31,135 @@ body {
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 1400px;
     margin: 0 auto;
+}
+
+/* Main Layout with Sidebar */
+.main-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.wizard-container {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Configuration Summary Sidebar */
+.config-summary-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: #1e293b;
+    border-radius: 12px;
+    color: #e2e8f0;
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #334155;
+    background: #0f172a;
+    border-radius: 12px 12px 0 0;
+}
+
+.sidebar-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+}
+
+.progress-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: #334155;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #4ade80 100%);
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+.progress-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4ade80;
+    min-width: 40px;
+    text-align: right;
+}
+
+.sidebar-content {
+    padding: 15px;
+}
+
+.summary-section {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #334155;
+}
+
+.summary-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.summary-section h4 {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 12px;
+    font-size: 12px;
+}
+
+.summary-label {
+    color: #64748b;
+}
+
+.summary-value {
+    color: #e2e8f0;
+    font-weight: 500;
+    text-align: right;
+    word-break: break-word;
+}
+
+.summary-value.highlight {
+    color: #4ade80;
+}
+
+/* Responsive: Hide sidebar on smaller screens */
+@media (max-width: 1200px) {
+    .config-summary-sidebar {
+        display: none;
+    }
+    
+    .container {
+        max-width: 1000px;
+    }
 }
 
 /* Header */
