@@ -114,3 +114,4 @@ node_modules/
 # Frontend build output
 frontend/dist/
 frontend/node_modules/
+archive/Odin-for-AzureLocal

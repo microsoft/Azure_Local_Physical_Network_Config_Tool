@@ -1,438 +1,509 @@
-# Azure Local Network Config Tool — Project Roadmap
+# Azure Local Switch Configuration Wizard — Project Roadmap
 
-**Version:** 7.0  
-**Date:** January 29, 2026  
-**Status:** Frontend Refresh (Pattern-First UI Redesign)  
-**Design Doc:** [AzureLocal_NetworkConfTool_Project_Design_Doc.md](AzureLocal_NetworkConfTool_Project_Design_Doc.md)
-
----
-
-## Overview
-
-Rebuild frontend to match Design Doc's 3-phase structure. Use current 7-step implementation as reference for working code patterns (validation, state management, export logic). Pattern-first visual selection drives entire UX.
-
-### Architecture Comparison
-
-| Aspect | Current (Reference) | Target (Design Doc) |
-|--------|---------------------|---------------------|
-| Navigation | 7 flat steps | 3 phases with sub-steps |
-| Flow | Vendor → Model → Role → Pattern | **Pattern → Vendor → Model → Role** |
-| Templates | By role (`dell-tor1`) | By pattern (`fully-converged/sample-tor1`) |
-| Pattern UI | Small card at bottom | Visual card with topology image + persistent sidebar |
-| Phase 2 | Steps 2-5 separate | 4 sub-steps (2.1-2.4) grouped |
+**Version:** 9.0  
+**Date:** January 30, 2026  
+**Status:** Frontend Redesign (Odin UI Integration)  
+**Reference:** [Odin for Azure Local](https://neilbird.github.io/Odin-for-AzureLocal/)
 
 ---
 
-## Target Phase Structure
+## Executive Summary
 
-```
-Phase 1: Pattern & Switch
-├── 1.1 Select Pattern (visual cards with topology images)
-├── 1.2 Select Hardware (Vendor → Model dropdowns)
-├── 1.3 Select Role (TOR1 / TOR2)
-└── 1.4 Hostname (auto-filled, editable)
-
-Phase 2: Network
-├── 2.1 VLANs (pattern-driven defaults)
-├── 2.2 Host Ports (port range + VLAN assignment)
-└── 2.3 Redundancy (vPC/MLAG peer-link, keepalive)
-
-Phase 3: Routing
-├── Border Uplinks (L3 interfaces to border switches)
-├── Loopback (BGP router-id)
-├── BGP (ASN, neighbors) OR
-└── Static Routes (destination, next-hop)
-
-→ Review & Export
-```
+Complete frontend redesign to match Odin for Azure Local's UI design system while preserving all existing switch configuration logic. The redesign adopts Odin's dark theme, single-page scroll layout, numbered sections, sticky summary sidebar, breadcrumb navigation, theme toggle, and accessibility controls.
 
 ---
 
-## Execution Order
+## Architecture Overview
 
 ```
-1. SCHEMA ────────────────────── ✅ Done (backend/schema/standard.json)
-   │
-2. FRONTEND REFRESH ◄─────────── 🔴 CURRENT FOCUS
-   │
-   ├─ (1) Prep / Assets
-   ├─ (2) HTML Restructure
-   ├─ (3) TypeScript Rewrite
-   ├─ (4) CSS Updates
-   ├─ (5) Example JSON Files
-   ├─ (6) Tests
-   │
-3. BACKEND ───────────────────── After frontend validates
-   │
-   ├─ Cisco NX-OS templates (stubs)
-   ├─ Integration test with frontend output
-   │
-4. E2E TESTING ───────────────── After both work
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ HEADER: Azure Local Switch Configuration Wizard         [📋 Load] [📁 Import]  │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│ STATS: 👁️ Page Views: 268  📄 Configs Generated: 45  📦 Exports: 35            │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│ BREADCRUMB: [1 Pattern ✓] › [2 VLANs ✓] › [3 Ports] › [4 Redund] › ...        │
+├────────────────────────────────────────────────────┬────────────────────────────┤
+│                                                    │                            │
+│  ┌──────────────────────────────────────────────┐  │  ┌──────────────────────┐  │
+│  │ 01 Pattern & Switch                          │  │  │ Progress    75% 5/7  │  │
+│  │ ┌─────────┐ ┌─────────┐ ┌─────────┐         │  │  │ ████████████░░░░░░░  │  │
+│  │ │Switchless│ │ Switched │ │Fully FC │         │  │  ├──────────────────────┤  │
+│  │ └─────────┘ └─────────┘ └─────────┘         │  │  │ Font: [A-][A+]       │  │
+│  │                                              │  │  │ Theme: [🌙/☀️]        │  │
+│  │ Vendor: [▼ Dell EMC    ]                    │  │  ├──────────────────────┤  │
+│  │ Model:  [▼ S5248F-ON   ]                    │  │  │ CONFIG SUMMARY       │  │
+│  │                                              │  │  │                      │  │
+│  │ Role: [TOR1 ✓] [TOR2]  Hostname: [______]  │  │  │ Pattern: Fully Conv  │  │
+│  └──────────────────────────────────────────────┘  │  │ Vendor: Dell EMC     │  │
+│                                                    │  │ Model: S5248F-ON     │  │
+│  ┌──────────────────────────────────────────────┐  │  │ Role: TOR1           │  │
+│  │ 02 VLANs                                     │  │  │ Hostname: tor1       │  │
+│  │                                              │  │  │                      │  │
+│  │ Management: [7    ] Name: [Infra_7    ]     │  │  │ VLANs: 4 configured  │  │
+│  │ Compute:    [201  ] Name: [Compute_201]     │  │  │ Routing: BGP         │  │
+│  │ Storage 1:  [711  ] Name: [Storage1_711]    │  │  └──────────────────────┘  │
+│  │ Storage 2:  [712  ] Name: [Storage2_712]    │  │                            │
+│  └──────────────────────────────────────────────┘  │  ┌──────────────────────┐  │
+│                                                    │  │ [📋 Load Template   ]│  │
+│  ┌──────────────────────────────────────────────┐  │  ├──────────────────────┤  │
+│  │ 03 Host Ports                                │  │  │[📁Import][💾Export] │  │
+│  │ ...                                          │  │  ├──────────────────────┤  │
+│  └──────────────────────────────────────────────┘  │  │ [   ↺ Start Over   ] │  │
+│                                                    │  └──────────────────────┘  │
+│  ... (04 Redundancy, 05 Uplinks, 06 Routing,      │                            │
+│       07 Review & Export)                          │                            │
+│                                                    │                            │
+└────────────────────────────────────────────────────┴────────────────────────────┘
 ```
 
 ---
 
-## Implementation Checklist
+## Odin UI Design Patterns Analysis
 
-### (1) Prep / Assets
+### 1. Layout Structure
 
-- [ ] **Download pattern topology images** to `frontend/media/`:
-  ```bash
-  mkdir -p frontend/media
-  curl -o frontend/media/pattern-switchless.png "https://raw.githubusercontent.com/Azure/AzureLocal-Supportability/main/TSG/Networking/Top-Of-Rack-Switch/images/AzureLocalPhysicalNetworkDiagram_Switchless.png"
-  curl -o frontend/media/pattern-switched.png "https://raw.githubusercontent.com/Azure/AzureLocal-Supportability/main/TSG/Networking/Top-Of-Rack-Switch/images/AzureLocalPhysicalNetworkDiagram_Switched.png"
-  curl -o frontend/media/pattern-fully-converged.png "https://raw.githubusercontent.com/Azure/AzureLocal-Supportability/main/TSG/Networking/Top-Of-Rack-Switch/images/AzureLocalPhysicalNetworkDiagram_FullyConverged.png"
-  ```
+| Component | Odin Pattern | Implementation |
+|-----------|--------------|----------------|
+| **Container** | `.layout-flex` with 2 columns | Steps column + Summary column |
+| **Steps Column** | `.steps-column` flex:1 | All numbered sections |
+| **Summary Column** | `.summary-column` width:460px fixed | Sticky sidebar |
+| **Sidebar** | `position: sticky; top: 2rem; max-height: calc(100vh - 4rem); overflow-y: auto` | Own scrollbar, pinned |
 
-- [ ] **Backup current working code** for reference:
-  ```bash
-  cp frontend/index.html frontend/index.html.v1-reference
-  cp frontend/src/app.ts frontend/src/app.ts.v1-reference
-  ```
+### 2. CSS Variables (Theme System)
 
----
+```css
+/* Dark Theme (Default) */
+:root {
+  --bg-dark: #000000;
+  --card-bg: #111111;
+  --card-bg-transparent: rgba(17, 17, 17, 0.95);
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --accent-blue: #0078d4;
+  --accent-purple: #8b5cf6;
+  --success: #10b981;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --subtle-bg: rgba(255, 255, 255, 0.03);
+  --subtle-bg-hover: rgba(255, 255, 255, 0.06);
+}
 
-### (2) HTML Restructure
+/* Light Theme (Toggle) */
+body.light-theme {
+  --bg-dark: #f5f5f7;
+  --card-bg: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b7280;
+  --glass-border: rgba(0, 0, 0, 0.1);
+}
+```
 
-**File:** `frontend/index.html`
+### 3. Step/Section Structure
 
-#### 2.1 Navigation Bar
-
-- [ ] **Replace 7-step nav with 3-phase nav**:
-  ```html
-  <nav class="top-nav">
-    <div class="nav-phase active" data-phase="1">
-      <div class="phase-number">1</div>
-      <div class="phase-label">Pattern & Switch</div>
-    </div>
-    <div class="nav-phase" data-phase="2">
-      <div class="phase-number">2</div>
-      <div class="phase-label">Network</div>
-      <div class="sub-steps">
-        <span data-step="2.1">VLANs</span>
-        <span data-step="2.2">Ports</span>
-        <span data-step="2.3">Redundancy</span>
-        <span data-step="2.4">Uplinks</span>
-      </div>
-    </div>
-    <div class="nav-phase" data-phase="3">
-      <div class="phase-number">3</div>
-      <div class="phase-label">Routing</div>
-    </div>
-  </nav>
-  ```
-
-#### 2.2 Persistent Pattern Sidebar
-
-- [ ] **Add sidebar after nav, before main content**:
-  ```html
-  <aside id="pattern-sidebar" class="pattern-sidebar" style="display: none;">
-    <div class="sidebar-thumbnail">
-      <img id="sidebar-pattern-img" src="" alt="Selected pattern">
-      <button onclick="expandPatternImage()">🔍 Expand</button>
-    </div>
-    <div class="sidebar-info">
-      <strong id="sidebar-pattern-name"></strong>
-      <p class="storage-rule">⚠️ Storage VLANs never on peer-link</p>
-    </div>
-    <button class="change-pattern-btn" onclick="changePattern()">Change Pattern</button>
-  </aside>
-  ```
-
-#### 2.3 Phase 1: Pattern & Switch
-
-- [ ] **Pattern selection FIRST with visual cards**:
-  ```html
-  <div id="phase1" class="phase active">
-    <h2>Phase 1: Pattern & Switch</h2>
-    
-    <!-- 1.1 Pattern Selection (FIRST) -->
-    <section class="form-section pattern-selection">
-      <h3>1.1 Select Deployment Pattern</h3>
-      <p>Choose how storage traffic flows in your Azure Local deployment</p>
-      
-      <div class="pattern-cards">
-        <div class="pattern-card" data-pattern="switchless" onclick="selectPattern('switchless')">
-          <img src="media/pattern-switchless.png" alt="Switchless topology">
-          <h4>🔌 Switchless</h4>
-          <p>Storage direct host-to-host. Edge/cost-sensitive.</p>
-          <span class="pattern-tag">VLANs: M, C only</span>
-        </div>
-        
-        <div class="pattern-card" data-pattern="switched" onclick="selectPattern('switched')">
-          <img src="media/pattern-switched.png" alt="Switched topology">
-          <h4>💾 Switched</h4>
-          <p>Storage on dedicated switch ports. Enterprise isolation.</p>
-          <span class="pattern-tag">VLANs: M, C, S1 or S2</span>
-        </div>
-        
-        <div class="pattern-card recommended" data-pattern="fully_converged" onclick="selectPattern('fully_converged')">
-          <img src="media/pattern-fully-converged.png" alt="Fully Converged topology">
-          <h4>🔄 Fully Converged ★</h4>
-          <p>All traffic on shared ports. General purpose.</p>
-          <span class="pattern-tag">VLANs: M, C, S1, S2</span>
-        </div>
-      </div>
-    </section>
-    
-    <!-- 1.2 Hardware Selection (dropdowns) -->
-    <section class="form-section hardware-selection" style="display: none;">
-      <h3>1.2 Select Hardware</h3>
-      <div class="form-row">
-        <label for="vendor-select">Vendor</label>
-        <select id="vendor-select" onchange="onVendorChange()">
-          <option value="">-- Select Vendor --</option>
-          <option value="cisco">Cisco</option>
-          <option value="dellemc">Dell EMC</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label for="model-select">Model</label>
-        <select id="model-select" disabled>
-          <option value="">-- Select Vendor First --</option>
-        </select>
-      </div>
-    </section>
-    
-    <!-- 1.3 Role Selection -->
-    <section class="form-section role-selection" style="display: none;">
-      <h3>1.3 Select Role</h3>
-      <div class="role-cards">
-        <div class="role-card" data-role="TOR1" onclick="selectRole('TOR1')">
-          <h4>TOR1</h4>
-          <p>Primary (HSRP priority 150)</p>
-        </div>
-        <div class="role-card" data-role="TOR2" onclick="selectRole('TOR2')">
-          <h4>TOR2</h4>
-          <p>Secondary (HSRP priority 100)</p>
-        </div>
-      </div>
-    </section>
-    
-    <!-- 1.4 Hostname -->
-    <section class="form-section hostname-section" style="display: none;">
-      <h3>1.4 Hostname</h3>
-      <input type="text" id="hostname" placeholder="Auto-generated based on role">
-    </section>
+```html
+<section class="step" id="step-1">
+  <div class="step-header">
+    <span class="step-number">01</span>
+    <h2>Section Title</h2>
   </div>
-  ```
+  <!-- Content -->
+</section>
+```
 
-#### 2.4 Phase 2: Network
+```css
+.step {
+  margin-bottom: 3rem;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 2rem;
+}
 
-- [ ] **Create Phase 2 container with 4 sub-sections** (consolidate current Steps 2-5):
-  - `2.1 VLANs` — from current Step 2
-  - `2.2 Host Ports` — from current Step 3
-  - `2.3 Redundancy` — from current Step 4
-  - `2.4 Uplinks` — from current Step 5
+.step-number {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  background: rgba(0, 120, 212, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 120, 212, 0.2);
+}
+```
 
-#### 2.5 Phase 3: Routing
+### 4. Option Card Pattern
 
-- [ ] **Create Phase 3 with BGP/Static toggle** (from current Step 6)
+```html
+<div class="option-card" data-value="value" onclick="selectOption('key', 'value')">
+  <div class="icon"><svg>...</svg></div>
+  <h3>Title</h3>
+  <p>Description</p>
+</div>
+```
 
-#### 2.6 Template Modal
+```css
+.option-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-- [ ] **Reorganize by pattern** (not by role):
-  - Fully Converged: `sample-tor1`, `sample-tor2`
-  - Switched: `sample-tor1`, `sample-tor2`
-  - Switchless: `sample-tor1`
+.option-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
+}
 
----
+.option-card.selected {
+  background: rgba(0, 120, 212, 0.1);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 1px var(--accent-blue), 0 4px 20px rgba(0, 120, 212, 0.2);
+}
 
-### (3) TypeScript Rewrite
+.option-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 20px; height: 20px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  color: white;
+  font-size: 12px;
+}
+```
 
-**File:** `frontend/src/app.ts`
+### 5. Progress Bar
 
-#### 3.1 State Management
+```html
+<div class="wizard-progress">
+  <div class="wizard-progress__top">
+    <div class="wizard-progress__title">Progress</div>
+    <div class="wizard-progress__text">75% • 5/7</div>
+  </div>
+  <div class="wizard-progress__bar">
+    <div class="wizard-progress__fill" style="width: 75%"></div>
+  </div>
+</div>
+```
 
-- [ ] **Update state interface** in `state.ts`:
-  ```typescript
-  interface WizardState {
-    currentPhase: 1 | 2 | 3;
-    currentSubStep: string;  // "2.1", "2.2", etc.
-    selectedPattern: DeploymentPattern | null;
-    // ... keep existing fields
+```css
+.wizard-progress__fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(0, 120, 212, 0.85), rgba(139, 92, 246, 0.85));
+}
+```
+
+### 6. Breadcrumb Navigation
+
+```html
+<nav class="breadcrumb-nav">
+  <div class="breadcrumb-container">
+    <button class="breadcrumb-item completed" onclick="scrollToStep('step-1')">
+      <span class="breadcrumb-number">1</span>
+      <span class="breadcrumb-label">Pattern</span>
+      <span class="breadcrumb-check">✓</span>
+    </button>
+    <span class="breadcrumb-separator">›</span>
+    <!-- More items -->
+  </div>
+</nav>
+```
+
+### 7. Summary Sidebar Structure
+
+```html
+<div id="summary-panel">
+  <!-- Progress -->
+  <div class="wizard-progress">...</div>
+  
+  <!-- Accessibility Controls -->
+  <div class="controls-row">
+    <span>Font: <button>A−</button> <button>A+</button></span>
+    <span>Theme: <button id="theme-toggle">🌙</button></span>
+  </div>
+  
+  <!-- Summary Content -->
+  <h3>Configuration Summary</h3>
+  <div id="summary-content">
+    <div class="summary-section">
+      <div class="summary-section-title">Switch</div>
+      <div class="summary-row">
+        <span class="summary-label">Pattern</span>
+        <span class="summary-value">Fully Converged</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Action Buttons -->
+  <button class="action-btn primary">📋 Load Example Template</button>
+  <div class="btn-row">
+    <button class="action-btn">📁 Import JSON</button>
+    <button class="action-btn">💾 Export Config</button>
+  </div>
+  <button class="reset-button">↺ Start Over</button>
+</div>
+```
+
+### 8. Toast Notifications
+
+```javascript
+function showToast(message, type = 'info', duration = 3000) {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.style.cssText = `
+    position: fixed; bottom: 20px; right: 20px;
+    padding: 12px 20px;
+    background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+    color: white; border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10000;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), duration);
+}
+```
+
+### 9. State Management Pattern
+
+```javascript
+const state = {
+  // UI state
+  theme: 'dark',
+  fontSize: 'medium',
+  
+  // Config state (preserve from current app.ts)
+  config: {
+    switch: { vendor, model, firmware, hostname, role, deployment_pattern },
+    vlans: [],
+    interfaces: [],
+    port_channels: [],
+    mlag: {},
+    bgp: {},
+    static_routes: []
   }
-  ```
+};
 
-#### 3.2 New Pattern-First Functions
+// Auto-save to localStorage
+function saveStateToLocalStorage() {
+  localStorage.setItem('wizardState', JSON.stringify(state));
+}
 
-| Function | Purpose |
-|----------|---------|
-| `selectPattern(pattern)` | Set pattern, show sidebar, reveal hardware section |
-| `showPatternSidebar(pattern)` | Display persistent thumbnail (150×100px) |
-| `expandPatternImage()` | Lightbox for full topology image |
-| `changePattern()` | Return to Phase 1 with confirmation |
-| `getPatternVlans(pattern)` | Return allowed VLANs for pattern |
-| `getPatternHostVlans(pattern)` | Return `tagged_vlans` string for pattern |
-
-#### 3.3 Navigation Rewrite
-
-- [ ] **Replace `showStep(stepNum)` with `showPhase(phase, subStep?)`**
-- [ ] **Replace `nextStep()` with `nextPhase()`**:
-  - Phase 1 → Phase 2.1
-  - Phase 2.1 → 2.2 → 2.3 → 2.4 → Phase 3
-  - Phase 3 → Review
-- [ ] **Update `updateNavigationUI()`** for phases
-
-#### 3.4 Pattern-Driven Logic
-
-- [ ] **`getPatternVlans(pattern)`**:
-  ```typescript
-  switch (pattern) {
-    case 'switchless': return ['management', 'compute'];
-    case 'switched': return ['management', 'compute', role === 'TOR1' ? 'storage_1' : 'storage_2'];
-    case 'fully_converged': return ['management', 'compute', 'storage_1', 'storage_2'];
-  }
-  ```
-
-- [ ] **`getPatternHostVlans(pattern)`**:
-  ```typescript
-  switch (pattern) {
-    case 'switchless': return '7,201';
-    case 'switched': return role === 'TOR1' ? '7,201,711' : '7,201,712';
-    case 'fully_converged': return '7,201,711,712';
-  }
-  ```
-
-#### 3.5 Keep From Current (Reference)
-
-| Keep | File | Reason |
-|------|------|--------|
-| `validateConfig()` | `validator.ts` | AJV schema validation works |
-| `exportJSON()` | `app.ts` | Output format unchanged |
-| `importJSON()` | `app.ts` | Input format unchanged |
-| VLAN form handling | `app.ts` | Wire to pattern logic |
-| BGP neighbor management | `app.ts` | Dynamic add/remove works |
+// Load on init
+function loadStateFromLocalStorage() {
+  const saved = localStorage.getItem('wizardState');
+  if (saved) Object.assign(state, JSON.parse(saved));
+}
+```
 
 ---
 
-### (4) CSS Updates
+## Implementation Plan
 
-**File:** `frontend/style.css`
+### Phase 1: CSS Foundation (Priority: High)
 
-- [ ] **Pattern card styles** — cards with images, selected/recommended states
-- [ ] **Pattern sidebar styles** — fixed position, thumbnail, expand button
-- [ ] **Phase navigation styles** — 3 phases, expandable sub-steps
-- [ ] **Lightbox styles** — full-screen image overlay
+**File:** `frontend/odin-theme.css` (replace current)
+
+| Task | Status |
+|------|--------|
+| Extract Odin CSS variables (dark/light themes) | ⏳ |
+| Copy `.step`, `.step-header`, `.step-number` styles | ⏳ |
+| Copy `.option-card` with selected/hover states | ⏳ |
+| Copy `.layout-flex`, `.steps-column`, `.summary-column` | ⏳ |
+| Copy `#summary-panel` sticky sidebar styles | ⏳ |
+| Copy `.wizard-progress` progress bar | ⏳ |
+| Copy `.breadcrumb-nav` styles | ⏳ |
+| Copy `.info-box`, `.hidden`, animations | ⏳ |
+| Copy responsive breakpoints (768px, 480px) | ⏳ |
+| Add light theme overrides | ⏳ |
+
+### Phase 2: HTML Restructure (Priority: High)
+
+**File:** `frontend/index.html` (major rewrite)
+
+| Task | Status |
+|------|--------|
+| Add `<div class="background-globes">` for subtle gradients | ⏳ |
+| Add `<nav class="breadcrumb-nav">` with 7 steps | ⏳ |
+| Add `<div id="page-statistics">` with view/export counters | ⏳ |
+| Wrap content in `.layout-flex > .steps-column + .summary-column` | ⏳ |
+| Convert phases to numbered sections (01-07) | ⏳ |
+| Build `#summary-panel` with progress, controls, summary, buttons | ⏳ |
+| Keep all form inputs and IDs intact for app.ts compatibility | ⏳ |
+
+**Section Mapping:**
+
+| Old Structure | New Section | Number |
+|---------------|-------------|--------|
+| Phase 1 | Pattern & Switch | 01 |
+| Phase 2.1 VLANs | VLANs | 02 |
+| Phase 2.2 Ports | Host Ports | 03 |
+| Phase 2.3 Redundancy | Redundancy | 04 |
+| Phase 3 Uplinks | Uplinks | 05 |
+| Phase 3 Routing | Routing | 06 |
+| Review | Review & Export | 07 |
+
+### Phase 3: TypeScript Updates (Priority: High)
+
+**File:** `frontend/src/app.ts` (modify, don't replace)
+
+| Task | Status |
+|------|--------|
+| Remove `showPhase()`, `nextPhase()`, `previousPhase()` | ⏳ |
+| Add `scrollToSection(id)` for breadcrumb navigation | ⏳ |
+| Add `updateProgress()` counting 7 sections | ⏳ |
+| Add `updateBreadcrumbs()` marking completed with ✓ | ⏳ |
+| Add `toggleTheme()` dark/light toggle | ⏳ |
+| Add `increaseFontSize()` / `decreaseFontSize()` | ⏳ |
+| Add `trackPageView()`, `trackExport()` for stats | ⏳ |
+| Update `updateConfigSummary()` for new sidebar format | ⏳ |
+| Keep all validation, export, import logic intact | ✅ |
+
+### Phase 4: Test Updates (Priority: High)
+
+**File:** `tests/wizard-e2e.spec.ts` (rewrite for new UI)
+
+| Test Category | Tests | Description |
+|---------------|-------|-------------|
+| 1. Page Load | 2 | Header, breadcrumbs visible |
+| 2. Breadcrumb Navigation | 3 | Click jumps to section, completed shows ✓ |
+| 3. Pattern Selection | 3 | Cards selectable, checkmark appears |
+| 4. Hardware Selection | 3 | Vendor/model dropdowns work |
+| 5. Summary Sidebar | 4 | Updates on changes, scrolls independently |
+| 6. Theme Toggle | 2 | Switches dark/light, persists |
+| 7. Font Controls | 2 | A-/A+ adjust size |
+| 8. VLAN Configuration | 3 | Pattern-driven, auto-naming |
+| 9. Port Configuration | 3 | Pattern-specific sections show |
+| 10. Routing | 2 | BGP/Static toggle |
+| 11. Export | 2 | JSON valid, download works |
+| 12. Import/Template | 3 | Loads correctly, populates form |
+| 13. Start Over | 1 | Resets with confirmation |
+| **Total** | **33** | |
+
+**Test Config (`playwright.config.ts`):**
+```typescript
+{
+  globalTimeout: 180000,    // 3 min total
+  timeout: 30000,           // 30s per test
+  expect: { timeout: 5000 },
+  actionTimeout: 10000,
+  workers: 1,
+  fullyParallel: false
+}
+```
 
 ---
 
-### (5) Example JSON Files
+## File Changes Summary
 
-**Location:** `frontend/examples/`
-
-| File | Pattern | VLANs | Host tagged_vlans |
-|------|---------|-------|-------------------|
-| `fully-converged/sample-tor1.json` | fully_converged | M, C, S1, S2 | `7,201,711,712` |
-| `fully-converged/sample-tor2.json` | fully_converged | M, C, S1, S2 | `7,201,711,712` |
-| `switched/sample-tor1.json` | switched | M, C, S1 | `7,201,711` |
-| `switched/sample-tor2.json` | switched | M, C, S2 | `7,201,712` |
-| `switchless/sample-tor1.json` | switchless | M, C | `7,201` |
-
-> **Critical Rule:** Peer-link `tagged_vlans` is always `7,201` (no storage) in all patterns.
-
----
-
-### (6) Tests
-
-**File:** `tests/wizard-e2e.spec.ts`
-
-- [ ] **Pattern-first flow test**:
-  ```typescript
-  test('pattern-first flow', async ({ page }) => {
-    await page.goto('/');
-    await page.click('.pattern-card[data-pattern="fully_converged"]');
-    await expect(page.locator('#pattern-sidebar')).toBeVisible();
-    await page.selectOption('#vendor-select', 'cisco');
-    await page.selectOption('#model-select', '93180YC-FX3');
-    await page.click('.role-card[data-role="TOR1"]');
-    await expect(page.locator('#hostname')).toHaveValue(/tor1/i);
-  });
-  ```
-
-- [ ] **Pattern-specific VLAN visibility tests**
-- [ ] **Peer-link storage VLAN exclusion test**
+| File | Action | Description |
+|------|--------|-------------|
+| `frontend/index.html` | **Rewrite** | New Odin layout structure |
+| `frontend/odin-theme.css` | **Replace** | Full Odin CSS with themes |
+| `frontend/src/app.ts` | **Modify** | Add scroll nav, theme, progress |
+| `frontend/src/state.ts` | Keep | No changes needed |
+| `frontend/src/types.ts` | Keep | No changes needed |
+| `frontend/src/utils.ts` | Keep | No changes needed |
+| `frontend/src/validator.ts` | Keep | No changes needed |
+| `tests/wizard-e2e.spec.ts` | **Rewrite** | Tests for new UI structure |
+| `playwright.config.ts` | Keep | Timeouts already configured |
 
 ---
 
-### (7) Backend (After Frontend)
+## Switch Logic to Preserve
 
-- [ ] **Cisco NX-OS template stubs** in `backend/templates/cisco/nxos/`:
-  - `full_config.j2`, `system.j2`, `vlan.j2`, `interface.j2`, `port_channel.j2`, `bgp.j2`
+The following logic from `app.ts` must remain unchanged:
 
-- [ ] **Verify Dell OS10 templates** work with new examples
+### Pattern-Driven Logic
+```typescript
+// getPatternVlans() - Returns VLANs allowed per pattern
+// getPatternHostVlans() - Returns tagged VLAN string per pattern
+// updateHostPortsSections() - Shows/hides port sections by pattern
+```
+
+### Configuration Building
+```typescript
+// collectConfig() - Builds StandardConfig object
+// collectVLANs() - Gathers VLAN entries
+// collectInterfaces() - Gathers interface entries
+// collectPortChannels() - Builds port-channel config
+// collectRouting() - BGP or static routes
+```
+
+### Validation
+```typescript
+// validateConfig() - Uses AJV against schema
+// showValidationError() / showSuccess() - Message display
+```
+
+### Import/Export
+```typescript
+// exportJSON() - Downloads config file
+// importJSON() - Parses uploaded file
+// loadTemplate() - Loads example configs
+```
 
 ---
 
-## Validation Checkpoints
+## Acceptance Criteria
 
-| After | Run | Expected |
-|-------|-----|----------|
-| HTML changes | `npm run dev` | Page loads, no console errors |
-| TypeScript changes | `npm run typecheck` | No type errors |
-| Pattern images added | Manual check | Images display in cards |
-| Example JSONs created | `npm run backend:test` | Schema validation passes |
-| Full flow | `npm run test` | E2E tests pass |
-
----
-
-## Acceptance Checklist
-
-| Design Doc Requirement | Verification |
-|------------------------|--------------|
-| Pattern visual cards first | Phase 1.1 shows 3 cards with images |
-| Vendor dropdown (not cards) | Phase 1.2 uses `<select>` |
-| Persistent pattern sidebar | Sidebar visible after pattern selection |
-| 3-phase navigation | Nav shows Phase 1, 2 (with sub-steps), 3 |
-| Pattern drives VLANs | Switchless hides S1/S2; Switched shows one |
-| Peer-link no storage | `tagged_vlans` on peer-link is always `7,201` |
-| Templates by pattern | Modal organized as Fully Converged / Switched / Switchless |
+| Requirement | Verification |
+|-------------|--------------|
+| Single-page scroll with 7 numbered sections | Scroll through all sections |
+| Sticky summary sidebar with own scrollbar | Sidebar stays pinned while scrolling |
+| Breadcrumb navigation with checkmarks | Click breadcrumb → scrolls to section |
+| Theme toggle (dark/light) | Button switches theme, persists |
+| Font size controls (A-/A+) | Text scales up/down |
+| Page statistics display | Shows view/export counts |
+| Pattern cards with selection checkmark | Blue glow + ✓ on selected |
+| Progress bar updates | Reflects completed sections |
+| All switch logic functional | Export produces valid JSON |
+| Tests pass with timeouts | 33 tests complete in <3 min |
 
 ---
 
-## Risk & Rollback
+## Risk Mitigation
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Breaking existing validation | Export fails | Keep `validator.ts` unchanged |
-| State migration issues | Form data lost | Backup v1-reference files |
-| Image fetch fails | Cards show broken images | Add fallback placeholder |
+| Breaking switch logic | Export fails | Keep all app.ts logic functions |
+| CSS conflicts | Layout broken | Use Odin classes exclusively |
+| Tests timeout | CI blocked | 30s per-test, 3min global |
+| Theme state lost | UX annoyance | Save to localStorage |
 
-**Rollback:** Restore from `*.v1-reference` backup files.
+**Rollback:**
+```bash
+git checkout HEAD~1 -- frontend/
+```
 
 ---
 
 ## Commands Reference
 
 ```bash
-# Frontend
-cd /workspace/frontend && npm install
-cd /workspace/frontend && npm run dev       # Start dev server
-cd /workspace/frontend && npm run typecheck # Check types
-cd /workspace/frontend && npm run build     # Build for production
+# Development
+cd /workspace/frontend && npm run dev -- --port 3000
 
-# Backend
-cd /workspace/backend && python -m src.cli validate <input.json>
-cd /workspace/backend && python -m src.cli generate <input.json> -o <output_dir>
-cd /workspace/backend && python -m pytest tests/ -v
+# Type Check
+cd /workspace/frontend && npm run typecheck
 
-# E2E Tests
-npm run test          # Run Playwright tests
-npm run test:ui       # Run with UI
+# Run Tests (with timeout)
+cd /workspace && timeout 180 npx playwright test --reporter=line
+
+# Build
+cd /workspace/frontend && npm run build
+
+# Git
+git add -A && git commit -m "Odin UI redesign"
 ```
 
 ---
 
-## Reference Files
+## Reference Links
 
-| Purpose | Location |
-|---------|----------|
+| Resource | URL |
+|----------|-----|
+| Odin Live | https://neilbird.github.io/Odin-for-AzureLocal/ |
+| Odin Source | `/workspace/archive/Odin-for-AzureLocal/` |
 | Design Doc | `.github/docs/AzureLocal_NetworkConfTool_Project_Design_Doc.md` |
 | JSON Schema | `backend/schema/standard.json` |
-| Current app.ts (reference) | `frontend/src/app.ts.v1-reference` (after backup) |
-| Current index.html (reference) | `frontend/index.html.v1-reference` (after backup) |
-| Azure Deployment Patterns | [GitHub](https://github.com/Azure/AzureLocal-Supportability/blob/main/TSG/Networking/Top-Of-Rack-Switch/Overview-Azure-Local-Deployment-Pattern.md) |
-
----
-
-**Next Step:** Start with **(1) Prep / Assets** — download pattern images.
+| Azure Patterns | [GitHub](https://github.com/Azure/AzureLocal-Supportability/blob/main/TSG/Networking/Top-Of-Rack-Switch/Overview-Azure-Local-Deployment-Pattern.md) |
