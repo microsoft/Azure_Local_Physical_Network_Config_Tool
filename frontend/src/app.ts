@@ -539,21 +539,21 @@ function updateProgressIndicator(): void {
   let completed = 0;
   const total = 10; // Total checkpoints
   
-  // Phase 1 checks
-  if (config.switch.deployment_pattern) completed++;
-  if (config.switch.vendor) completed++;
-  if (config.switch.model) completed++;
-  if (config.switch.role) completed++;
-  if (config.switch.hostname) completed++;
+  // Phase 1 checks - must have actual non-empty values
+  if (config.switch.deployment_pattern && config.switch.deployment_pattern !== '') completed++;
+  if (config.switch.vendor && config.switch.vendor !== '') completed++;
+  if (config.switch.model && config.switch.model !== '') completed++;
+  if (config.switch.role && config.switch.role !== '') completed++;
+  if (config.switch.hostname && config.switch.hostname !== '') completed++;
   
   // Phase 2 checks
   if (config.vlans && config.vlans.length > 0) completed++;
   if (config.interfaces && config.interfaces.length > 0) completed++;
   if (config.port_channels && config.port_channels.length > 0) completed++;
   
-  // Phase 3 checks
-  if (config.bgp?.asn || config.static_routes?.length) completed++;
-  if (config.bgp?.neighbors?.length || config.static_routes?.length) completed++;
+  // Phase 3 checks - must have actual values
+  if (config.bgp?.asn || (config.static_routes && config.static_routes.length > 0)) completed++;
+  if ((config.bgp?.neighbors && config.bgp.neighbors.length > 0) || (config.static_routes && config.static_routes.length > 0)) completed++;
   
   const percentage = Math.round((completed / total) * 100);
   
