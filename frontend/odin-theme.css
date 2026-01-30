@@ -176,58 +176,76 @@ body.font-large span {
 }
 
 /* ================================================================
-   BREADCRUMB NAVIGATION (Odin Style)
+   BREADCRUMB NAVIGATION (Odin Style) - STICKY
    ================================================================ */
 .breadcrumb-nav {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: var(--bg-primary);
+    background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
     flex-wrap: wrap;
+    /* Sticky positioning */
+    position: sticky;
+    top: 60px; /* Below header */
+    z-index: 90;
+    backdrop-filter: blur(8px);
 }
 
 .breadcrumb-item {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 14px;
+    padding: 8px 16px;
     background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 24px;
     color: var(--text-secondary);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     text-decoration: none;
 }
 
 .breadcrumb-item:hover {
     background: var(--bg-card-hover);
     color: var(--text-primary);
+    transform: translateY(-1px);
 }
 
 .breadcrumb-item.active {
     background: var(--accent-blue);
     border-color: var(--accent-blue);
     color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
+/* Completed step - green with checkmark */
 .breadcrumb-item.completed {
+    background: rgba(34, 197, 94, 0.15);
     border-color: var(--accent-green);
     color: var(--accent-green);
 }
 
 .breadcrumb-item.completed::before {
     content: "✓";
-    margin-right: 4px;
+    font-weight: bold;
+    margin-right: 2px;
+}
+
+/* Completed AND active */
+.breadcrumb-item.completed.active {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 .breadcrumb-separator {
     color: var(--text-muted);
-    font-size: 12px;
+    font-size: 14px;
 }
 
 /* ================================================================
@@ -843,24 +861,48 @@ body.font-large span {
     background: var(--bg-card-hover);
 }
 
-.btn-add {
+.btn-add,
+.btn-add-small {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    background: transparent;
-    border: 1px dashed var(--border-color);
-    border-radius: 8px;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 10px;
     color: var(--accent-blue);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 }
 
-.btn-add:hover {
+.btn-add:hover,
+.btn-add-small:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
     border-color: var(--accent-blue);
-    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.btn-add::before,
+.btn-add-small::before {
+    content: "+";
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Section header with add button */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-header h3 {
+    margin: 0;
 }
 
 /* ================================================================

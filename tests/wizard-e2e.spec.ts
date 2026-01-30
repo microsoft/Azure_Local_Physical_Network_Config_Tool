@@ -3,15 +3,18 @@ import { test, expect } from '@playwright/test';
 /**
  * Azure Local Switch Configuration Wizard - E2E Tests
  * 
- * Tests for Odin-style UI redesign with:
- * - Single-page scroll layout with 7 numbered sections
- * - Sticky summary sidebar with own scrollbar
- * - Breadcrumb navigation
- * - Theme toggle (dark/light)
- * - Font size controls
+ * Tests for Odin-style UI with single-page scroll layout.
  * 
- * TIMEOUT CONFIG: 30s per test, 3min global (playwright.config.ts)
+ * TIMEOUT CONFIG (playwright.config.ts):
+ * - Per test: 30 seconds
+ * - Global: 3 minutes  
+ * - Action: 10 seconds
+ * - Navigation: 15 seconds
+ * - Expect: 5 seconds
  */
+
+// Set default timeout for all tests in this file
+test.setTimeout(30000);
 
 // ============================================================================
 // TEST HELPERS
@@ -46,14 +49,14 @@ async function setupSwitch(page: any, options: {
 
 /** Load a template quickly */
 async function loadTemplate(page: any, pattern = 'Fully Converged', role = 'TOR1') {
-  await page.click('button:has-text("Load")');
-  await expect(page.locator('#template-modal')).toBeVisible();
+  await page.click('button:has-text("Load")', { timeout: 5000 });
+  await expect(page.locator('#template-modal')).toBeVisible({ timeout: 5000 });
   
   if (pattern === 'Fully Converged') {
-    await page.click(`.template-card:has-text("${role}")`);
+    await page.click(`.template-card:has-text("${role}")`, { timeout: 5000 });
   } else {
     const section = page.locator(`.template-category:has-text("${pattern}") + .template-grid`);
-    await section.locator(`.template-card:has-text("${role}")`).click();
+    await section.locator(`.template-card:has-text("${role}")`).click({ timeout: 5000 });
   }
   await page.waitForTimeout(300);
 }

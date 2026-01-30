@@ -93,16 +93,99 @@ function decreaseFontSize(): void {
 function scrollToSection(sectionId: string): void {
   const section = document.getElementById(sectionId);
   if (section) {
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Update active state in sidebar nav
-    document.querySelectorAll('.sidebar-nav-link').forEach(link => {
-      link.classList.remove('active');
+    // Scroll with offset for sticky header
+    const headerHeight = 120; // header + breadcrumb height
+    const elementPosition = section.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
+    
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
     });
-    const activeLink = document.querySelector(`.sidebar-nav-link[onclick*="${sectionId}"]`);
-    if (activeLink) {
-      activeLink.classList.add('active');
-    }
+    
+    // Update active breadcrumb
+    updateActiveBreadcrumb(sectionId);
   }
+}
+
+function updateActiveBreadcrumb(sectionId: string): void {
+  document.querySelectorAll('.breadcrumb-item').forEach(item => {
+    item.classList.remove('active');
+    if (item.getAttribute('data-section') === sectionId || 
+        item.getAttribute('href') === `#${sectionId}`) {
+      item.classList.add('active');
+    }
+  });
+}
+
+/**
+ * Update breadcrumb completion states based on form data
+ */
+function updateBreadcrumbCompletion(): void {
+  const breadcrumbs = document.querySelectorAll('.breadcrumb-item');
+  
+  breadcrumbs.forEach(item => {
+    const section = item.getAttribute('data-section') || item.getAttribute('href')?.replace('#', '');
+    let isComplete = false;
+    
+    switch (section) {
+      case 'phase1':
+        // Pattern & Switch complete if pattern, vendor, model, role selected
+        isComplete = !!(
+          document.querySelector('.pattern-card.selected') &&
+          (document.getElementById('vendor-select') as HTMLSelectElement)?.value &&
+          (document.getElementById('model-select') as HTMLSelectElement)?.value &&
+          document.querySelector('.role-card.selected')
+        );
+        break;
+      case 'phase2':
+        // VLANs complete if management VLAN has ID
+        const mgmtVlan = document.querySelector('.vlan-mgmt-id') as HTMLInputElement;
+        isComplete = !!(mgmtVlan?.value);
+        break;
+      case 'phase2-ports':
+        // Ports complete if any port range is set
+        const convergedStart = document.getElementById('intf-converged-start') as HTMLInputElement;
+        isComplete = !!(convergedStart?.value);
+        break;
+      case 'phase2-redundancy':
+        // Redundancy complete if MLAG keepalive is set
+        const keepaliveSrc = document.getElementById('mlag-keepalive-src') as HTMLInputElement;
+        isComplete = !!(keepaliveSrc?.value);
+        break;
+      case 'phase3':
+        // Routing complete if loopback IP is set
+        const loopback = document.getElementById('intf-loopback-ip') as HTMLInputElement;
+        isComplete = !!(loopback?.value);
+        break;
+      case 'review':
+        // Review is complete if we reach it with valid config
+        isComplete = document.querySelectorAll('.breadcrumb-item.completed').length >= 5;
+        break;
+    }
+    
+    if (isComplete) {
+      item.classList.add('completed');
+    } else {
+      item.classList.remove('completed');
+    }
+  });
+}
+
+// Call updateBreadcrumbCompletion periodically and on input changes
+function setupBreadcrumbTracking(): void {
+  // Update on any input change
+  document.addEventListener('input', () => {
+    setTimeout(updateBreadcrumbCompletion, 100);
+  });
+  
+  // Update on click (for card selections)
+  document.addEventListener('click', () => {
+    setTimeout(updateBreadcrumbCompletion, 100);
+  });
+  
+  // Initial update
+  setTimeout(updateBreadcrumbCompletion, 500);
 }
 
 function showToast(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
@@ -204,4 +287,5 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   setupVlanCardDelegation();
   setupRouteDelegation();
+  setupBreadcrumbTracking();
 });
