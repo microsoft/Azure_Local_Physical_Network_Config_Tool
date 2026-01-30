@@ -587,6 +587,31 @@ export function setupEventListeners(): void {
       }
     });
   }
+
+  // Routing type toggle (BGP/Static)
+  getElements<HTMLElement>('.routing-card').forEach(card => {
+    card.addEventListener('click', () => {
+      // Remove selected from all routing cards
+      getElements('.routing-card').forEach(c => c.classList.remove('selected'));
+      // Add selected to clicked card
+      card.classList.add('selected');
+      // Update state and toggle sections
+      const routingType = card.dataset.routing as 'bgp' | 'static';
+      if (routingType) {
+        state.config.routing_type = routingType;
+        updateRoutingSection();
+      }
+    });
+  });
+
+  // Delegate remove button clicks for dynamic entries
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('btn-remove-neighbor')) {
+      const entry = target.closest('.neighbor-entry');
+      if (entry) entry.remove();
+    }
+  });
 }
 
 // ============================================================================
@@ -732,7 +757,7 @@ export function nextPhase(): void {
  * Navigate to next substep within Phase 2
  */
 export function nextSubstep(): void {
-  const substeps = ['2.1', '2.2', '2.3', '2.4'];
+  const substeps = ['2.1', '2.2', '2.3'];
   const currentSubstep = getCurrentSubstep();
   const currentIndex = substeps.indexOf(currentSubstep);
   
@@ -749,7 +774,7 @@ export function nextSubstep(): void {
  * Navigate to previous substep or phase
  */
 export function previousSubstep(): void {
-  const substeps = ['2.1', '2.2', '2.3', '2.4'];
+  const substeps = ['2.1', '2.2', '2.3'];
   const currentSubstep = getCurrentSubstep();
   const currentIndex = substeps.indexOf(currentSubstep);
   
@@ -771,7 +796,7 @@ export function previousPhase(): void {
   if (currentPhase === 2) {
     showPhase(1);
   } else if (currentPhase === 3) {
-    showPhase(2, '2.4'); // Go to last substep of Phase 2
+    showPhase(2, '2.3'); // Go to last substep of Phase 2 (Redundancy)
   } else if (currentPhase === 'review') {
     showPhase(3);
   }
@@ -877,6 +902,7 @@ function updateNavigationUI(): void {
 
 function updateHostPortsSections(): void {
   const deploymentPattern = state.config.switch.deployment_pattern || 'fully_converged';
+  const role = state.config.switch.role || 'TOR1';
   const storagePurposes = ['storage_1', 'storage_2'];
   const displayElem = getElement('#deployment-pattern-display');
   if (displayElem) {
@@ -902,17 +928,22 @@ function updateHostPortsSections(): void {
     if (section) (section as HTMLElement).style.display = '';
     updateVlanDisplay('#converged-vlans-display', ['management', 'compute', ...storagePurposes]);
   } else if (deploymentPattern === 'switched') {
+    // Switched pattern: Management+Compute ports for all TORs
     const section = getElement('#port-section-mgmt-compute');
     if (section) (section as HTMLElement).style.display = '';
     updateVlanDisplay('#mgmt-compute-vlans-display', ['management', 'compute']);
     
-    const storage1Section = getElement('#port-section-storage1');
-    if (storage1Section) (storage1Section as HTMLElement).style.display = '';
-    updateVlanDisplay('#storage1-vlans-display', ['storage_1']);
-    
-    const storage2Section = getElement('#port-section-storage2');
-    if (storage2Section) (storage2Section as HTMLElement).style.display = '';
-    updateVlanDisplay('#storage2-vlans-display', ['storage_2']);
+    // Switched pattern: Show only the relevant storage section based on TOR role
+    // TOR1 → Storage 1 (VLAN 711), TOR2 → Storage 2 (VLAN 712)
+    if (role === 'TOR1') {
+      const storage1Section = getElement('#port-section-storage1');
+      if (storage1Section) (storage1Section as HTMLElement).style.display = '';
+      updateVlanDisplay('#storage1-vlans-display', ['storage_1']);
+    } else if (role === 'TOR2') {
+      const storage2Section = getElement('#port-section-storage2');
+      if (storage2Section) (storage2Section as HTMLElement).style.display = '';
+      updateVlanDisplay('#storage2-vlans-display', ['storage_2']);
+    }
   } else if (deploymentPattern === 'switchless') {
     const section = getElement('#port-section-switchless');
     if (section) (section as HTMLElement).style.display = '';
@@ -925,6 +956,7 @@ function updateVlanDisplay(containerId: string, purposes: string[]): void {
   let nativeFieldId = '';
   let taggedFieldId = '';
   let hintId = '';
+  let useNativeVlan99 = false; // Only for storage trunk ports, use dummy VLAN 99
   
   if (containerId === '#converged-vlans-display') {
     nativeFieldId = '#intf-converged-native';
@@ -934,12 +966,17 @@ function updateVlanDisplay(containerId: string, purposes: string[]): void {
     nativeFieldId = '#intf-mgmt-compute-native';
     taggedFieldId = '#intf-mgmt-compute-tagged';
     hintId = '#mgmt-compute-vlans-hint';
+    // Host trunk uses management VLAN as native (NOT 99)
   } else if (containerId === '#storage1-vlans-display') {
+    nativeFieldId = '#intf-storage1-native';
     taggedFieldId = '#intf-storage1-tagged';
     hintId = '#storage1-vlans-hint';
+    useNativeVlan99 = true; // Storage trunk uses dummy VLAN 99
   } else if (containerId === '#storage2-vlans-display') {
+    nativeFieldId = '#intf-storage2-native';
     taggedFieldId = '#intf-storage2-tagged';
     hintId = '#storage2-vlans-hint';
+    useNativeVlan99 = true; // Storage trunk uses dummy VLAN 99
   } else if (containerId === '#switchless-vlans-display') {
     nativeFieldId = '#intf-switchless-native';
     taggedFieldId = '#intf-switchless-tagged';
@@ -954,12 +991,19 @@ function updateVlanDisplay(containerId: string, purposes: string[]): void {
   const vlanIds = vlans.map(v => v.vlan_id).join(',');
   const vlanNames = vlans.map(v => `${v.vlan_id} (${v.name})`).join(', ');
 
-  // Populate native VLAN (default to management VLAN)
+  // Populate native VLAN
   if (nativeFieldId) {
     const nativeField = getElement<HTMLInputElement>(nativeFieldId);
-    if (nativeField && mgmtVlan) {
-      nativeField.value = String(mgmtVlan.vlan_id);
-      nativeField.placeholder = String(mgmtVlan.vlan_id);
+    if (nativeField) {
+      if (useNativeVlan99) {
+        // Switched pattern: use dummy VLAN 99
+        nativeField.value = '99';
+        nativeField.placeholder = '99';
+      } else if (mgmtVlan) {
+        // Other patterns: use management VLAN
+        nativeField.value = String(mgmtVlan.vlan_id);
+        nativeField.placeholder = String(mgmtVlan.vlan_id);
+      }
     }
   }
 
@@ -967,8 +1011,17 @@ function updateVlanDisplay(containerId: string, purposes: string[]): void {
   if (taggedFieldId) {
     const taggedField = getElement<HTMLInputElement>(taggedFieldId);
     if (taggedField) {
-      taggedField.value = vlanIds;
-      taggedField.placeholder = vlanIds || 'No VLANs configured';
+      // For storage VLANs, use defaults if not configured
+      if (purposes.includes('storage_1') && !vlanIds) {
+        taggedField.value = '711';
+        taggedField.placeholder = '711';
+      } else if (purposes.includes('storage_2') && !vlanIds) {
+        taggedField.value = '712';
+        taggedField.placeholder = '712';
+      } else {
+        taggedField.value = vlanIds;
+        taggedField.placeholder = vlanIds || 'No VLANs configured';
+      }
     }
   }
 
@@ -977,8 +1030,17 @@ function updateVlanDisplay(containerId: string, purposes: string[]): void {
     const hint = getElement(hintId);
     if (hint) {
       if (vlans.length === 0) {
-        hint.textContent = 'Complete Step 2 to configure VLANs';
-        (hint as HTMLElement).style.color = '#999';
+        // Show default hint for storage VLANs
+        if (purposes.includes('storage_1')) {
+          hint.textContent = '711 (Storage1_711)';
+          (hint as HTMLElement).style.color = '#4CAF50';
+        } else if (purposes.includes('storage_2')) {
+          hint.textContent = '712 (Storage2_712)';
+          (hint as HTMLElement).style.color = '#4CAF50';
+        } else {
+          hint.textContent = 'Complete Step 2 to configure VLANs';
+          (hint as HTMLElement).style.color = '#999';
+        }
       } else {
         hint.textContent = vlanNames;
         (hint as HTMLElement).style.color = '#4CAF50';
@@ -1058,9 +1120,16 @@ export function updateRoleBasedSections(): void {
 }
 
 export function updateRoutingSection(): void {
-  const routingType = state.config.routing_type;
-  toggleElement('#section-bgp', routingType === 'bgp');
-  toggleElement('#section-static-routes', routingType === 'static');
+  const routingType = state.config.routing_type || 'bgp';
+  const bgpSection = getElement('#bgp-section');
+  const staticSection = getElement('#static-section');
+  
+  if (bgpSection) {
+    (bgpSection as HTMLElement).style.display = routingType === 'bgp' ? '' : 'none';
+  }
+  if (staticSection) {
+    (staticSection as HTMLElement).style.display = routingType === 'static' ? '' : 'none';
+  }
 }
 
 // ============================================================================
@@ -1223,6 +1292,7 @@ function collectVlansByType(
 function collectHostPortsData(): void {
   const interfaces: Interface[] = [];
   const deploymentPattern = state.config.switch.deployment_pattern;
+  const role = state.config.switch.role || 'TOR1';
   
   const mgmtVlan = (state.config.vlans || []).find(v => v.purpose === 'management');
   const nativeVlan = mgmtVlan ? String(mgmtVlan.vlan_id) : '7';
@@ -1234,11 +1304,6 @@ function collectHostPortsData(): void {
 
   const mgmtComputeVlans = (state.config.vlans || [])
     .filter(v => !v.shutdown && (v.purpose === 'management' || v.purpose === 'compute'))
-    .map(v => v.vlan_id)
-    .join(',');
-
-  const storageVlans = (state.config.vlans || [])
-    .filter(v => v.purpose === 'storage_1' || v.purpose === 'storage_2')
     .map(v => v.vlan_id)
     .join(',');
 
@@ -1271,33 +1336,56 @@ function collectHostPortsData(): void {
     
     if (mgmtStart && mgmtEnd) {
       interfaces.push({
-        name: 'Management_Compute_To_Hosts',
+        name: 'Host_Trunk',
         type: 'Trunk',
         intf_type: 'Ethernet',
         start_intf: mgmtStart,
         end_intf: mgmtEnd,
-        native_vlan: mgmtNativeInput || nativeVlan,
+        native_vlan: mgmtNativeInput || nativeVlan, // Use management VLAN as native
         tagged_vlans: mgmtTaggedInput || mgmtComputeVlans
       } as Interface);
     }
 
-    const storageStart = getInputValue('#intf-storage-start');
-    const storageEnd = getInputValue('#intf-storage-end');
-    const storageNativeInput = getInputValue('#intf-storage-native');
-    const storageTaggedInput = getInputValue('#intf-storage-tagged');
-    
-    if (storageStart && storageEnd) {
-      const storageQos = getElement<HTMLInputElement>('#intf-storage-qos');
-      interfaces.push({
-        name: 'Storage_Ports',
-        type: 'Trunk',
-        intf_type: 'Ethernet',
-        start_intf: storageStart,
-        end_intf: storageEnd,
-        native_vlan: storageNativeInput || nativeVlan,
-        tagged_vlans: storageTaggedInput || storageVlans,
-        qos: storageQos?.checked || false
-      } as Interface);
+    // Storage Trunk: Only collect for the appropriate TOR role
+    // TOR1 → Storage 1 (VLAN 711), TOR2 → Storage 2 (VLAN 712)
+    if (role === 'TOR1') {
+      const storage1Start = getInputValue('#intf-storage1-start');
+      const storage1End = getInputValue('#intf-storage1-end');
+      const storage1NativeInput = getInputValue('#intf-storage1-native');
+      const storage1TaggedInput = getInputValue('#intf-storage1-tagged');
+      
+      if (storage1Start && storage1End) {
+        const storage1Qos = getElement<HTMLInputElement>('#intf-storage1-qos');
+        interfaces.push({
+          name: 'Storage_Trunk',
+          type: 'Trunk',
+          intf_type: 'Ethernet',
+          start_intf: storage1Start,
+          end_intf: storage1End,
+          native_vlan: storage1NativeInput || '99', // Storage trunk uses dummy VLAN 99
+          tagged_vlans: storage1TaggedInput || '711',
+          qos: storage1Qos?.checked || false
+        } as Interface);
+      }
+    } else if (role === 'TOR2') {
+      const storage2Start = getInputValue('#intf-storage2-start');
+      const storage2End = getInputValue('#intf-storage2-end');
+      const storage2NativeInput = getInputValue('#intf-storage2-native');
+      const storage2TaggedInput = getInputValue('#intf-storage2-tagged');
+      
+      if (storage2Start && storage2End) {
+        const storage2Qos = getElement<HTMLInputElement>('#intf-storage2-qos');
+        interfaces.push({
+          name: 'Storage_Trunk',
+          type: 'Trunk',
+          intf_type: 'Ethernet',
+          start_intf: storage2Start,
+          end_intf: storage2End,
+          native_vlan: storage2NativeInput || '99', // Storage trunk uses dummy VLAN 99
+          tagged_vlans: storage2TaggedInput || '712',
+          qos: storage2Qos?.checked || false
+        } as Interface);
+      }
     }
   } else if (deploymentPattern === 'switchless') {
     // Switchless: Only mgmt/compute ports (no storage network)
@@ -1308,7 +1396,7 @@ function collectHostPortsData(): void {
     
     if (start && end) {
       interfaces.push({
-        name: 'Management_Compute_To_Hosts',
+        name: 'Host_Trunk',
         type: 'Trunk',
         intf_type: 'Ethernet',
         start_intf: start,
@@ -1677,23 +1765,29 @@ function addBgpNeighbor(): void {
   const container = getElement('#bgp-neighbors');
   if (!container) return;
 
+  const neighborCount = container.querySelectorAll('.neighbor-entry').length + 1;
+  const defaultDesc = neighborCount === 1 ? 'TO_BORDER1' : `TO_BORDER${neighborCount}`;
+
   const entry = document.createElement('div');
   entry.className = 'neighbor-entry';
   entry.innerHTML = `
-    <div class="form-row">
+    <div class="neighbor-header">
+      <span class="neighbor-title">Neighbor ${neighborCount}</span>
+      <button type="button" class="btn-remove-neighbor" title="Remove this neighbor">✕</button>
+    </div>
+    <div class="neighbor-fields">
       <div class="form-group">
-        <label>Neighbor IP</label>
-        <input type="text" class="bgp-neighbor-ip" placeholder="10.0.0.1">
+        <label>Neighbor IP <span class="required">*</span></label>
+        <input type="text" class="bgp-neighbor-ip" placeholder="198.51.100.5">
+      </div>
+      <div class="form-group">
+        <label>Remote ASN <span class="required">*</span></label>
+        <input type="number" class="bgp-neighbor-asn" placeholder="65010">
       </div>
       <div class="form-group">
         <label>Description</label>
-        <input type="text" class="bgp-neighbor-desc" placeholder="Border_Router_1">
+        <input type="text" class="bgp-neighbor-desc" placeholder="${defaultDesc}">
       </div>
-      <div class="form-group">
-        <label>Remote ASN</label>
-        <input type="number" class="bgp-neighbor-asn" placeholder="65000">
-      </div>
-      <button type="button" class="btn-remove" data-remove-entry="neighbor">Remove</button>
     </div>
   `;
   container.appendChild(entry);
@@ -1703,7 +1797,7 @@ function addBgpNeighbor(): void {
 // TEMPLATE LIST RENDERING (dynamic)
 // ============================================================================
 
-const EXAMPLE_TEMPLATES = import.meta.glob('../examples/**/*.json', { eager: true, as: 'url' });
+const EXAMPLE_TEMPLATES = import.meta.glob('../examples/**/*.json', { eager: true, query: '?url', import: 'default' });
 
 type TemplateCard = {
   key: string;

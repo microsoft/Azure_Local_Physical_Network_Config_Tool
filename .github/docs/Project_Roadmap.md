@@ -35,12 +35,13 @@ Phase 1: Pattern & Switch
 Phase 2: Network
 ├── 2.1 VLANs (pattern-driven defaults)
 ├── 2.2 Host Ports (port range + VLAN assignment)
-├── 2.3 Redundancy (vPC/MLAG peer-link, keepalive)
-└── 2.4 Uplinks (L3 interfaces, Loopback)
+└── 2.3 Redundancy (vPC/MLAG peer-link, keepalive)
 
 Phase 3: Routing
-├── 3.1 BGP (ASN, neighbors) OR
-└── 3.2 Static Routes (destination, next-hop)
+├── Border Uplinks (L3 interfaces to border switches)
+├── Loopback (BGP router-id)
+├── BGP (ASN, neighbors) OR
+└── Static Routes (destination, next-hop)
 
 → Review & Export
 ```

@@ -94,7 +94,7 @@
       "intf_type": "Ethernet",
       "start_intf": "1/1/17",
       "end_intf": "1/1/18",
-      "native_vlan": "7",
+      "native_vlan": "99",
       "tagged_vlans": "712",
       "service_policy": {
         "qos_input": "AZLOCAL-QOS-MAP"

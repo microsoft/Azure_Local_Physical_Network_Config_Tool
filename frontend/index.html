@@ -177,14 +177,13 @@
                  ================================================================ -->
             <section id="phase2" class="phase">
                 <h2>Phase 2: Network Configuration</h2>
-                <p class="description">Configure VLANs, ports, redundancy, and uplinks</p>
+                <p class="description">Configure VLANs, ports, and redundancy</p>
                 
                 <!-- Sub-navigation for Phase 2 -->
                 <div class="sub-nav">
                     <button class="sub-nav-btn active" data-substep="2.1">2.1 VLANs</button>
                     <button class="sub-nav-btn" data-substep="2.2">2.2 Host Ports</button>
                     <button class="sub-nav-btn" data-substep="2.3">2.3 Redundancy</button>
-                    <button class="sub-nav-btn" data-substep="2.4">2.4 Uplinks</button>
                 </div>
 
                 <!-- 2.1 VLANs -->
@@ -435,8 +434,8 @@
                     </div>
 
                     <div class="port-card" id="port-section-storage1" style="display: none;">
-                        <h3>💾 Storage 1 Ports (Dedicated NIC → ToR1)</h3>
-                        <p class="section-note">Dedicated ports for Storage VLAN 1 (S1) traffic to ToR1</p>
+                        <h3>💾 Storage Trunk Ports (TOR1 → Storage Network 1)</h3>
+                        <p class="section-note">TOR1 only: Dedicated trunk ports for Storage VLAN 711 traffic</p>
                         
                         <div class="form-row">
                             <div class="form-group">
@@ -458,16 +457,21 @@
                         
                         <div class="form-row">
                             <div class="form-group">
+                                <label>Native/Untagged VLAN</label>
+                                <input type="number" id="intf-storage1-native" value="99" placeholder="99" min="2" max="4094">
+                                <small>Dummy/unused VLAN (default: 99)</small>
+                            </div>
+                            <div class="form-group">
                                 <label>Tagged VLAN</label>
-                                <input type="text" id="intf-storage1-tagged" placeholder="711" style="font-family: monospace;">
+                                <input type="text" id="intf-storage1-tagged" value="711" placeholder="711" style="font-family: monospace;">
                                 <small id="storage1-vlans-hint" style="color: #4CAF50;">Storage VLAN 1 only</small>
                             </div>
                         </div>
                     </div>
 
                     <div class="port-card" id="port-section-storage2" style="display: none;">
-                        <h3>💾 Storage 2 Ports (Dedicated NIC → ToR2)</h3>
-                        <p class="section-note">Dedicated ports for Storage VLAN 2 (S2) traffic to ToR2</p>
+                        <h3>💾 Storage Trunk Ports (TOR2 → Storage Network 2)</h3>
+                        <p class="section-note">TOR2 only: Dedicated trunk ports for Storage VLAN 712 traffic</p>
                         
                         <div class="form-row">
                             <div class="form-group">
@@ -489,8 +493,13 @@
                         
                         <div class="form-row">
                             <div class="form-group">
+                                <label>Native/Untagged VLAN</label>
+                                <input type="number" id="intf-storage2-native" value="99" placeholder="99" min="2" max="4094">
+                                <small>Dummy/unused VLAN (default: 99)</small>
+                            </div>
+                            <div class="form-group">
                                 <label>Tagged VLAN</label>
-                                <input type="text" id="intf-storage2-tagged" placeholder="712" style="font-family: monospace;">
+                                <input type="text" id="intf-storage2-tagged" value="712" placeholder="712" style="font-family: monospace;">
                                 <small id="storage2-vlans-hint" style="color: #4CAF50;">Storage VLAN 2 only</small>
                             </div>
                         </div>
@@ -603,20 +612,24 @@
                 
                 <div class="btn-group">
                     <button class="btn-back" onclick="previousSubstep()">← Back</button>
-                    <button class="btn-next" onclick="nextSubstep()">Next: Uplinks →</button>
+                    <button class="btn-next" onclick="nextPhase()">Next: Routing →</button>
                 </div>
                 </div>
+            </section>
 
-                <!-- 2.4 Uplinks -->
-                <div class="substep" data-substep="2.4">
-                    <h3>2.4 Uplink Configuration</h3>
-                    <p class="substep-description">Configure border uplinks and loopback</p>
+            <!-- ================================================================
+                 PHASE 3: ROUTING CONFIGURATION
+                 Includes Uplinks (border links + loopback) and BGP/Static routing
+                 ================================================================ -->
+            <section id="phase3" class="phase">
+                <h2>Phase 3: Routing Configuration</h2>
+                <p class="description">Configure uplinks, loopback, and routing protocol</p>
                 
                 <div class="form-container">
                     <!-- Border Uplinks -->
                     <div class="port-card">
                         <h3>🌐 Border Uplink Ports - L3</h3>
-                        <p class="section-note">Point-to-point links to border/spine switches</p>
+                        <p class="section-note">Point-to-point links to border/spine switches. These IPs are used as BGP neighbors.</p>
                         
                         <div class="form-row">
                             <div class="form-group">
@@ -643,7 +656,7 @@
                     <!-- Loopback Interface -->
                     <div class="port-card">
                         <h3>🔄 Loopback Interface</h3>
-                        <p class="section-note">Used as BGP router-id in next step</p>
+                        <p class="section-note">Used as BGP router-id</p>
                         
                         <div class="form-group">
                             <label>Loopback0 IP (CIDR) <span class="required">*</span></label>
@@ -651,24 +664,7 @@
                             <small>Must be /32 (single host)</small>
                         </div>
                     </div>
-                </div>
-                
-                <div class="btn-group">
-                    <button class="btn-back" onclick="previousSubstep()">← Back</button>
-                    <button class="btn-next" onclick="nextPhase()">Next: Routing →</button>
-                </div>
-                </div>
-            </section>
 
-            <!-- ================================================================
-                 PHASE 3: ROUTING CONFIGURATION
-                 Former Step 6 - BGP or static routing
-                 ================================================================ -->
-            <section id="phase3" class="phase">
-                <h2>Phase 3: Routing Configuration</h2>
-                <p class="description">Configure BGP or static routing</p>
-                
-                <div class="form-container">
                     <!-- Routing Type Selection -->
                     <div class="form-group">
                         <label>Routing Type</label>
@@ -688,35 +684,22 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Local ASN <span class="required">*</span></label>
-                                <input type="number" id="bgp-asn" placeholder="4200003501">
+                                <input type="number" id="bgp-asn" placeholder="65001">
                             </div>
                             <div class="form-group">
                                 <label>Router ID</label>
-                                <input type="text" id="bgp-router-id" placeholder="Auto from Loopback" readonly>
-                                <small>Auto-filled from Loopback0 IP</small>
+                                <input type="text" id="bgp-router-id" placeholder="203.0.113.1">
+                                <small>Auto-filled from Loopback0, editable if needed</small>
                             </div>
                         </div>
 
                         <h4>BGP Neighbors</h4>
+                        <p class="section-note">Add eBGP neighbors to border/spine switches</p>
+                        
                         <div id="bgp-neighbors">
-                            <div class="neighbor-entry">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Neighbor IP</label>
-                                        <input type="text" class="bgp-neighbor-ip" placeholder="198.51.100.5">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Description</label>
-                                        <input type="text" class="bgp-neighbor-desc" placeholder="TO_Border1">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Remote ASN</label>
-                                        <input type="number" class="bgp-neighbor-asn" placeholder="64811">
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- Neighbor entries will be added here -->
                         </div>
-                        <button type="button" class="btn-add" id="btn-add-neighbor">+ Add Neighbor</button>
+                        <button type="button" class="btn-add" id="btn-add-neighbor">+ Add BGP Neighbor</button>
                     </div>
 
                     <!-- Static Routes Configuration -->

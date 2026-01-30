@@ -813,16 +813,77 @@ textarea:focus-visible,
     margin-top: 15px;
 }
 
-/* Neighbor Entry */
+/* BGP Neighbor Entry - Improved Layout */
 .neighbor-entry {
-    background: white;
-    border: 1px solid #e0e0e0;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    position: relative;
+    padding: 0;
+    margin-bottom: 12px;
+    overflow: hidden;
 }
 
+.neighbor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.neighbor-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #475569;
+}
+
+.btn-remove-neighbor {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-remove-neighbor:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.neighbor-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    padding: 15px;
+}
+
+.neighbor-fields .form-group {
+    margin-bottom: 0;
+}
+
+.neighbor-fields .form-group label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.neighbor-fields .form-group input {
+    padding: 8px 10px;
+    font-size: 13px;
+}
+
+/* Legacy neighbor entry remove button (kept for backward compat) */
 .neighbor-entry .remove-btn {
     position: absolute;
     top: 10px;
