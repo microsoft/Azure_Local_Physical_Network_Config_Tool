@@ -42,8 +42,8 @@ async function setupSwitch(page: any, options: {
   await page.selectOption('#vendor-select', vendor);
   await page.selectOption('#model-select', model);
   
-  // Select role
-  await page.click(`.role-card[data-role="${role}"]`);
+  // Select role (class is .role-btn not .role-card)
+  await page.click(`.role-btn[data-role="${role}"]`);
   await page.waitForTimeout(100);
 }
 
@@ -166,7 +166,7 @@ test.describe('4. Hardware Selection', () => {
     await page.selectOption('#vendor-select', 'dellemc');
     await page.selectOption('#model-select', 's5248f-on');
     
-    await expect(page.locator('.role-card[data-role="TOR1"]')).toBeVisible();
+    await expect(page.locator('.role-btn[data-role="TOR1"]')).toBeVisible();
   });
 
   test('role selection auto-generates hostname', async ({ page }) => {

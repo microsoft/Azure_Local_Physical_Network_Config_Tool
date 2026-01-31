@@ -477,6 +477,62 @@ git checkout HEAD~1 -- frontend/
 
 ---
 
+## ⚠️ Critical Development Rules
+
+> [!WARNING]
+> These rules are mandatory for all developers and AI agents working on this project.
+
+### 1. NEVER Kill Node/Vite Processes
+
+```bash
+# ❌ FORBIDDEN - These commands will shut down the dev container
+pkill -f node
+pkill -f vite
+pkill -9 node
+kill $(pgrep -f vite)
+
+# ✅ SAFE - Use Ctrl+C in the terminal running the server
+# ✅ SAFE - Close the terminal tab running the server
+# ✅ SAFE - Use VS Code's "Stop" button on the terminal
+```
+
+**Reason:** The development environment runs inside a container where Node.js processes are essential for the container's operation. Killing these processes will terminate the entire dev container, disconnecting your session.
+
+### 2. ALWAYS Use Timeouts for Tests and Commands
+
+```bash
+# ❌ BAD - Can hang forever
+npx playwright test
+curl http://localhost:3000
+
+# ✅ GOOD - Always use timeout
+timeout 120 npx playwright test --reporter=line
+timeout 10 curl -s http://localhost:3000
+```
+
+**Test Timeout Requirements:**
+
+| Scope | Timeout | Purpose |
+|-------|---------|---------|
+| Global | 180s (3 min) | Maximum total test run |
+| Per-test | 30s | Individual test timeout |
+| Action | 10s | Single action (click, fill) |
+| Expect | 5s | Assertion timeout |
+
+**In test files:**
+```typescript
+// At file level
+test.setTimeout(30000);
+
+// Per action
+await page.click('#button', { timeout: 10000 });
+await expect(locator).toBeVisible({ timeout: 5000 });
+```
+
+**Reason:** Tests and network requests can hang indefinitely due to various issues (server not responding, network issues, race conditions). Timeouts ensure CI/CD pipelines don't get stuck and development sessions remain productive.
+
+---
+
 ## Commands Reference
 
 ```bash

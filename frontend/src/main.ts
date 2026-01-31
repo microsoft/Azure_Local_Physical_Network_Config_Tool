@@ -120,8 +120,10 @@ function updateActiveBreadcrumb(sectionId: string): void {
 
 /**
  * Update breadcrumb completion states based on form data
+ * Only marks sections as complete when ALL required fields are filled
+ * Exported so it can be called after template/config loading
  */
-function updateBreadcrumbCompletion(): void {
+export function updateBreadcrumbCompletion(): void {
   const breadcrumbs = document.querySelectorAll('.breadcrumb-item');
   
   breadcrumbs.forEach(item => {
@@ -130,37 +132,88 @@ function updateBreadcrumbCompletion(): void {
     
     switch (section) {
       case 'phase1':
-        // Pattern & Switch complete if pattern, vendor, model, role selected
+        // Pattern & Switch complete ONLY if ALL required fields filled:
+        // - Pattern selected
+        // - Vendor selected (not empty)
+        // - Model selected (not empty)
+        // - Role selected
+        // - Hostname has value
+        const patternSelected = document.querySelector('.pattern-card.selected');
+        const vendorSelect = document.getElementById('vendor-select') as HTMLSelectElement;
+        const modelSelect = document.getElementById('model-select') as HTMLSelectElement;
+        const roleSelected = document.querySelector('.role-btn.selected');
+        const hostnameInput = document.getElementById('hostname') as HTMLInputElement;
+        
         isComplete = !!(
-          document.querySelector('.pattern-card.selected') &&
-          (document.getElementById('vendor-select') as HTMLSelectElement)?.value &&
-          (document.getElementById('model-select') as HTMLSelectElement)?.value &&
-          document.querySelector('.role-card.selected')
+          patternSelected &&
+          vendorSelect?.value && vendorSelect.value !== '' &&
+          modelSelect?.value && modelSelect.value !== '' &&
+          roleSelected &&
+          hostnameInput?.value && hostnameInput.value.trim() !== ''
         );
         break;
+        
       case 'phase2':
-        // VLANs complete if management VLAN has ID
-        const mgmtVlan = document.querySelector('.vlan-mgmt-id') as HTMLInputElement;
-        isComplete = !!(mgmtVlan?.value);
+        // VLANs complete if management VLAN has a valid ID (number > 0)
+        // Note: VLAN inputs use class selectors, not IDs
+        const mgmtVlanInput = document.querySelector('.vlan-mgmt-id') as HTMLInputElement;
+        const mgmtVlanValue = mgmtVlanInput?.value?.trim();
+        isComplete = !!(mgmtVlanValue && parseInt(mgmtVlanValue, 10) > 0);
         break;
+        
       case 'phase2-ports':
-        // Ports complete if any port range is set
+        // Ports complete if converged/host port range is defined with BOTH start and end
         const convergedStart = document.getElementById('intf-converged-start') as HTMLInputElement;
-        isComplete = !!(convergedStart?.value);
+        const convergedEnd = document.getElementById('intf-converged-end') as HTMLInputElement;
+        isComplete = !!(
+          convergedStart?.value && convergedStart.value.trim() !== '' &&
+          convergedEnd?.value && convergedEnd.value.trim() !== ''
+        );
         break;
+        
       case 'phase2-redundancy':
-        // Redundancy complete if MLAG keepalive is set
+        // Redundancy complete if MLAG peer-link members and keepalive IPs are set
+        // Note: HTML uses id="mlag-peerlink-members" (no hyphen in peerlink)
+        const peerLinkMembers = document.getElementById('mlag-peerlink-members') as HTMLInputElement;
         const keepaliveSrc = document.getElementById('mlag-keepalive-src') as HTMLInputElement;
-        isComplete = !!(keepaliveSrc?.value);
+        const keepaliveDst = document.getElementById('mlag-keepalive-dst') as HTMLInputElement;
+        isComplete = !!(
+          peerLinkMembers?.value && peerLinkMembers.value.trim() !== '' &&
+          keepaliveSrc?.value && keepaliveSrc.value.trim() !== '' &&
+          keepaliveDst?.value && keepaliveDst.value.trim() !== ''
+        );
         break;
+        
       case 'phase3':
-        // Routing complete if loopback IP is set
-        const loopback = document.getElementById('intf-loopback-ip') as HTMLInputElement;
-        isComplete = !!(loopback?.value);
+        // Routing complete based on routing type
+        const routingType = (document.querySelector('input[name="routing-type"]:checked') as HTMLInputElement)?.value || 'bgp';
+        if (routingType === 'bgp') {
+          // BGP requires loopback IP, ASN, and router-id
+          const loopback = document.getElementById('intf-loopback-ip') as HTMLInputElement;
+          const asn = document.getElementById('bgp-asn') as HTMLInputElement;
+          const routerId = document.getElementById('bgp-router-id') as HTMLInputElement;
+          isComplete = !!(
+            loopback?.value && loopback.value.trim() !== '' &&
+            asn?.value && parseInt(asn.value, 10) > 0 &&
+            routerId?.value && routerId.value.trim() !== ''
+          );
+        } else {
+          // Static routing - just needs loopback IP
+          const loopback = document.getElementById('intf-loopback-ip') as HTMLInputElement;
+          isComplete = !!(loopback?.value && loopback.value.trim() !== '');
+        }
         break;
+        
       case 'review':
-        // Review is complete if we reach it with valid config
-        isComplete = document.querySelectorAll('.breadcrumb-item.completed').length >= 5;
+        // Review is complete when all other sections are complete
+        // Check if phase1, phase2, phase2-ports, phase2-redundancy, and phase3 are all done
+        const allOtherSectionsComplete = [
+          'phase1', 'phase2', 'phase2-ports', 'phase2-redundancy', 'phase3'
+        ].every(sectionId => {
+          const breadcrumb = document.querySelector(`.breadcrumb-item[data-section="${sectionId}"]`);
+          return breadcrumb?.classList.contains('completed');
+        });
+        isComplete = allOtherSectionsComplete;
         break;
     }
     

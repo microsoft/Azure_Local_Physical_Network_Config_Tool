@@ -31,6 +31,7 @@ import {
   parseIntSafe,
   formatJSON
 } from './utils';
+import { updateBreadcrumbCompletion } from './main';
 
 // ============================================================================
 // TYPES
@@ -298,8 +299,8 @@ export function selectRole(role: Role): void {
   // Update state
   state.config.switch.role = role;
   
-  // Update UI
-  getElements('.role-card').forEach(card => {
+  // Update UI - support both role-card and role-btn
+  getElements('.role-card, .role-btn').forEach(card => {
     card.classList.remove('selected');
     if (card.dataset.role === role) {
       card.classList.add('selected');
@@ -488,6 +489,9 @@ export function updateConfigSummary(): void {
   
   // Update progress
   updateProgressIndicator();
+  
+  // Update JSON preview in real-time
+  updateJsonPreview();
 }
 
 /**
@@ -576,7 +580,7 @@ export function initializeWizard(): void {
   });
   updateModelCards();
 
-  initializeCardGroup('.role-card', 'role', (value) => {
+  initializeCardGroup('.role-card, .role-btn', 'role', (value) => {
     state.config.switch.role = value as Role;
     updateRoleBasedSections();
   }, 'TOR1');
@@ -2317,6 +2321,17 @@ function populateReviewStep(): void {
   }
 }
 
+/**
+ * Update just the JSON preview (called by updateConfigSummary for real-time updates)
+ */
+function updateJsonPreview(): void {
+  const jsonPreview = getElement('#json-preview');
+  if (jsonPreview) {
+    const exportConfig = buildExportConfig();
+    jsonPreview.textContent = formatJSON(exportConfig);
+  }
+}
+
 function buildExportConfig(): Partial<StandardConfig> {
   const config: any = {
     switch: state.config.switch
@@ -2603,6 +2618,14 @@ function loadConfig(config: Partial<StandardConfig>): void {
   
   // Update config summary sidebar
   updateConfigSummary();
+  
+  // Update breadcrumb completion states after loading config
+  // Use setTimeout to ensure all DOM updates have settled
+  setTimeout(() => {
+    updateBreadcrumbCompletion();
+    // Run twice to catch "Review" section which depends on others being complete
+    setTimeout(updateBreadcrumbCompletion, 100);
+  }, 100);
   
   showPhase(1);
 }

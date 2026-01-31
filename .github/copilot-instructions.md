@@ -212,3 +212,54 @@ project/
 - Callouts: `> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`
 - Language tags on all code blocks
 - `<details>` for optional content
+
+---
+
+## ⚠️ CRITICAL: Environment Safety Rules
+
+> [!WARNING]
+> **MANDATORY** rules for all AI agents. Violations will break the development environment.
+
+### Rule 1: NEVER Kill Node/Vite Processes
+
+```bash
+# ❌ FORBIDDEN - Will shut down the dev container
+pkill -f node
+pkill -f vite
+pkill -9 node
+kill $(pgrep -f vite)
+```
+
+**Why:** The dev container depends on Node.js processes. Killing them terminates the container and disconnects your session.
+
+**Safe alternatives:**
+- Use Ctrl+C in the terminal running the server
+- Close the terminal tab
+- Let the process run (it doesn't hurt)
+
+### Rule 2: ALWAYS Use Timeouts
+
+```bash
+# ❌ BAD - Can hang forever
+npx playwright test
+curl http://localhost:3000
+
+# ✅ GOOD - Always wrap with timeout
+timeout 120 npx playwright test --reporter=line
+timeout 10 curl -s http://localhost:3000
+```
+
+**Test timeout requirements:**
+- Global: 180s (3 min max total)
+- Per-test: 30s
+- Per-action: 10s
+- Assertions: 5s
+
+```typescript
+// In test files
+test.setTimeout(30000);
+await page.click('#btn', { timeout: 10000 });
+await expect(loc).toBeVisible({ timeout: 5000 });
+```
+
+**Why:** Hanging processes block CI/CD pipelines and waste development time.

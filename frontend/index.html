@@ -118,14 +118,14 @@
                     </div>
                 </section>
                 
-                <!-- 1.2 Hardware Selection (dropdowns, hidden until pattern selected) -->
-                <section class="form-section hardware-selection">
-                    <h3>1.2 Select Hardware <span class="required">*</span></h3>
-                    <div class="form-container">
+                <!-- 1.2 Hardware & Role Selection - Compact Layout -->
+                <section class="form-section hardware-compact" id="hardware-section">
+                    <h3>1.2 Configure Switch <span class="required">*</span></h3>
+                    <div class="hardware-grid">
                         <div class="form-group">
                             <label>Vendor <span class="required">*</span></label>
                             <select id="vendor-select" onchange="onVendorChange()">
-                                <option value="">-- Select Vendor --</option>
+                                <option value="">Select Vendor</option>
                                 <option value="cisco">Cisco</option>
                                 <option value="dellemc">Dell EMC</option>
                             </select>
@@ -133,33 +133,19 @@
                         <div class="form-group">
                             <label>Model <span class="required">*</span></label>
                             <select id="model-select" onchange="onModelChange()" disabled>
-                                <option value="">-- Select Vendor First --</option>
+                                <option value="">Select Vendor First</option>
                             </select>
                         </div>
-                    </div>
-                </section>
-                
-                <!-- 1.3 Role Selection (hidden until hardware selected) -->
-                <section class="form-section role-selection" id="role-selection-section">
-                    <h3>1.3 Select Role <span class="required">*</span></h3>
-                    <div class="role-cards">
-                        <div class="role-card" data-role="TOR1" onclick="selectRole('TOR1')">
-                            <h4>🔵 TOR1</h4>
+                        <div class="form-group">
+                            <label>Role <span class="required">*</span></label>
+                            <div class="role-buttons">
+                                <button type="button" class="role-btn" data-role="TOR1" onclick="selectRole('TOR1')">🔵 TOR1</button>
+                                <button type="button" class="role-btn" data-role="TOR2" onclick="selectRole('TOR2')">🟢 TOR2</button>
+                            </div>
                         </div>
-                        <div class="role-card" data-role="TOR2" onclick="selectRole('TOR2')">
-                            <h4>🟢 TOR2</h4>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- 1.4 Hostname (shown after role selected) -->
-                <section class="form-section hostname-section" id="hostname-section">
-                    <h3>1.4 Hostname <span class="required">*</span></h3>
-                    <div class="form-container">
                         <div class="form-group">
                             <label>Hostname <span class="required">*</span></label>
-                            <input type="text" id="hostname" placeholder="Auto-generated based on role" oninput="updateHostname()" autocomplete="off">
-                            <small>Edit if needed, or leave as auto-generated</small>
+                            <input type="text" id="hostname" placeholder="Auto-generated" oninput="updateHostname()" autocomplete="off">
                         </div>
                     </div>
                 </section>

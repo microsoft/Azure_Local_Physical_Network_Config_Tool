@@ -616,6 +616,81 @@ body.font-large span {
     color: var(--text-primary);
 }
 
+/* ================================================================
+   COMPACT HARDWARE SECTION
+   ================================================================ */
+.hardware-compact {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.hardware-compact h3 {
+    margin-bottom: 16px;
+    font-size: 16px;
+}
+
+.hardware-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    align-items: end;
+}
+
+.hardware-grid .form-group {
+    margin-bottom: 0;
+}
+
+.hardware-grid .form-group label {
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+/* Role buttons in compact layout */
+.role-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.role-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.role-btn:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-card-hover);
+}
+
+.role-btn.selected {
+    border-color: var(--accent-blue);
+    background: var(--bg-selected);
+    color: var(--accent-blue);
+}
+
+/* Responsive: Stack on smaller screens */
+@media (max-width: 1200px) {
+    .hardware-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .hardware-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Checkbox styling */
 .checkbox-label {
     display: flex;
