@@ -1,6 +1,19 @@
 /**
  * Azure Local Switch Configuration Wizard - Main Application
- * TypeScript conversion from app.js
+ * 
+ * This module handles the wizard UI logic for configuring Azure Local ToR switches.
+ * It manages pattern selection, hardware configuration, VLAN setup, port assignments,
+ * MLAG redundancy, and routing configuration (BGP/Static).
+ * 
+ * Key Features:
+ * - Pattern-driven configuration (Switchless, Switched, Fully Converged)
+ * - Real-time config summary and JSON preview
+ * - Import/Export of Standard JSON configurations
+ * - Template loading for quick setup
+ * 
+ * @module app
+ * @version 2.0.0
+ * @date February 2026
  */
 
 import type {
@@ -34,7 +47,7 @@ import {
 import { updateBreadcrumbCompletion } from './main';
 
 // ============================================================================
-// TYPES
+// TYPES & INTERFACES
 // ============================================================================
 
 interface WizardState {
@@ -117,11 +130,19 @@ const VLAN_CONFIGS: Record<'management' | 'compute', VLANConfig> = {
 };
 
 // ============================================================================
-// PATTERN-FIRST FUNCTIONS
+// PATTERN SELECTION (Phase 1.1)
 // ============================================================================
 
 /**
- * Select deployment pattern - Phase 1.1
+ * Selects a deployment pattern and updates the UI accordingly.
+ * Pattern determines which VLANs are available and how storage traffic flows.
+ * 
+ * Patterns:
+ * - switchless: Storage direct host-to-host, no storage VLANs on switch
+ * - switched: Storage on dedicated ports, S1 on TOR1, S2 on TOR2
+ * - fully_converged: All VLANs on shared host ports
+ * 
+ * @param pattern - The deployment pattern to select
  */
 export function selectPattern(pattern: DeploymentPattern): void {
   // Update state
@@ -510,36 +531,72 @@ function capitalize(str: string): string {
 }
 
 /**
- * Update the progress indicator
+ * Update the progress indicator - 5 sections (20% each)
+ * Each section is either 0% or 20% (no partial credit)
  */
 function updateProgressIndicator(): void {
-  const config = state.config;
-  let completed = 0;
-  const total = 10; // Total checkpoints
+  let completedSections = 0;
+  const totalSections = 5;
   
-  // Phase 1 checks - must have actual non-empty values
-  if (config.switch.deployment_pattern) completed++;
-  if (config.switch.vendor) completed++;
-  if (config.switch.model) completed++;
-  if (config.switch.role) completed++;
-  if (config.switch.hostname) completed++;
+  // Section 1: Pattern & Switch (all 5 fields required)
+  const patternComplete = !!(
+    state.config.switch.deployment_pattern &&
+    state.config.switch.vendor &&
+    state.config.switch.model &&
+    state.config.switch.role &&
+    state.config.switch.hostname
+  );
+  if (patternComplete) completedSections++;
   
-  // Phase 2 checks
-  if (config.vlans && config.vlans.length > 0) completed++;
-  if (config.interfaces && config.interfaces.length > 0) completed++;
-  if (config.port_channels && config.port_channels.length > 0) completed++;
+  // Section 2: VLANs (management VLAN required)
+  const mgmtVlanInput = document.querySelector('.vlan-mgmt-id') as HTMLInputElement;
+  const vlanComplete = !!(mgmtVlanInput?.value && parseInt(mgmtVlanInput.value, 10) > 0);
+  if (vlanComplete) completedSections++;
   
-  // Phase 3 checks - must have actual values
-  if (config.bgp?.asn || (config.static_routes && config.static_routes.length > 0)) completed++;
-  if ((config.bgp?.neighbors && config.bgp.neighbors.length > 0) || (config.static_routes && config.static_routes.length > 0)) completed++;
+  // Section 3: Ports (converged or storage ports defined)
+  const convergedStart = getElement<HTMLInputElement>('#intf-converged-start');
+  const convergedEnd = getElement<HTMLInputElement>('#intf-converged-end');
+  const portsComplete = !!(
+    convergedStart?.value && convergedStart.value.trim() !== '' &&
+    convergedEnd?.value && convergedEnd.value.trim() !== ''
+  );
+  if (portsComplete) completedSections++;
   
-  const percentage = Math.round((completed / total) * 100);
+  // Section 4: Redundancy (peer-link + keepalive IPs)
+  const peerLinkMembers = getElement<HTMLInputElement>('#mlag-peerlink-members');
+  const keepaliveSrc = getElement<HTMLInputElement>('#mlag-keepalive-src');
+  const keepaliveDst = getElement<HTMLInputElement>('#mlag-keepalive-dst');
+  const redundancyComplete = !!(
+    peerLinkMembers?.value && peerLinkMembers.value.trim() !== '' &&
+    keepaliveSrc?.value && keepaliveSrc.value.trim() !== '' &&
+    keepaliveDst?.value && keepaliveDst.value.trim() !== ''
+  );
+  if (redundancyComplete) completedSections++;
+  
+  // Section 5: Routing (BGP or static routes)
+  const routingType = (document.querySelector('input[name="routing-type"]:checked') as HTMLInputElement)?.value || 'bgp';
+  let routingComplete = false;
+  if (routingType === 'bgp') {
+    const asn = getElement<HTMLInputElement>('#bgp-asn');
+    const routerId = getElement<HTMLInputElement>('#bgp-router-id');
+    routingComplete = !!(
+      asn?.value && parseInt(asn.value, 10) > 0 &&
+      routerId?.value && routerId.value.trim() !== ''
+    );
+  } else {
+    // Static routing - just needs at least one route
+    const routes = document.querySelectorAll('.static-route-entry');
+    routingComplete = routes.length > 0;
+  }
+  if (routingComplete) completedSections++;
+  
+  const percentage = Math.round((completedSections / totalSections) * 100);
   
   const fill = getElement('#progress-fill');
   const text = getElement('#progress-text');
   
   if (fill) (fill as HTMLElement).style.width = `${percentage}%`;
-  if (text) text.textContent = `${percentage}%`;
+  if (text) text.textContent = `${percentage}% (${completedSections}/${totalSections})`;
 }
 
 // ============================================================================
@@ -672,12 +729,34 @@ export function setupEventListeners(): void {
 
   const addMgmtBtn = getElement('#btn-add-mgmt');
   if (addMgmtBtn) {
-    addMgmtBtn.addEventListener('click', () => addDynamicVlan('management'));
+    addMgmtBtn.addEventListener('click', () => {
+      addDynamicVlan('management');
+      updateVlanRemoveButtonVisibility('management');
+    });
+  }
+
+  const removeMgmtBtn = getElement('#btn-remove-mgmt');
+  if (removeMgmtBtn) {
+    removeMgmtBtn.addEventListener('click', () => {
+      removeLastDynamicVlan('management');
+      updateVlanRemoveButtonVisibility('management');
+    });
   }
 
   const addComputeBtn = getElement('#btn-add-compute');
   if (addComputeBtn) {
-    addComputeBtn.addEventListener('click', () => addDynamicVlan('compute'));
+    addComputeBtn.addEventListener('click', () => {
+      addDynamicVlan('compute');
+      updateVlanRemoveButtonVisibility('compute');
+    });
+  }
+
+  const removeComputeBtn = getElement('#btn-remove-compute');
+  if (removeComputeBtn) {
+    removeComputeBtn.addEventListener('click', () => {
+      removeLastDynamicVlan('compute');
+      updateVlanRemoveButtonVisibility('compute');
+    });
   }
 
   const addNeighborBtn = getElement('#btn-add-neighbor');
@@ -1768,7 +1847,6 @@ function createVlanCardHTML(config: VLANConfig, index: number, vlanId: number): 
   return `
     <div class="card-header">
       <h4>${config.label} VLAN #${index + 1}</h4>
-      <button type="button" class="btn-remove-vlan" data-remove-vlan="true">× Remove</button>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -1777,7 +1855,7 @@ function createVlanCardHTML(config: VLANConfig, index: number, vlanId: number): 
       </div>
       <div class="form-group">
         <label>VLAN Name</label>
-        <input type="text" class="vlan-${config.cssClass}-name" value="${config.namePrefix}_${vlanId}" placeholder="${config.namePrefix}_${vlanId}" style="color: #666;">
+        <input type="text" class="vlan-${config.cssClass}-name" value="${config.namePrefix}_${vlanId}" placeholder="${config.namePrefix}_${vlanId}">
         <small>Optional - defaults to ${config.namePrefix}_{vlan_id}</small>
       </div>
     </div>
@@ -1817,7 +1895,6 @@ function populateVlanCard(card: HTMLElement, config: VLANConfig, data: VLAN): vo
     const customName = data.name || defaultName;
     nameInput.value = customName;
     nameInput.placeholder = defaultName;
-    nameInput.style.color = data.name ? '#333' : '#666';
   }
 
   if (ipInput && data.interface?.ip) {
@@ -1836,13 +1913,7 @@ function populateVlanCard(card: HTMLElement, config: VLANConfig, data: VLAN): vo
 }
 
 export function setupVlanCardDelegation(): void {
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    if (target.dataset.removeVlan === 'true') {
-      removeDynamicVlan(target);
-    }
-  });
-
+  // Handle VLAN ID changes to auto-update names
   document.addEventListener('change', (e) => {
     const target = e.target as HTMLInputElement;
     if (target.classList.contains('vlan-mgmt-id') || target.classList.contains('vlan-compute-id')) {
@@ -1851,11 +1922,39 @@ export function setupVlanCardDelegation(): void {
   });
 }
 
-function removeDynamicVlan(btn: HTMLElement): void {
-  const card = btn.closest('.vlan-card');
-  if (card && confirm('Remove this VLAN?')) {
-    card.remove();
+/**
+ * Remove the last VLAN card from a container
+ * Called by section-level Remove button in header
+ */
+function removeLastDynamicVlan(type: 'management' | 'compute'): void {
+  const containerId = type === 'management' ? '#mgmt-vlans-container' : '#compute-vlans-container';
+  const container = getElement(containerId);
+  if (!container) return;
+
+  const cards = container.querySelectorAll('.vlan-card');
+  if (cards.length > 1) {
+    const lastCard = cards[cards.length - 1];
+    if (lastCard && confirm('Remove the last VLAN?')) {
+      lastCard.remove();
+    }
   }
+}
+
+/**
+ * Toggle visibility of section Remove button based on VLAN count
+ * Show only when more than 1 VLAN exists
+ */
+function updateVlanRemoveButtonVisibility(type: 'management' | 'compute'): void {
+  const containerId = type === 'management' ? '#mgmt-vlans-container' : '#compute-vlans-container';
+  const buttonId = type === 'management' ? '#btn-remove-mgmt' : '#btn-remove-compute';
+  
+  const container = getElement(containerId);
+  const removeBtn = getElement<HTMLButtonElement>(buttonId);
+  
+  if (!container || !removeBtn) return;
+  
+  const cardCount = container.querySelectorAll('.vlan-card').length;
+  removeBtn.style.display = cardCount > 1 ? 'inline-flex' : 'none';
 }
 
 export function updateVlanName(idInput: HTMLInputElement, type?: string, prefix?: string): void {
@@ -1878,7 +1977,6 @@ export function updateVlanName(idInput: HTMLInputElement, type?: string, prefix?
     
     if (isAutoGenerated) {
       nameInput.value = newName;
-      nameInput.style.color = '#666';
     }
   }
 }
@@ -2332,6 +2430,12 @@ function updateJsonPreview(): void {
   }
 }
 
+/**
+ * Builds the export configuration object from current wizard state.
+ * Only includes sections that have data (non-empty arrays, defined objects).
+ * 
+ * @returns Partial StandardConfig ready for JSON export
+ */
 function buildExportConfig(): Partial<StandardConfig> {
   const config: any = {
     switch: state.config.switch
@@ -2353,6 +2457,7 @@ function buildExportConfig(): Partial<StandardConfig> {
     config.mlag = state.config.mlag;
   }
 
+  // Include routing based on selected type (BGP or Static)
   if (state.config.routing_type === 'bgp' && state.config.bgp) {
     if (state.config.prefix_lists && Object.keys(state.config.prefix_lists).length > 0) {
       config.prefix_lists = state.config.prefix_lists;
@@ -2365,6 +2470,14 @@ function buildExportConfig(): Partial<StandardConfig> {
   return config;
 }
 
+// ============================================================================
+// EXPORT FUNCTIONS
+// ============================================================================
+
+/**
+ * Exports the current configuration as a JSON file download.
+ * Filename is based on the configured hostname.
+ */
 function exportJSONFile(): void {
   const config = buildExportConfig();
   const filename = `${state.config.switch.hostname || 'switch'}-config.json`;
@@ -2372,6 +2485,9 @@ function exportJSONFile(): void {
   showSuccessMessage('Configuration exported successfully!');
 }
 
+/**
+ * Copies the current configuration JSON to the clipboard.
+ */
 async function copyJSON(): Promise<void> {
   const config = buildExportConfig();
   const success = await copyToClipboard(formatJSON(config));
@@ -2382,6 +2498,9 @@ async function copyJSON(): Promise<void> {
   }
 }
 
+/**
+ * Resets the wizard to initial state after user confirmation.
+ */
 export function startOver(): void {
   if (confirm('Are you sure you want to reset all configuration?')) {
     location.reload();
@@ -2389,9 +2508,13 @@ export function startOver(): void {
 }
 
 // ============================================================================
-// IMPORT
+// IMPORT FUNCTIONS
 // ============================================================================
 
+/**
+ * Handles file input change event for JSON import.
+ * Parses the uploaded file and loads it into the wizard.
+ */
 function handleFileImport(event: Event): void {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];

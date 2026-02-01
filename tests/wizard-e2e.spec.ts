@@ -49,7 +49,8 @@ async function setupSwitch(page: any, options: {
 
 /** Load a template quickly */
 async function loadTemplate(page: any, pattern = 'Fully Converged', role = 'TOR1') {
-  await page.click('button:has-text("Load")', { timeout: 5000 });
+  // Load Template button is now a <label>, not a <button>
+  await page.click('label:has-text("Load Template")', { timeout: 5000 });
   await expect(page.locator('#template-modal')).toBeVisible({ timeout: 5000 });
   
   if (pattern === 'Fully Converged') {
@@ -100,16 +101,40 @@ test.describe('2. Navigation', () => {
     }
   });
 
-  test('all 6 sections are visible on scroll', async ({ page }) => {
+  test('all 5 sections are visible on scroll', async ({ page }) => {
     await page.goto('/');
     
     // All wizard-step sections should be visible (single-page scroll)
+    // Note: There are 5 sections - Review section was removed
     await expect(page.locator('#phase1')).toBeVisible();
     await expect(page.locator('#phase2')).toBeVisible();
     await expect(page.locator('#phase2-ports')).toBeVisible();
     await expect(page.locator('#phase2-redundancy')).toBeVisible();
     await expect(page.locator('#phase3')).toBeVisible();
-    await expect(page.locator('#review')).toBeVisible();
+  });
+
+  test('breadcrumb clicks scroll to sections', async ({ page }) => {
+    await page.goto('/');
+    
+    // Click breadcrumb 02 VLANs - should scroll to phase2
+    // Breadcrumbs are <a> tags with class .breadcrumb-item
+    await page.click('a.breadcrumb-item[data-section="phase2"]');
+    await page.waitForTimeout(300);
+    
+    // Verify phase2 is in viewport (scrolled to)
+    const phase2 = page.locator('#phase2');
+    await expect(phase2).toBeInViewport();
+  });
+
+  test('progress bar starts at 0% on fresh page', async ({ page }) => {
+    await page.goto('/');
+    
+    // Progress bar should show 0% on fresh load (no default values)
+    const progressBar = page.locator('.progress-fill');
+    const width = await progressBar.evaluate(el => getComputedStyle(el).width);
+    
+    // Width should be 0px or very small (0%)
+    expect(parseInt(width)).toBeLessThanOrEqual(5);
   });
 });
 
@@ -318,7 +343,8 @@ test.describe('9. Template Loading', () => {
   test('template modal opens and closes', async ({ page }) => {
     await page.goto('/');
     
-    await page.click('button:has-text("Load")');
+    // Load Template is now a <label>, not a <button>
+    await page.click('label:has-text("Load Template")');
     await expect(page.locator('#template-modal')).toBeVisible();
     
     await page.click('.modal-close');
@@ -350,12 +376,17 @@ test.describe('9. Template Loading', () => {
 
 test.describe('10. Export Functionality', () => {
   
-  test('JSON preview is visible in review', async ({ page }) => {
+  test('JSON preview is visible by default', async ({ page }) => {
     await page.goto('/');
     await loadTemplate(page);
     
-    // Review section visible on single-page scroll
-    await expect(page.locator('#json-preview')).toBeVisible();
+    // JSON preview should be open by default (not collapsed)
+    const jsonPreview = page.locator('#json-preview');
+    await expect(jsonPreview).toBeVisible();
+    
+    // Verify it has actual content (not empty)
+    const jsonText = await jsonPreview.textContent();
+    expect(jsonText?.trim().length).toBeGreaterThan(10);
   });
 
   test('export button triggers download', async ({ page }) => {
@@ -368,6 +399,21 @@ test.describe('10. Export Functionality', () => {
     const download = await downloadPromise;
     
     expect(download.suggestedFilename()).toMatch(/\.json$/);
+  });
+
+  test('copy JSON button copies to clipboard', async ({ page, context }) => {
+    await page.goto('/');
+    await loadTemplate(page);
+    
+    // Grant clipboard permissions
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    
+    // Click copy button
+    await page.click('#btn-copy');
+    
+    // Verify clipboard content is valid JSON
+    const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
+    expect(() => JSON.parse(clipboardText)).not.toThrow();
   });
 });
 
@@ -495,15 +541,62 @@ test.describe('14. UI Components', () => {
     await expect(page.locator('.pattern-card[data-pattern="switched"]')).not.toHaveClass(/selected/);
   });
 
-  test('collapsible BMC section toggles', async ({ page }) => {
+  test('theme toggle switches between dark and light', async ({ page }) => {
+    await page.goto('/');
+    
+    // Check initial theme (dark by default)
+    const body = page.locator('body');
+    const initialTheme = await body.getAttribute('data-theme') || 'dark';
+    
+    // Click theme toggle (class selector, not ID)
+    await page.click('.theme-toggle');
+    await page.waitForTimeout(200);
+    
+    // Theme should change
+    const newTheme = await body.getAttribute('data-theme');
+    expect(newTheme).not.toBe(initialTheme);
+  });
+
+  test('font size controls adjust text', async ({ page }) => {
+    await page.goto('/');
+    
+    // Font size is controlled via CSS classes on body
+    const body = page.locator('body');
+    
+    // Click increase button (A+ text)
+    await page.click('button:has-text("A+")');
+    await page.waitForTimeout(200);
+    
+    // Body should have font-large class or changed from font-small
+    const hasLargeClass = await body.evaluate(el => 
+      el.classList.contains('font-large')
+    );
+    expect(hasLargeClass).toBeTruthy();
+  });
+
+  test('VLAN Add/Remove buttons in section header', async ({ page }) => {
     await page.goto('/');
     await loadTemplate(page);
     
-    // BMC section visible on single-page scroll
-    const bmcContent = page.locator('#vlan-bmc-section .collapsible-content');
-    await expect(bmcContent).not.toBeVisible();
+    // Add button should be visible
+    await expect(page.locator('#btn-add-mgmt')).toBeVisible();
     
-    await page.click('#vlan-bmc-section .collapsible-header');
-    await expect(bmcContent).toBeVisible();
+    // Remove button should be hidden initially (only 1 VLAN)
+    await expect(page.locator('#btn-remove-mgmt')).not.toBeVisible();
+    
+    // Add a VLAN
+    await page.click('#btn-add-mgmt');
+    await page.waitForTimeout(200);
+    
+    // Now Remove button should be visible (2 VLANs)
+    await expect(page.locator('#btn-remove-mgmt')).toBeVisible();
+    
+    // Remove the last VLAN
+    page.on('dialog', dialog => dialog.accept());
+    await page.click('#btn-remove-mgmt');
+    await page.waitForTimeout(200);
+    
+    // Remove button should be hidden again (1 VLAN)
+    await expect(page.locator('#btn-remove-mgmt')).not.toBeVisible();
   });
 });

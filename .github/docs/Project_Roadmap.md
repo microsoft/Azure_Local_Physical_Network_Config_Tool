@@ -1,446 +1,277 @@
 # Azure Local Switch Configuration Wizard — Project Roadmap
 
-**Version:** 9.0  
-**Date:** January 30, 2026  
-**Status:** Frontend Redesign (Odin UI Integration)  
+**Version:** 10.2  
+**Date:** February 1, 2026  
+**Status:** UI Polish Phase 2  
 **Reference:** [Odin for Azure Local](https://neilbird.github.io/Odin-for-AzureLocal/)
 
 ---
 
 ## Executive Summary
 
-Complete frontend redesign to match Odin for Azure Local's UI design system while preserving all existing switch configuration logic. The redesign adopts Odin's dark theme, single-page scroll layout, numbered sections, sticky summary sidebar, breadcrumb navigation, theme toggle, and accessibility controls.
+The Odin UI redesign is complete. Phase 1 UI Polish & Code Cleanup has been completed (breadcrumb active state, button styling, text contrast, typography system, CSS consolidation, E2E test refresh). Phase 2 focuses on VLAN section UX improvements (move Remove button to header, fix placeholder contrast), JSON preview enhancements, and final button styling consistency.
 
 ---
 
-## Architecture Overview
+## Open Issues
+
+| Issue | Description | Priority |
+|-------|-------------|----------|
+| **VLAN Remove button position** | Remove button inside each card; should be in section header next to Add | HIGH |
+| **Placeholder text contrast** | `--text-muted` (#64748b) too dark; should match input text (#f1f5f9) | HIGH |
+| **BMC section unnecessary** | BMC VLAN section not needed; remove from VLANs | MEDIUM |
+| **JSON preview too small** | Need larger min-height for better visibility | LOW |
+| **Copy button label** | "Copy to Clipboard" should be "Export Switch Config" | LOW |
+| **Start Over button style** | Doesn't match other action buttons | LOW |
+
+---
+
+## Architecture Overview (Updated)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │ HEADER: Azure Local Switch Configuration Wizard         [📋 Load] [📁 Import]  │
 ├─────────────────────────────────────────────────────────────────────────────────┤
-│ STATS: 👁️ Page Views: 268  📄 Configs Generated: 45  📦 Exports: 35            │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│ BREADCRUMB: [1 Pattern ✓] › [2 VLANs ✓] › [3 Ports] › [4 Redund] › ...        │
+│ BREADCRUMB: [1 Pattern] › [2 VLANs] › [3 Ports] › [4 Redund] › [5 Routing]    │
 ├────────────────────────────────────────────────────┬────────────────────────────┤
 │                                                    │                            │
 │  ┌──────────────────────────────────────────────┐  │  ┌──────────────────────┐  │
-│  │ 01 Pattern & Switch                          │  │  │ Progress    75% 5/7  │  │
-│  │ ┌─────────┐ ┌─────────┐ ┌─────────┐         │  │  │ ████████████░░░░░░░  │  │
+│  │ 01 Pattern & Switch                          │  │  │ Progress    80% 4/5  │  │
+│  │ ┌─────────┐ ┌─────────┐ ┌─────────┐         │  │  │ ████████████████░░░  │  │
 │  │ │Switchless│ │ Switched │ │Fully FC │         │  │  ├──────────────────────┤  │
 │  │ └─────────┘ └─────────┘ └─────────┘         │  │  │ Font: [A-][A+]       │  │
 │  │                                              │  │  │ Theme: [🌙/☀️]        │  │
 │  │ Vendor: [▼ Dell EMC    ]                    │  │  ├──────────────────────┤  │
 │  │ Model:  [▼ S5248F-ON   ]                    │  │  │ CONFIG SUMMARY       │  │
-│  │                                              │  │  │                      │  │
-│  │ Role: [TOR1 ✓] [TOR2]  Hostname: [______]  │  │  │ Pattern: Fully Conv  │  │
-│  └──────────────────────────────────────────────┘  │  │ Vendor: Dell EMC     │  │
-│                                                    │  │ Model: S5248F-ON     │  │
-│  ┌──────────────────────────────────────────────┐  │  │ Role: TOR1           │  │
-│  │ 02 VLANs                                     │  │  │ Hostname: tor1       │  │
-│  │                                              │  │  │                      │  │
-│  │ Management: [7    ] Name: [Infra_7    ]     │  │  │ VLANs: 4 configured  │  │
-│  │ Compute:    [201  ] Name: [Compute_201]     │  │  │ Routing: BGP         │  │
-│  │ Storage 1:  [711  ] Name: [Storage1_711]    │  │  └──────────────────────┘  │
-│  │ Storage 2:  [712  ] Name: [Storage2_712]    │  │                            │
-│  └──────────────────────────────────────────────┘  │  ┌──────────────────────┐  │
-│                                                    │  │ [📋 Load Template   ]│  │
-│  ┌──────────────────────────────────────────────┐  │  ├──────────────────────┤  │
-│  │ 03 Host Ports                                │  │  │[📁Import][💾Export] │  │
-│  │ ...                                          │  │  ├──────────────────────┤  │
-│  └──────────────────────────────────────────────┘  │  │ [   ↺ Start Over   ] │  │
-│                                                    │  └──────────────────────┘  │
-│  ... (04 Redundancy, 05 Uplinks, 06 Routing,      │                            │
-│       07 Review & Export)                          │                            │
+│  │                                              │  │  │ Pattern: Fully Conv  │  │
+│  │ Role: [TOR1 ✓] [TOR2]  Hostname: [______]  │  │  │ Vendor: Dell EMC     │  │
+│  └──────────────────────────────────────────────┘  │  │ ...                  │  │
+│                                                    │  ├──────────────────────┤  │
+│  ┌──────────────────────────────────────────────┐  │  │ 📄 JSON Preview [▼]  │  │
+│  │ 02 VLANs                                     │  │  │ ┌──────────────────┐ │  │
+│  │ ...                                          │  │  │ │ { "switch": ... }│ │  │
+│  └──────────────────────────────────────────────┘  │  │ └──────────────────┘ │  │
+│                                                    │  ├──────────────────────┤  │
+│  ┌──────────────────────────────────────────────┐  │  │ [💾 Export JSON    ] │  │
+│  │ 03 Host Ports                                │  │  │ [📋 Copy Clipboard ] │  │
+│  │ ...                                          │  │  │ [📋 Load Template  ] │  │
+│  └──────────────────────────────────────────────┘  │  │ [📁 Import JSON    ] │  │
+│                                                    │  │ [🔄 Start Over     ] │  │
+│  ┌──────────────────────────────────────────────┐  │  └──────────────────────┘  │
+│  │ 04 Redundancy                                │  │                            │
+│  │ ...                                          │  │                            │
+│  └──────────────────────────────────────────────┘  │                            │
+│                                                    │                            │
+│  ┌──────────────────────────────────────────────┐  │                            │
+│  │ 05 Routing                                   │  │                            │
+│  │ ...                                          │  │                            │
+│  └──────────────────────────────────────────────┘  │                            │
 │                                                    │                            │
 └────────────────────────────────────────────────────┴────────────────────────────┘
 ```
 
+**Key Changes:**
+- **5 sections** instead of 6 (Review removed)
+- **JSON Preview** moved to collapsible section in sidebar
+- **Export/Copy/Template/Import buttons** consolidated in sidebar
+- **Progress** tracks 5 sections (20% each)
+
 ---
 
-## Odin UI Design Patterns Analysis
+## Typography System (New)
 
-### 1. Layout Structure
-
-| Component | Odin Pattern | Implementation |
-|-----------|--------------|----------------|
-| **Container** | `.layout-flex` with 2 columns | Steps column + Summary column |
-| **Steps Column** | `.steps-column` flex:1 | All numbered sections |
-| **Summary Column** | `.summary-column` width:460px fixed | Sticky sidebar |
-| **Sidebar** | `position: sticky; top: 2rem; max-height: calc(100vh - 4rem); overflow-y: auto` | Own scrollbar, pinned |
-
-### 2. CSS Variables (Theme System)
+### Design Tokens
 
 ```css
-/* Dark Theme (Default) */
 :root {
-  --bg-dark: #000000;
-  --card-bg: #111111;
-  --card-bg-transparent: rgba(17, 17, 17, 0.95);
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  --accent-blue: #0078d4;
-  --accent-purple: #8b5cf6;
-  --success: #10b981;
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --subtle-bg: rgba(255, 255, 255, 0.03);
-  --subtle-bg-hover: rgba(255, 255, 255, 0.06);
-}
-
-/* Light Theme (Toggle) */
-body.light-theme {
-  --bg-dark: #f5f5f7;
-  --card-bg: #ffffff;
-  --text-primary: #1a1a1a;
-  --text-secondary: #6b7280;
-  --glass-border: rgba(0, 0, 0, 0.1);
-}
-```
-
-### 3. Step/Section Structure
-
-```html
-<section class="step" id="step-1">
-  <div class="step-header">
-    <span class="step-number">01</span>
-    <h2>Section Title</h2>
-  </div>
-  <!-- Content -->
-</section>
-```
-
-```css
-.step {
-  margin-bottom: 3rem;
-  background: var(--card-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 2rem;
-}
-
-.step-number {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--accent-blue);
-  background: rgba(0, 120, 212, 0.1);
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  border: 1px solid rgba(0, 120, 212, 0.2);
-}
-```
-
-### 4. Option Card Pattern
-
-```html
-<div class="option-card" data-value="value" onclick="selectOption('key', 'value')">
-  <div class="icon"><svg>...</svg></div>
-  <h3>Title</h3>
-  <p>Description</p>
-</div>
-```
-
-```css
-.option-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.option-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  transform: translateY(-2px);
-}
-
-.option-card.selected {
-  background: rgba(0, 120, 212, 0.1);
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 1px var(--accent-blue), 0 4px 20px rgba(0, 120, 212, 0.2);
-}
-
-.option-card.selected::after {
-  content: '✓';
-  position: absolute;
-  top: 8px; right: 8px;
-  width: 20px; height: 20px;
-  background: var(--accent-blue);
-  border-radius: 50%;
-  color: white;
-  font-size: 12px;
-}
-```
-
-### 5. Progress Bar
-
-```html
-<div class="wizard-progress">
-  <div class="wizard-progress__top">
-    <div class="wizard-progress__title">Progress</div>
-    <div class="wizard-progress__text">75% • 5/7</div>
-  </div>
-  <div class="wizard-progress__bar">
-    <div class="wizard-progress__fill" style="width: 75%"></div>
-  </div>
-</div>
-```
-
-```css
-.wizard-progress__fill {
-  height: 100%;
-  background: linear-gradient(90deg, rgba(0, 120, 212, 0.85), rgba(139, 92, 246, 0.85));
-}
-```
-
-### 6. Breadcrumb Navigation
-
-```html
-<nav class="breadcrumb-nav">
-  <div class="breadcrumb-container">
-    <button class="breadcrumb-item completed" onclick="scrollToStep('step-1')">
-      <span class="breadcrumb-number">1</span>
-      <span class="breadcrumb-label">Pattern</span>
-      <span class="breadcrumb-check">✓</span>
-    </button>
-    <span class="breadcrumb-separator">›</span>
-    <!-- More items -->
-  </div>
-</nav>
-```
-
-### 7. Summary Sidebar Structure
-
-```html
-<div id="summary-panel">
-  <!-- Progress -->
-  <div class="wizard-progress">...</div>
+  /* Type Scale (rem for accessibility) */
+  --text-xs: 0.75rem;     /* 12px - captions, hints */
+  --text-sm: 0.875rem;    /* 14px - body, labels */
+  --text-base: 1rem;      /* 16px - card titles */
+  --text-lg: 1.125rem;    /* 18px - section titles */
+  --text-xl: 1.5rem;      /* 24px - page title */
   
-  <!-- Accessibility Controls -->
-  <div class="controls-row">
-    <span>Font: <button>A−</button> <button>A+</button></span>
-    <span>Theme: <button id="theme-toggle">🌙</button></span>
-  </div>
+  /* Font Weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
   
-  <!-- Summary Content -->
-  <h3>Configuration Summary</h3>
-  <div id="summary-content">
-    <div class="summary-section">
-      <div class="summary-section-title">Switch</div>
-      <div class="summary-row">
-        <span class="summary-label">Pattern</span>
-        <span class="summary-value">Fully Converged</span>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Action Buttons -->
-  <button class="action-btn primary">📋 Load Example Template</button>
-  <div class="btn-row">
-    <button class="action-btn">📁 Import JSON</button>
-    <button class="action-btn">💾 Export Config</button>
-  </div>
-  <button class="reset-button">↺ Start Over</button>
-</div>
-```
-
-### 8. Toast Notifications
-
-```javascript
-function showToast(message, type = 'info', duration = 3000) {
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.style.cssText = `
-    position: fixed; bottom: 20px; right: 20px;
-    padding: 12px 20px;
-    background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-    color: white; border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    z-index: 10000;
-  `;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), duration);
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
 }
 ```
 
-### 9. State Management Pattern
+### Hierarchy
 
-```javascript
-const state = {
-  // UI state
-  theme: 'dark',
-  fontSize: 'medium',
-  
-  // Config state (preserve from current app.ts)
-  config: {
-    switch: { vendor, model, firmware, hostname, role, deployment_pattern },
-    vlans: [],
-    interfaces: [],
-    port_channels: [],
-    mlag: {},
-    bgp: {},
-    static_routes: []
-  }
-};
-
-// Auto-save to localStorage
-function saveStateToLocalStorage() {
-  localStorage.setItem('wizardState', JSON.stringify(state));
-}
-
-// Load on init
-function loadStateFromLocalStorage() {
-  const saved = localStorage.getItem('wizardState');
-  if (saved) Object.assign(state, JSON.parse(saved));
-}
-```
+| Element | Size | Weight | Use Case |
+|---------|------|--------|----------|
+| Page Title (h1) | `--text-xl` | `--font-bold` | Main header only |
+| Section Title (h2) | `--text-lg` | `--font-semibold` | Step headers (01-05) |
+| Card Title (h3) | `--text-base` | `--font-semibold` | Option cards, subsections |
+| Sidebar Header (h4) | `--text-sm` | `--font-semibold` | Summary section titles |
+| Body Text | `--text-sm` | `--font-normal` | Descriptions, paragraphs |
+| Form Labels | `--text-sm` | `--font-medium` | Input labels |
+| Helper Text | `--text-xs` | `--font-normal` | Hints, captions, small text |
+| Buttons | `--text-sm` | `--font-semibold` | All buttons |
 
 ---
 
 ## Implementation Plan
 
-### Phase 1: CSS Foundation (Priority: High)
+### Phase 1: VLAN Section UX (Priority: HIGH) — CURRENT
 
-**File:** `frontend/odin-theme.css` (replace current)
+**1.1 Move Remove Button to Section Header**
 
-| Task | Status |
-|------|--------|
-| Extract Odin CSS variables (dark/light themes) | ⏳ |
-| Copy `.step`, `.step-header`, `.step-number` styles | ⏳ |
-| Copy `.option-card` with selected/hover states | ⏳ |
-| Copy `.layout-flex`, `.steps-column`, `.summary-column` | ⏳ |
-| Copy `#summary-panel` sticky sidebar styles | ⏳ |
-| Copy `.wizard-progress` progress bar | ⏳ |
-| Copy `.breadcrumb-nav` styles | ⏳ |
-| Copy `.info-box`, `.hidden`, animations | ⏳ |
-| Copy responsive breakpoints (768px, 480px) | ⏳ |
-| Add light theme overrides | ⏳ |
-
-### Phase 2: HTML Restructure (Priority: High)
-
-**File:** `frontend/index.html` (major rewrite)
+**Files:** `frontend/index.html`, `frontend/src/app.ts`, `frontend/odin-theme.css`
 
 | Task | Status |
 |------|--------|
-| Add `<div class="background-globes">` for subtle gradients | ⏳ |
-| Add `<nav class="breadcrumb-nav">` with 7 steps | ⏳ |
-| Add `<div id="page-statistics">` with view/export counters | ⏳ |
-| Wrap content in `.layout-flex > .steps-column + .summary-column` | ⏳ |
-| Convert phases to numbered sections (01-07) | ⏳ |
-| Build `#summary-panel` with progress, controls, summary, buttons | ⏳ |
-| Keep all form inputs and IDs intact for app.ts compatibility | ⏳ |
+| Add `.btn-group` container in section header with "+ Add" then "− Remove" | ⏳ |
+| Remove button hidden when only 1 VLAN exists | ⏳ |
+| Remove "× Remove" button from `createVlanCardHTML()` card-header | ⏳ |
+| Add click handlers for `#btn-remove-mgmt` and `#btn-remove-compute` | ⏳ |
+| Toggle Remove button visibility based on VLAN count (show when >1) | ⏳ |
+| Add `.btn-group` flexbox CSS styling | ⏳ |
 
-**Section Mapping:**
+**1.2 Fix Placeholder/Helper Text Contrast**
 
-| Old Structure | New Section | Number |
-|---------------|-------------|--------|
-| Phase 1 | Pattern & Switch | 01 |
-| Phase 2.1 VLANs | VLANs | 02 |
-| Phase 2.2 Ports | Host Ports | 03 |
-| Phase 2.3 Redundancy | Redundancy | 04 |
-| Phase 3 Uplinks | Uplinks | 05 |
-| Phase 3 Routing | Routing | 06 |
-| Review | Review & Export | 07 |
-
-### Phase 3: TypeScript Updates (Priority: High)
-
-**File:** `frontend/src/app.ts` (modify, don't replace)
+**File:** `frontend/odin-theme.css`
 
 | Task | Status |
 |------|--------|
-| Remove `showPhase()`, `nextPhase()`, `previousPhase()` | ⏳ |
-| Add `scrollToSection(id)` for breadcrumb navigation | ⏳ |
-| Add `updateProgress()` counting 7 sections | ⏳ |
-| Add `updateBreadcrumbs()` marking completed with ✓ | ⏳ |
-| Add `toggleTheme()` dark/light toggle | ⏳ |
-| Add `increaseFontSize()` / `decreaseFontSize()` | ⏳ |
-| Add `trackPageView()`, `trackExport()` for stats | ⏳ |
-| Update `updateConfigSummary()` for new sidebar format | ⏳ |
-| Keep all validation, export, import logic intact | ✅ |
+| Change `--text-muted` from `#64748b` to `#f1f5f9` | ⏳ |
+| Placeholder text now matches filled input text (white) | ⏳ |
 
-### Phase 4: Test Updates (Priority: High)
+**1.3 Remove BMC Section**
 
-**File:** `tests/wizard-e2e.spec.ts` (rewrite for new UI)
+**File:** `frontend/index.html`
 
-| Test Category | Tests | Description |
-|---------------|-------|-------------|
-| 1. Page Load | 2 | Header, breadcrumbs visible |
-| 2. Breadcrumb Navigation | 3 | Click jumps to section, completed shows ✓ |
-| 3. Pattern Selection | 3 | Cards selectable, checkmark appears |
-| 4. Hardware Selection | 3 | Vendor/model dropdowns work |
-| 5. Summary Sidebar | 4 | Updates on changes, scrolls independently |
-| 6. Theme Toggle | 2 | Switches dark/light, persists |
-| 7. Font Controls | 2 | A-/A+ adjust size |
-| 8. VLAN Configuration | 3 | Pattern-driven, auto-naming |
-| 9. Port Configuration | 3 | Pattern-specific sections show |
-| 10. Routing | 2 | BGP/Static toggle |
-| 11. Export | 2 | JSON valid, download works |
-| 12. Import/Template | 3 | Loads correctly, populates form |
-| 13. Start Over | 1 | Resets with confirmation |
-| **Total** | **33** | |
+| Task | Status |
+|------|--------|
+| Delete entire BMC VLAN collapsible section (`#vlan-bmc-section`) | ⏳ |
 
-**Test Config (`playwright.config.ts`):**
-```typescript
-{
-  globalTimeout: 180000,    // 3 min total
-  timeout: 30000,           // 30s per test
-  expect: { timeout: 5000 },
-  actionTimeout: 10000,
-  workers: 1,
-  fullyParallel: false
-}
-```
+### Phase 2: Sidebar Polish (Priority: MEDIUM)
+
+**2.1 JSON Preview Sizing**
+
+**File:** `frontend/odin-theme.css`
+
+| Task | Status |
+|------|--------|
+| Increase `#json-preview` min-height to ~400px | ⏳ |
+
+**2.2 Button Labeling**
+
+**File:** `frontend/index.html`
+
+| Task | Status |
+|------|--------|
+| Change "📋 Copy to Clipboard" to "📤 Export Switch Config" | ⏳ |
+
+**2.3 Start Over Button Styling**
+
+**File:** `frontend/odin-theme.css`
+
+| Task | Status |
+|------|--------|
+| Style `#btn-reset` to match Export/Copy buttons | ⏳ |
+
+### Phase 3: Test Updates (Priority: MEDIUM)
+
+**File:** `tests/wizard-e2e.spec.ts`
+
+| Task | Status |
+|------|--------|
+| Update Remove button selector to `#btn-remove-mgmt` | ⏳ |
+| Remove BMC collapsible test | ⏳ |
+| Update copy button text selector | ⏳ |
 
 ---
 
-## File Changes Summary
+## Standard Development Practices
+
+> [!IMPORTANT]
+> These practices must be followed after completing any implementation phase.
+
+### 1. Code Review & Cleanup
+
+After finishing all tasks in a phase:
+- Review the entire `frontend/` folder for cleanliness
+- Ensure logic is clear and well-organized
+- Remove any duplicates, unused code, or dead imports
+- Verify no conflicting styles or redundant CSS
+
+### 2. Test Maintenance
+
+After any code changes:
+- Refresh and refine unit tests to match current implementation
+- Remove unused, outdated, or invalidated tests
+- Keep only the most relevant and focused test cases
+- Ensure all tests pass with proper timeouts
+
+### 3. Code Documentation
+
+For all code changes:
+- Add JSDoc comments to exported functions
+- Include inline comments for complex logic
+- Document any workarounds or non-obvious decisions
+- Add section headers (`// === SECTION NAME ===`) for organization
+- Write comments that help future debugging and review
+
+---
+
+## Section Mapping (Final)
+
+| Number | Section | Completion Criteria |
+|--------|---------|---------------------|
+| 01 | Pattern & Switch | Pattern + Vendor + Model + Role + Hostname |
+| 02 | VLANs | Management VLAN ID > 0 |
+| 03 | Host Ports | Converged OR Storage port range defined |
+| 04 | Redundancy | Peer-link + Keepalive IPs configured |
+| 05 | Routing | BGP (ASN + Router ID) OR Static routes |
+
+---
+
+## Files to Modify
 
 | File | Action | Description |
 |------|--------|-------------|
-| `frontend/index.html` | **Rewrite** | New Odin layout structure |
-| `frontend/odin-theme.css` | **Replace** | Full Odin CSS with themes |
-| `frontend/src/app.ts` | **Modify** | Add scroll nav, theme, progress |
-| `frontend/src/state.ts` | Keep | No changes needed |
-| `frontend/src/types.ts` | Keep | No changes needed |
-| `frontend/src/utils.ts` | Keep | No changes needed |
-| `frontend/src/validator.ts` | Keep | No changes needed |
-| `tests/wizard-e2e.spec.ts` | **Rewrite** | Tests for new UI structure |
-| `playwright.config.ts` | Keep | Timeouts already configured |
+| `frontend/index.html` | **Modify** | Add btn-group for Add/Remove, remove BMC section, rename copy button |
+| `frontend/odin-theme.css` | **Modify** | Fix --text-muted contrast, add btn-group CSS, enlarge JSON preview, style Start Over |
+| `frontend/src/app.ts` | **Modify** | Remove button from createVlanCardHTML, add section Remove handlers |
+| `tests/wizard-e2e.spec.ts` | **Modify** | Update Remove button selector, remove BMC test |
 
 ---
 
-## Switch Logic to Preserve
+## Files to Keep (No Changes)
 
-The following logic from `app.ts` must remain unchanged:
+| File | Reason |
+|------|--------|
+| `frontend/src/state.ts` | State management working correctly |
+| `frontend/src/types.ts` | TypeScript interfaces stable |
+| `frontend/src/utils.ts` | Utility functions stable |
+| `frontend/src/validator.ts` | Validation logic stable |
+| `frontend/src/main.ts` | Entry point stable |
+| `frontend/vite.config.ts` | Build config stable |
+| `frontend/tsconfig.json` | TypeScript config stable |
+| `frontend/package.json` | Dependencies stable |
+| `playwright.config.ts` | Test config has correct timeouts |
 
-### Pattern-Driven Logic
-```typescript
-// getPatternVlans() - Returns VLANs allowed per pattern
-// getPatternHostVlans() - Returns tagged VLAN string per pattern
-// updateHostPortsSections() - Shows/hides port sections by pattern
-```
+---
 
-### Configuration Building
-```typescript
-// collectConfig() - Builds StandardConfig object
-// collectVLANs() - Gathers VLAN entries
-// collectInterfaces() - Gathers interface entries
-// collectPortChannels() - Builds port-channel config
-// collectRouting() - BGP or static routes
-```
+## Switch Logic (Preserved - Do Not Modify)
 
-### Validation
-```typescript
-// validateConfig() - Uses AJV against schema
-// showValidationError() / showSuccess() - Message display
-```
+These core functions in `frontend/src/app.ts` must remain unchanged:
 
-### Import/Export
-```typescript
-// exportJSON() - Downloads config file
-// importJSON() - Parses uploaded file
-// loadTemplate() - Loads example configs
-```
+| Category | Functions |
+|----------|-----------|
+| **Pattern Logic** | `getPatternVlans()`, `getPatternHostVlans()`, `updateHostPortsSections()` |
+| **Config Building** | `collectConfig()`, `collectVLANs()`, `collectInterfaces()`, `collectPortChannels()`, `collectRouting()` |
+| **Validation** | `validateConfig()`, `showValidationError()`, `showSuccessMessage()` |
+| **Import/Export** | `exportConfig()`, `importJSON()`, `loadConfig()` |
 
 ---
 
@@ -448,16 +279,12 @@ The following logic from `app.ts` must remain unchanged:
 
 | Requirement | Verification |
 |-------------|--------------|
-| Single-page scroll with 7 numbered sections | Scroll through all sections |
-| Sticky summary sidebar with own scrollbar | Sidebar stays pinned while scrolling |
-| Breadcrumb navigation with checkmarks | Click breadcrumb → scrolls to section |
-| Theme toggle (dark/light) | Button switches theme, persists |
-| Font size controls (A-/A+) | Text scales up/down |
-| Page statistics display | Shows view/export counts |
-| Pattern cards with selection checkmark | Blue glow + ✓ on selected |
-| Progress bar updates | Reflects completed sections |
-| All switch logic functional | Export produces valid JSON |
-| Tests pass with timeouts | 33 tests complete in <3 min |
+| VLAN Add/Remove buttons in section header | Both buttons visible, Remove hidden when 1 VLAN |
+| Placeholder text white like input text | Visual check - same contrast |
+| BMC section removed | No BMC collapsible in VLANs |
+| JSON preview larger | Min-height ~400px |
+| Copy button renamed | Shows "Export Switch Config" |
+| Start Over button styled | Matches Export/Copy buttons |
 
 ---
 
@@ -465,10 +292,11 @@ The following logic from `app.ts` must remain unchanged:
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Breaking switch logic | Export fails | Keep all app.ts logic functions |
-| CSS conflicts | Layout broken | Use Odin classes exclusively |
+| Breaking switch logic | Export fails | Keep all app.ts config logic intact |
+| CSS conflicts | Layout broken | Consolidate to single CSS file |
 | Tests timeout | CI blocked | 30s per-test, 3min global |
-| Theme state lost | UX annoyance | Save to localStorage |
+| Template loading fails | UX broken | Verify glob import, add fallback |
+| Progress/breadcrumb mismatch | User confusion | Use same criteria for both |
 
 **Rollback:**
 ```bash
@@ -556,10 +384,10 @@ git add -A && git commit -m "Odin UI redesign"
 
 ## Reference Links
 
-| Resource | URL |
-|----------|-----|
-| Odin Live | https://neilbird.github.io/Odin-for-AzureLocal/ |
+| Resource | Path/URL |
+|----------|----------|
+| **Design Document** | [.github/docs/AzureLocal_NetworkConfTool_Project_Design_Doc.md](.github/docs/AzureLocal_NetworkConfTool_Project_Design_Doc.md) |
+| Odin Live Demo | https://neilbird.github.io/Odin-for-AzureLocal/ |
 | Odin Source | `/workspace/archive/Odin-for-AzureLocal/` |
-| Design Doc | `.github/docs/AzureLocal_NetworkConfTool_Project_Design_Doc.md` |
 | JSON Schema | `backend/schema/standard.json` |
 | Azure Patterns | [GitHub](https://github.com/Azure/AzureLocal-Supportability/blob/main/TSG/Networking/Top-Of-Rack-Switch/Overview-Azure-Local-Deployment-Pattern.md) |

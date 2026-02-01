@@ -18,7 +18,7 @@
         </div>
         <div class="header-right">
             <div class="import-section">
-                <button class="import-btn" onclick="showTemplateModal()">📋 Load Template</button>
+                <label class="import-btn" onclick="showTemplateModal()">📋 Load Template</label>
                 <label for="import-json" class="import-btn">📥 Import JSON</label>
                 <input type="file" id="import-json" accept=".json" style="display: none;">
             </div>
@@ -30,19 +30,17 @@
         </div>
     </header>
 
-    <!-- Breadcrumb Navigation (Odin Style) -->
+    <!-- Breadcrumb Navigation (Odin Style) - 5 Sections -->
     <nav class="breadcrumb-nav" id="breadcrumb-nav">
-        <a href="#phase1" class="breadcrumb-item active" data-section="phase1">01 Pattern & Switch</a>
+        <a href="#phase1" class="breadcrumb-item active" data-section="phase1" onclick="event.preventDefault(); scrollToSection('phase1')">01 Pattern & Switch</a>
         <span class="breadcrumb-separator">→</span>
-        <a href="#phase2" class="breadcrumb-item" data-section="phase2">02 VLANs</a>
+        <a href="#phase2" class="breadcrumb-item" data-section="phase2" onclick="event.preventDefault(); scrollToSection('phase2')">02 VLANs</a>
         <span class="breadcrumb-separator">→</span>
-        <a href="#phase2-ports" class="breadcrumb-item" data-section="phase2-ports">03 Ports</a>
+        <a href="#phase2-ports" class="breadcrumb-item" data-section="phase2-ports" onclick="event.preventDefault(); scrollToSection('phase2-ports')">03 Ports</a>
         <span class="breadcrumb-separator">→</span>
-        <a href="#phase2-redundancy" class="breadcrumb-item" data-section="phase2-redundancy">04 Redundancy</a>
+        <a href="#phase2-redundancy" class="breadcrumb-item" data-section="phase2-redundancy" onclick="event.preventDefault(); scrollToSection('phase2-redundancy')">04 Redundancy</a>
         <span class="breadcrumb-separator">→</span>
-        <a href="#phase3" class="breadcrumb-item" data-section="phase3">05 Routing</a>
-        <span class="breadcrumb-separator">→</span>
-        <a href="#review" class="breadcrumb-item" data-section="review">06 Review</a>
+        <a href="#phase3" class="breadcrumb-item" data-section="phase3" onclick="event.preventDefault(); scrollToSection('phase3')">05 Routing</a>
     </nav>
 
     <div class="container">
@@ -183,7 +181,10 @@
                     <div class="vlan-section">
                         <div class="section-header">
                             <h3>📡 Management VLANs <span class="required">*</span></h3>
-                            <button type="button" class="btn-add-small" id="btn-add-mgmt">+ Add Management VLAN</button>
+                            <div class="btn-group">
+                                <button type="button" class="btn-add-small" id="btn-add-mgmt">+ Add</button>
+                                <button type="button" class="btn-remove-small" id="btn-remove-mgmt" style="display: none;">− Remove</button>
+                            </div>
                         </div>
                         <div id="mgmt-vlans-container">
                             <div class="vlan-card dynamic-vlan" data-vlan-type="management" data-vlan-index="0">
@@ -193,11 +194,11 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>VLAN ID <span class="required">*</span></label>
-                                        <input type="number" class="vlan-mgmt-id" value="7" min="2" max="4094" onchange="updateVlanName(this, 'mgmt', 'Infra')">
+                                        <input type="number" class="vlan-mgmt-id" placeholder="7" min="2" max="4094" onchange="updateVlanName(this, 'mgmt', 'Infra')">
                                     </div>
                                     <div class="form-group">
                                         <label>VLAN Name</label>
-                                        <input type="text" class="vlan-mgmt-name" value="Infra_7" placeholder="Infra_7" style="color: #666;">
+                                        <input type="text" class="vlan-mgmt-name" placeholder="Infra_7">
                                         <small>Optional - defaults to Infra_{vlan_id}</small>
                                     </div>
                                 </div>
@@ -223,7 +224,10 @@
                     <div class="vlan-section">
                         <div class="section-header">
                             <h3>💻 Compute VLANs <span class="required">*</span></h3>
-                            <button type="button" class="btn-add-small" id="btn-add-compute">+ Add Compute VLAN</button>
+                            <div class="btn-group">
+                                <button type="button" class="btn-add-small" id="btn-add-compute">+ Add</button>
+                                <button type="button" class="btn-remove-small" id="btn-remove-compute" style="display: none;">− Remove</button>
+                            </div>
                         </div>
                         <div id="compute-vlans-container">
                             <div class="vlan-card dynamic-vlan" data-vlan-type="compute" data-vlan-index="0">
@@ -233,11 +237,11 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>VLAN ID <span class="required">*</span></label>
-                                        <input type="number" class="vlan-compute-id" value="201" min="2" max="4094" onchange="updateVlanName(this, 'compute', 'Compute')">
+                                        <input type="number" class="vlan-compute-id" placeholder="201" min="2" max="4094" onchange="updateVlanName(this, 'compute', 'Compute')">
                                     </div>
                                     <div class="form-group">
                                         <label>VLAN Name</label>
-                                        <input type="text" class="vlan-compute-name" value="Compute_201" placeholder="Compute_201" style="color: #666;">
+                                        <input type="text" class="vlan-compute-name" placeholder="Compute_201">
                                         <small>Optional - defaults to Compute_{vlan_id}</small>
                                     </div>
                                 </div>
@@ -269,7 +273,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Storage 1 Name</label>
-                                <input type="text" id="vlan-storage1-name" value="Storage1_711" placeholder="Storage1_711" style="color: #666;">
+                                <input type="text" id="vlan-storage1-name" placeholder="Storage1_711">
                                 <small>Optional - defaults to Storage1_{vlan_id}</small>
                             </div>
                         </div>
@@ -280,46 +284,13 @@
                             </div>
                             <div class="form-group">
                                 <label>Storage 2 Name</label>
-                                <input type="text" id="vlan-storage2-name" value="Storage2_712" placeholder="Storage2_712" style="color: #666;">
+                                <input type="text" id="vlan-storage2-name" placeholder="Storage2_712">
                                 <small>Optional - defaults to Storage2_{vlan_id}</small>
                             </div>
                         </div>
                     </div>
 
-                    <!-- BMC VLAN (for BMC switch only) - Optional & Collapsed -->
-                    <div class="vlan-card collapsible" id="vlan-bmc-section">
-                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
-                            <h3>🖥️ BMC VLAN <span class="optional-badge">Optional - Lab/BMC Switch Only</span></h3>
-                            <span class="collapse-icon">▼</span>
-                        </div>
-                        <div class="collapsible-content" style="display: none;">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>VLAN ID</label>
-                                    <input type="number" id="vlan-bmc-id" placeholder="125" min="2" max="4094">
-                                </div>
-                                <div class="form-group">
-                                    <label>VLAN Name</label>
-                                    <input type="text" id="vlan-bmc-name" placeholder="BMC_125">
-                                    <small>Optional - defaults to BMC_{vlan_id}</small>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Switch IP</label>
-                                    <input type="text" id="vlan-bmc-ip" placeholder="192.0.2.68">
-                                </div>
-                                <div class="form-group">
-                                    <label>CIDR</label>
-                                    <input type="number" id="vlan-bmc-cidr" value="26" min="1" max="32">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Gateway (Virtual IP)</label>
-                                <input type="text" id="vlan-bmc-gateway" placeholder="192.0.2.65">
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
                 <!-- End VLANs -->
                 </div> <!-- End step-content -->
@@ -352,11 +323,11 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Start Port <span class="required">*</span></label>
-                                <input type="text" id="intf-converged-start" value="1/1/1" placeholder="1/1/1">
+                                <input type="text" id="intf-converged-start" placeholder="1/1/1">
                             </div>
                             <div class="form-group">
                                 <label>End Port <span class="required">*</span></label>
-                                <input type="text" id="intf-converged-end" value="1/1/16" placeholder="1/1/16">
+                                <input type="text" id="intf-converged-end" placeholder="1/1/16">
                             </div>
                         </div>
                         
@@ -542,11 +513,11 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Peer-Link Port-Channel ID</label>
-                                <input type="number" id="mlag-peerlink-id" value="101" min="1" max="4096">
+                                <input type="number" id="mlag-peerlink-id" placeholder="101" min="1" max="4096">
                             </div>
                             <div class="form-group">
                                 <label>Peer-Link Members (comma-separated)</label>
-                                <input type="text" id="mlag-peerlink-members" value="1/1/49,1/1/50,1/1/51,1/1/52">
+                                <input type="text" id="mlag-peerlink-members" placeholder="1/1/49,1/1/50,1/1/51,1/1/52">
                             </div>
                         </div>
 
@@ -703,37 +674,6 @@
                 </div>
                 </div> <!-- End step-content -->
             </section>
-
-            <!-- ================================================================
-                 SECTION 06: REVIEW & EXPORT
-                 Final step
-                 ================================================================ -->
-            <section id="review" class="phase wizard-step">
-                <div class="step-header">
-                    <div class="step-number">06</div>
-                    <div class="step-title">
-                        <h2>Review & Export</h2>
-                        <p>Review your configuration and export Standard JSON</p>
-                    </div>
-                </div>
-                <div class="step-content">
-                
-                <div class="summary-container">
-                    <div id="config-summary" class="config-summary"></div>
-                </div>
-
-                <div class="preview-container">
-                    <h3>📄 Standard JSON Preview</h3>
-                    <pre id="json-preview"></pre>
-                </div>
-                
-                <div class="export-buttons">
-                    <button class="btn-export" id="btn-export">💾 Export JSON</button>
-                    <button class="btn-export secondary" id="btn-copy">📋 Copy to Clipboard</button>
-                    <button class="btn-reset" id="btn-reset">🔄 Start Over</button>
-                </div>
-                </div> <!-- End step-content -->
-            </section>
         </div>
 
             <!-- Configuration Summary Sidebar (Odin Style) -->
@@ -817,6 +757,24 @@
                             <span class="summary-value" id="sum-neighbors">—</span>
                         </div>
                     </div>
+
+                    <!-- JSON Preview Section (Always Open) -->
+                    <div class="summary-section json-preview-section">
+                        <div class="json-preview-header" onclick="toggleJsonPreviewSection()">
+                            <h4>📄 JSON Preview</h4>
+                            <span class="collapse-icon" id="json-collapse-icon">▲</span>
+                        </div>
+                        <div class="json-preview-content" id="json-preview-content" style="display: block;">
+                            <pre id="json-preview"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="sidebar-actions">
+                    <button class="btn-export primary" id="btn-export">💾 Export JSON</button>
+                    <button class="btn-export secondary" id="btn-copy">� Export Switch Config</button>
+                    <button class="btn-export tertiary" id="btn-reset">🔄 Start Over</button>
                 </div>
             </aside>
         </div> <!-- End main-layout -->

@@ -119,6 +119,19 @@ function updateActiveBreadcrumb(sectionId: string): void {
 }
 
 /**
+ * Toggle the JSON preview section in sidebar
+ */
+function toggleJsonPreviewSection(): void {
+  const content = document.getElementById('json-preview-content');
+  const icon = document.getElementById('json-collapse-icon');
+  if (content && icon) {
+    const isVisible = content.style.display !== 'none';
+    content.style.display = isVisible ? 'none' : 'block';
+    icon.textContent = isVisible ? '▼' : '▲';
+  }
+}
+
+/**
  * Update breadcrumb completion states based on form data
  * Only marks sections as complete when ALL required fields are filled
  * Exported so it can be called after template/config loading
@@ -133,31 +146,34 @@ export function updateBreadcrumbCompletion(): void {
     switch (section) {
       case 'phase1':
         // Pattern & Switch complete ONLY if ALL required fields filled:
-        // - Pattern selected
-        // - Vendor selected (not empty)
-        // - Model selected (not empty)
-        // - Role selected
-        // - Hostname has value
+        // - Pattern selected (card has .selected class)
+        // - Vendor selected (not empty string)
+        // - Model selected (not empty string)
+        // - Role selected (button has .selected class)
+        // - Hostname has non-empty value
         const patternSelected = document.querySelector('.pattern-card.selected');
         const vendorSelect = document.getElementById('vendor-select') as HTMLSelectElement;
         const modelSelect = document.getElementById('model-select') as HTMLSelectElement;
         const roleSelected = document.querySelector('.role-btn.selected');
         const hostnameInput = document.getElementById('hostname') as HTMLInputElement;
         
+        const vendorValue = vendorSelect?.value?.trim() || '';
+        const modelValue = modelSelect?.value?.trim() || '';
+        const hostnameValue = hostnameInput?.value?.trim() || '';
+        
         isComplete = !!(
           patternSelected &&
-          vendorSelect?.value && vendorSelect.value !== '' &&
-          modelSelect?.value && modelSelect.value !== '' &&
+          vendorValue !== '' &&
+          modelValue !== '' &&
           roleSelected &&
-          hostnameInput?.value && hostnameInput.value.trim() !== ''
+          hostnameValue !== ''
         );
         break;
         
       case 'phase2':
         // VLANs complete if management VLAN has a valid ID (number > 0)
-        // Note: VLAN inputs use class selectors, not IDs
         const mgmtVlanInput = document.querySelector('.vlan-mgmt-id') as HTMLInputElement;
-        const mgmtVlanValue = mgmtVlanInput?.value?.trim();
+        const mgmtVlanValue = mgmtVlanInput?.value?.trim() || '';
         isComplete = !!(mgmtVlanValue && parseInt(mgmtVlanValue, 10) > 0);
         break;
         
@@ -165,56 +181,43 @@ export function updateBreadcrumbCompletion(): void {
         // Ports complete if converged/host port range is defined with BOTH start and end
         const convergedStart = document.getElementById('intf-converged-start') as HTMLInputElement;
         const convergedEnd = document.getElementById('intf-converged-end') as HTMLInputElement;
-        isComplete = !!(
-          convergedStart?.value && convergedStart.value.trim() !== '' &&
-          convergedEnd?.value && convergedEnd.value.trim() !== ''
-        );
+        const startValue = convergedStart?.value?.trim() || '';
+        const endValue = convergedEnd?.value?.trim() || '';
+        isComplete = !!(startValue !== '' && endValue !== '');
         break;
         
       case 'phase2-redundancy':
         // Redundancy complete if MLAG peer-link members and keepalive IPs are set
-        // Note: HTML uses id="mlag-peerlink-members" (no hyphen in peerlink)
         const peerLinkMembers = document.getElementById('mlag-peerlink-members') as HTMLInputElement;
         const keepaliveSrc = document.getElementById('mlag-keepalive-src') as HTMLInputElement;
         const keepaliveDst = document.getElementById('mlag-keepalive-dst') as HTMLInputElement;
-        isComplete = !!(
-          peerLinkMembers?.value && peerLinkMembers.value.trim() !== '' &&
-          keepaliveSrc?.value && keepaliveSrc.value.trim() !== '' &&
-          keepaliveDst?.value && keepaliveDst.value.trim() !== ''
-        );
+        const peerValue = peerLinkMembers?.value?.trim() || '';
+        const srcValue = keepaliveSrc?.value?.trim() || '';
+        const dstValue = keepaliveDst?.value?.trim() || '';
+        isComplete = !!(peerValue !== '' && srcValue !== '' && dstValue !== '');
         break;
         
       case 'phase3':
         // Routing complete based on routing type
         const routingType = (document.querySelector('input[name="routing-type"]:checked') as HTMLInputElement)?.value || 'bgp';
         if (routingType === 'bgp') {
-          // BGP requires loopback IP, ASN, and router-id
-          const loopback = document.getElementById('intf-loopback-ip') as HTMLInputElement;
+          // BGP requires ASN and router-id (loopback is auto-used for router-id)
           const asn = document.getElementById('bgp-asn') as HTMLInputElement;
           const routerId = document.getElementById('bgp-router-id') as HTMLInputElement;
+          const asnValue = asn?.value?.trim() || '';
+          const routerIdValue = routerId?.value?.trim() || '';
           isComplete = !!(
-            loopback?.value && loopback.value.trim() !== '' &&
-            asn?.value && parseInt(asn.value, 10) > 0 &&
-            routerId?.value && routerId.value.trim() !== ''
+            asnValue !== '' && parseInt(asnValue, 10) > 0 &&
+            routerIdValue !== ''
           );
         } else {
-          // Static routing - just needs loopback IP
-          const loopback = document.getElementById('intf-loopback-ip') as HTMLInputElement;
-          isComplete = !!(loopback?.value && loopback.value.trim() !== '');
+          // Static routing - needs at least one route entry
+          const routes = document.querySelectorAll('.static-route-entry');
+          isComplete = routes.length > 0;
         }
         break;
         
-      case 'review':
-        // Review is complete when all other sections are complete
-        // Check if phase1, phase2, phase2-ports, phase2-redundancy, and phase3 are all done
-        const allOtherSectionsComplete = [
-          'phase1', 'phase2', 'phase2-ports', 'phase2-redundancy', 'phase3'
-        ].every(sectionId => {
-          const breadcrumb = document.querySelector(`.breadcrumb-item[data-section="${sectionId}"]`);
-          return breadcrumb?.classList.contains('completed');
-        });
-        isComplete = allOtherSectionsComplete;
-        break;
+      // Note: 'review' section removed - no case needed
     }
     
     if (isComplete) {
@@ -303,6 +306,7 @@ declare global {
     decreaseFontSize: () => void;
     scrollToSection: (sectionId: string) => void;
     showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
+    toggleJsonPreviewSection: () => void;
   }
 }
 
@@ -332,6 +336,7 @@ window.increaseFontSize = increaseFontSize;
 window.decreaseFontSize = decreaseFontSize;
 window.scrollToSection = scrollToSection;
 window.showToast = showToast;
+window.toggleJsonPreviewSection = toggleJsonPreviewSection;
 
 // Initialize the application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
