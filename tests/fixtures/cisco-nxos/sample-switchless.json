@@ -1,0 +1,80 @@
+{
+  "_metadata": {
+    "description": "Sample TOR1 configuration for Azure Local switchless deployment (Cisco NX-OS)",
+    "pattern": "switchless",
+    "generated_by": "Azure Local Physical Network Config Tool",
+    "version": "1.0"
+  },
+  "switch": {
+    "vendor": "cisco",
+    "model": "93180yc-fx",
+    "hostname": "cisco-switchless1",
+    "role": "TOR1",
+    "firmware": "nxos",
+    "deployment_pattern": "switchless",
+    "version": "10.2"
+  },
+  "vlans": [
+    {
+      "vlan_id": 2,
+      "name": "UNUSED_VLAN",
+      "purpose": "parking",
+      "shutdown": true
+    },
+    {
+      "vlan_id": 7,
+      "name": "Mgmt_7",
+      "purpose": "management",
+      "interface": {
+        "ip": "192.0.2.2",
+        "cidr": 24,
+        "mtu": 9216
+      }
+    },
+    {
+      "vlan_id": 201,
+      "name": "Compute_201",
+      "purpose": "compute",
+      "interface": {
+        "ip": "198.51.100.2",
+        "cidr": 24,
+        "mtu": 9216
+      }
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "Loopback0",
+      "type": "L3",
+      "intf_type": "loopback",
+      "intf": "0",
+      "ipv4": "203.0.113.1/32"
+    },
+    {
+      "name": "Host_Access",
+      "type": "Access",
+      "intf_type": "Ethernet",
+      "start_intf": "1/1",
+      "end_intf": "1/16",
+      "access_vlan": "7"
+    }
+  ],
+  "port_channels": [],
+  "static_routes": [
+    {
+      "destination": "0.0.0.0/0",
+      "next_hop": "192.0.2.1",
+      "name": "default-gateway"
+    },
+    {
+      "destination": "10.0.0.0/8",
+      "next_hop": "192.0.2.254",
+      "name": "internal-networks"
+    },
+    {
+      "destination": "172.16.0.0/12",
+      "next_hop": "192.0.2.254"
+    }
+  ],
+  "prefix_lists": {}
+}

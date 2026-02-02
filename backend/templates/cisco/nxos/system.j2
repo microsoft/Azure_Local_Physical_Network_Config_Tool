@@ -1,0 +1,50 @@
+{#
+  System Configuration for Cisco NX-OS
+  
+  Configures hostname, features, and global system settings.
+  Based on Azure Local requirements for NX-OS switches.
+#}
+! System Configuration - {{ switch.hostname }}
+! Vendor: {{ switch.vendor }}
+! Model: {{ switch.model }}
+! Role: {{ switch.role }}
+! Firmware: {{ switch.firmware }}
+
+hostname {{ switch.hostname }}
+
+banner motd #
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+
+hostname {{ switch.hostname }}
+Unauthorized access and/or use prohibited.
+All access and/or use subject to monitoring.
+
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+#
+
+! === FEATURE ENABLEMENT ===
+no feature telnet
+feature scp-server
+feature interface-vlan
+feature lldp
+feature dhcp
+feature lacp
+feature ssh
+{% if has_mlag %}
+feature vpc
+feature hsrp
+{% endif %}
+{% if has_bgp %}
+feature bgp
+{% endif %}
+
+! === GLOBAL SYSTEM SETTINGS ===
+no cdp enable
+lldp tlv-select dcbxp
+
+service dhcp
+ip dhcp relay
+
+ip load-sharing address source-destination port source-destination
+
+cli alias name wr copy running-config startup-config

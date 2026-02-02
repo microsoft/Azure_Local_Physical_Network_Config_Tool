@@ -1,0 +1,31 @@
+{# system.j2 - System configuration template #}
+{# Replace [VENDOR-SYNTAX] with actual vendor commands #}
+
+! Hostname
+[VENDOR-SYNTAX] hostname {{ switch.hostname }}
+
+! Management interface
+[VENDOR-SYNTAX] management interface
+  ip address {{ management.ip }}/{{ management.cidr }}
+  gateway {{ management.gateway }}
+
+! Users (if defined)
+{% if users is defined %}
+{% for user in users %}
+[VENDOR-SYNTAX] username {{ user.name }} password {{ user.password }}
+{% endfor %}
+{% endif %}
+
+! NTP (if defined)
+{% if ntp_servers is defined %}
+{% for server in ntp_servers %}
+[VENDOR-SYNTAX] ntp server {{ server }}
+{% endfor %}
+{% endif %}
+
+! DNS (if defined)
+{% if dns_servers is defined %}
+{% for server in dns_servers %}
+[VENDOR-SYNTAX] name-server {{ server }}
+{% endfor %}
+{% endif %}

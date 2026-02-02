@@ -1,6 +1,6 @@
-# Azure Local Network Config Tool - Backend
+# Azure Local Physical Network Config Tool - Backend
 
-Python CLI for generating network switch configurations from JSON input.
+Python CLI for generating physical network switch configurations from JSON input.
 
 ## Features
 

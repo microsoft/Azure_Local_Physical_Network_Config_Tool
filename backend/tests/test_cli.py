@@ -9,7 +9,7 @@ from unittest.mock import Mock
 @pytest.fixture
 def example_config_path():
     """Path to example configuration"""
-    return Path(__file__).parent.parent.parent / "frontend" / "examples" / "dell-tor1.json"
+    return Path(__file__).parent.parent.parent / "frontend" / "examples" / "fully-converged" / "sample-tor1.json"
 
 
 def test_validate_command_valid_file(example_config_path, capsys):

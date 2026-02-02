@@ -1,0 +1,133 @@
+name: Golden Config Submission
+description: Submit a working switch configuration to help expand vendor support for Azure Local deployments.
+title: "[Golden Config] <Vendor> <Model> - <Deployment Pattern>"
+labels: ["golden-config", "community-contribution"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thank you for contributing! 🎉
+        
+        By submitting your working switch configuration, you're helping the community expand vendor support for Azure Local physical network deployments.
+        
+        **Important:**
+        - Your config will be automatically sanitized (passwords, IPs, hostnames removed)
+        - Please review your submission to ensure no sensitive data remains
+        - Configs must be from working Azure Local deployments
+        
+  - type: input
+    id: vendor
+    attributes:
+      label: Switch Vendor
+      description: "The switch manufacturer (e.g., Cisco, Dell, Juniper, Arista)"
+      placeholder: "e.g., Cisco Nexus"
+    validations:
+      required: true
+
+  - type: input
+    id: model
+    attributes:
+      label: Switch Model
+      description: "The specific switch model number"
+      placeholder: "e.g., N9K-C93180YC-FX3"
+    validations:
+      required: true
+
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware/OS Version
+      description: "The firmware or operating system version running on the switch"
+      placeholder: "e.g., NXOS 10.3(2), OS10 10.5.4.5"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment_pattern
+    attributes:
+      label: Deployment Pattern
+      description: "Which Azure Local deployment pattern is this config for?"
+      options:
+        - Switchless (storage direct-connect, no storage VLANs on TOR)
+        - Switched (non-converged, storage VLANs on TOR but not on peer-link)
+        - Fully-Converged (storage VLANs allowed on peer-link)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: switch_role
+    attributes:
+      label: Switch Role
+      description: "What role does this switch serve in the deployment?"
+      options:
+        - TOR Switch (Top-of-Rack for Azure Local hosts)
+        - Management Switch (out-of-band management network)
+        - BMC Switch (for baseboard management controllers)
+    validations:
+      required: true
+
+  - type: input
+    id: azure_local_version
+    attributes:
+      label: Azure Local Version
+      description: "The version of Azure Local this config was tested with"
+      placeholder: "e.g., 23H2, 24H2"
+    validations:
+      required: false
+
+  - type: input
+    id: cluster_size
+    attributes:
+      label: Cluster Size
+      description: "Number of nodes in your Azure Local cluster"
+      placeholder: "e.g., 2, 4, 8, 16"
+    validations:
+      required: false
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Switch Configuration
+      description: |
+        Paste your switch configuration here.
+        
+        **Before pasting, please:**
+        1. Remove or replace actual passwords with `REDACTED`
+        2. Consider replacing real IP addresses with examples (10.x.x.x)
+        3. Remove any proprietary or company-specific naming
+        
+        The config will be further sanitized during processing, but your initial review helps.
+      placeholder: |
+        hostname my-switch
+        !
+        vlan 7
+          name Management
+        ...
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: "Any special considerations, customizations, or notes about this configuration"
+      placeholder: |
+        - Uses HSRP for gateway redundancy
+        - QoS configured for RoCEv2 RDMA
+        - ...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Contribution Agreement
+      description: "Please confirm the following"
+      options:
+        - label: "This configuration is from a working Azure Local deployment"
+          required: true
+        - label: "I have reviewed the config and removed sensitive data to the best of my ability"
+          required: true
+        - label: "I agree to contribute this config under the project's MIT license"
+          required: true

@@ -1,0 +1,16 @@
+{#
+  Prefix-List Configuration for Cisco NX-OS
+  
+  Creates named prefix-lists for BGP route filtering.
+  Used to control which routes are advertised or accepted.
+#}
+{% if has_prefix_lists -%}
+! === PREFIX-LIST CONFIGURATION ===
+
+{% for name, entries in prefix_lists.items() %}
+{% for entry in entries %}
+ip prefix-list {{ name }} seq {{ entry.seq }} {{ entry.action }} {{ entry.prefix }}{% if entry.prefix_filter is defined %} {{ entry.prefix_filter }}{% endif %}
+
+{% endfor %}
+{% endfor %}
+{%- endif %}

@@ -1,0 +1,57 @@
+# Network Config Development Collection
+# This collection groups all the agents, skills, and prompts for working with
+# the Azure Local Physical Network Config Tool.
+
+name: network-config-dev
+description: 'Complete toolkit for developing and validating Azure Local physical network configurations and vendor templates.'
+
+# Reference all skills
+skills:
+  - .github/skills/azure-local-requirements
+  - .github/skills/vendor-templates
+  - .github/skills/config-analyzer
+
+# Reference all prompts
+prompts:
+  - .github/prompts/add-vendor.prompt.md
+  - .github/prompts/validate-pattern.prompt.md
+  - .github/prompts/process-submission.prompt.md
+
+# Reference all agents
+agents:
+  - .github/agents/network-config.agent.md
+  - .github/agents/template-generator.agent.md
+
+# Reference workflow instructions
+instructions:
+  - .github/instructions/plan.instructions.md
+  - .github/instructions/doc.instructions.md
+  - .github/instructions/jinja-templates.instructions.md
+
+# Tags for discovery
+tags:
+  - azure-local
+  - network-config
+  - jinja2-templates
+  - switch-configuration
+  - vendor-agnostic
+
+# Usage hints
+usage: |
+  This collection supports:
+  
+  1. **Adding new vendor support**
+     - Use `add-vendor.prompt.md` to create template structure
+     - Follow `vendor-templates` skill for implementation
+  
+  2. **Validating configurations**
+     - Use `validate-pattern.prompt.md` to check Azure Local compliance
+     - Reference `azure-local-requirements` skill for rules
+  
+  3. **Processing community submissions**
+     - Use `process-submission.prompt.md` for golden config intake
+     - Reference `config-analyzer` skill for normalization
+  
+  4. **Day-to-day development**
+     - Use `network-config.agent.md` for config generation
+     - Use `template-generator.agent.md` for template authoring

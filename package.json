@@ -1,7 +1,7 @@
 {
-  "name": "azure-local-network-config-tool",
+  "name": "azure-local-physical-network-config-tool",
   "version": "2.0.0",
-  "description": "Generate vendor-specific switch configurations for Azure Local deployments",
+  "description": "Reference tool for generating vendor-specific switch configurations for Azure Local physical network deployments",
   "private": true,
   "scripts": {
     "dev": "npm run dev --prefix frontend",

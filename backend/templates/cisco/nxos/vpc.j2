@@ -1,0 +1,22 @@
+{#
+  vPC (Virtual Port-Channel) Configuration for Cisco NX-OS
+  
+  Configures vPC domain for multi-chassis link aggregation.
+  Required for Azure Local dual-TOR redundancy.
+#}
+{% if has_mlag -%}
+! === VPC CONFIGURATION ===
+
+vpc domain {{ mlag.domain_id }}
+  peer-keepalive destination {{ mlag.peer_keepalive.destination_ip }} source {{ mlag.peer_keepalive.source_ip }}
+{% if is_tor1 %}
+  role priority 1
+{% else %}
+  role priority 2
+{% endif %}
+  peer-switch
+  peer-gateway
+  layer3 peer-router
+  auto-recovery
+  delay restore 150
+{%- endif %}

@@ -14,7 +14,7 @@ def validator():
 @pytest.fixture
 def valid_config():
     """Load a valid example config"""
-    config_path = Path(__file__).parent.parent.parent / "frontend" / "examples" / "dell-tor1.json"
+    config_path = Path(__file__).parent.parent.parent / "frontend" / "examples" / "fully-converged" / "sample-tor1.json"
     with open(config_path, 'r') as f:
         return json.load(f)
 

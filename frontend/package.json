@@ -1,7 +1,7 @@
 {
-  "name": "azure-local-network-config-wizard",
+  "name": "azure-local-physical-network-config-wizard",
   "version": "1.0.0",
-  "description": "TypeScript-based wizard for Azure Local network switch configuration",
+  "description": "TypeScript-based wizard for Azure Local physical network switch configuration",
   "type": "module",
   "scripts": {
     "dev": "vite",

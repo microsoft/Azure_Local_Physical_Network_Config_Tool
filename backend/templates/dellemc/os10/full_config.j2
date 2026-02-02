@@ -1,4 +1,28 @@
+{#
+  Full Configuration Template for Dell EMC OS10
+  
+  Aggregates all sub-templates in the correct order for a complete switch configuration.
+  Order: system → login → qos → vlan → interface → port_channel → mlag → prefix_list → bgp/static_routes
+#}
 {% include "dellemc/os10/system.j2" %}
+
+! === LOGIN CONFIGURATION ===
+! Replace $CREDENTIAL_PLACEHOLDER$ with actual credentials after generation
+password-attributes character-restriction upper 1 lower 1 numeric 1 special-char 1 min-length 15 lockout-period 15 max-retry 3
+
+enable password 0 $CREDENTIAL_PLACEHOLDER$ priv-lvl 15
+username admin password $CREDENTIAL_PLACEHOLDER$ role sysadmin
+
+ip ssh server enable
+ip ssh server cipher aes256-ctr aes192-ctr aes128-ctr
+ip ssh server mac hmac-sha1 hmac-sha2-256
+ip ssh server max-auth-tries 3
+no ip telnet server enable
+
+login concurrent-session limit 3
+login statistics enable
+
+{% include "dellemc/os10/qos.j2" %}
 
 {% include "dellemc/os10/vlan.j2" %}
 
@@ -11,3 +35,5 @@
 {% include "dellemc/os10/prefix_list.j2" %}
 
 {% include "dellemc/os10/bgp.j2" %}
+
+{% include "dellemc/os10/static_route.j2" %}

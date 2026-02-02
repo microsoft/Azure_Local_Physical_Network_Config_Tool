@@ -1,0 +1,164 @@
+{
+  "_metadata": {
+    "description": "Sample TOR1 configuration for Azure Local fully-converged deployment (Cisco NX-OS)",
+    "pattern": "fully_converged",
+    "generated_by": "Azure Local Physical Network Config Tool",
+    "version": "1.0"
+  },
+  "switch": {
+    "vendor": "cisco",
+    "model": "93180yc-fx",
+    "hostname": "cisco-tor1",
+    "role": "TOR1",
+    "firmware": "nxos",
+    "deployment_pattern": "fully_converged",
+    "version": "10.2"
+  },
+  "vlans": [
+    {
+      "vlan_id": 2,
+      "name": "UNUSED_VLAN",
+      "purpose": "parking",
+      "shutdown": true
+    },
+    {
+      "vlan_id": 7,
+      "name": "Mgmt_7",
+      "purpose": "management",
+      "interface": {
+        "ip": "192.0.2.2",
+        "cidr": 24,
+        "mtu": 9216,
+        "redundancy": {
+          "type": "hsrp",
+          "group": 7,
+          "priority": 150,
+          "virtual_ip": "192.0.2.1"
+        }
+      }
+    },
+    {
+      "vlan_id": 201,
+      "name": "Compute_201",
+      "purpose": "compute",
+      "interface": {
+        "ip": "198.51.100.2",
+        "cidr": 24,
+        "mtu": 9216,
+        "redundancy": {
+          "type": "hsrp",
+          "group": 201,
+          "priority": 150,
+          "virtual_ip": "198.51.100.1"
+        }
+      }
+    },
+    {
+      "vlan_id": 99,
+      "name": "Native_99",
+      "purpose": "native"
+    },
+    {
+      "vlan_id": 711,
+      "name": "Storage1_711",
+      "purpose": "storage_1"
+    },
+    {
+      "vlan_id": 712,
+      "name": "Storage2_712",
+      "purpose": "storage_2"
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "Loopback0",
+      "type": "L3",
+      "intf_type": "loopback",
+      "intf": "0",
+      "ipv4": "203.0.113.1/32"
+    },
+    {
+      "name": "P2P_Border1",
+      "type": "L3",
+      "intf_type": "Ethernet",
+      "intf": "1/47",
+      "ipv4": "198.51.100.6/30"
+    },
+    {
+      "name": "P2P_Border2",
+      "type": "L3",
+      "intf_type": "Ethernet",
+      "intf": "1/48",
+      "ipv4": "198.51.100.10/30"
+    },
+    {
+      "name": "Host_Trunk",
+      "type": "Trunk",
+      "intf_type": "Ethernet",
+      "start_intf": "1/1",
+      "end_intf": "1/16",
+      "native_vlan": "7",
+      "tagged_vlans": "7,201,711,712",
+      "qos": true,
+      "service_policy": {
+        "qos_input": "AZLOCAL-QOS-MAP"
+      }
+    }
+  ],
+  "port_channels": [
+    {
+      "id": 101,
+      "description": "VPC_Peer_Link",
+      "type": "Trunk",
+      "native_vlan": "99",
+      "tagged_vlans": "7,201",
+      "vpc_peer_link": true,
+      "members": [
+        "1/49",
+        "1/50",
+        "1/51",
+        "1/52"
+      ]
+    },
+    {
+      "id": 50,
+      "description": "iBGP_Peer_Link",
+      "type": "L3",
+      "ipv4": "203.0.113.2/30",
+      "members": [
+        "1/39",
+        "1/40"
+      ]
+    }
+  ],
+  "mlag": {
+    "domain_id": 1,
+    "peer_keepalive": {
+      "source_ip": "192.0.2.2",
+      "destination_ip": "192.0.2.3"
+    }
+  },
+  "bgp": {
+    "asn": 65001,
+    "router_id": "203.0.113.1",
+    "networks": [
+      "192.0.2.0/24",
+      "198.51.100.0/24"
+    ],
+    "neighbors": [
+      {
+        "ip": "198.51.100.5",
+        "description": "TO_BORDER1",
+        "remote_as": 65010,
+        "af_ipv4_unicast": {}
+      },
+      {
+        "ip": "198.51.100.9",
+        "description": "TO_BORDER2",
+        "remote_as": 65010,
+        "af_ipv4_unicast": {}
+      }
+    ]
+  },
+  "prefix_lists": {}
+}

@@ -1,0 +1,55 @@
+{#
+  Port-Channel Configuration for Cisco NX-OS
+  
+  Creates port-channel interfaces and binds member interfaces.
+  Supports both L2 (trunk) and L3 (routed) port-channels.
+  vPC configuration is handled separately in vpc.j2.
+#}
+{% if has_port_channels -%}
+! === PORT-CHANNEL CONFIGURATION ===
+
+{% for pc in port_channels %}
+{# -------- Port-Channel Interface -------- #}
+interface port-channel{{ pc.id }}
+  description {{ pc.description }}
+{% if pc.type | lower == 'trunk' %}
+  switchport
+  switchport mode trunk
+  switchport trunk native vlan {{ pc.native_vlan }}
+{% if pc.tagged_vlans is defined and pc.tagged_vlans %}
+  switchport trunk allowed vlan {{ pc.tagged_vlans }}
+{% endif %}
+  spanning-tree port type network
+{% if pc.vpc_peer_link is defined and pc.vpc_peer_link %}
+  vpc peer-link
+{% elif pc.vpc_id is defined %}
+  vpc {{ pc.vpc_id }}
+{% endif %}
+{% elif pc.type | lower == 'l3' %}
+  no switchport
+  ip address {{ pc.ipv4 }}
+{% endif %}
+  mtu 9216
+  no shutdown
+
+{# -------- Member Interfaces -------- #}
+{% for member in pc.members %}
+interface Ethernet{{ member }}
+  description {{ pc.description }}
+  no cdp enable
+{% if pc.type | lower == 'trunk' %}
+  switchport
+  switchport mode trunk
+  switchport trunk native vlan {{ pc.native_vlan }}
+{% if pc.tagged_vlans is defined and pc.tagged_vlans %}
+  switchport trunk allowed vlan {{ pc.tagged_vlans }}
+{% endif %}
+  spanning-tree port type network
+{% endif %}
+  mtu 9216
+  channel-group {{ pc.id }} mode active
+  no shutdown
+
+{% endfor %}
+{% endfor %}
+{%- endif %}

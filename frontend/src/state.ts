@@ -12,7 +12,7 @@ import type {
   BGP,
   PrefixLists,
   StandardConfig,
-  DeploymentPattern 
+  DeploymentPattern
 } from './types';
 
 export type WizardPhase = 1 | 2 | 3 | 'review';
@@ -29,7 +29,6 @@ export interface WizardState {
   mlag: Partial<MLAG>;
   bgp: Partial<BGP>;
   prefix_lists: PrefixLists;
-  qos: boolean;
 }
 
 // Initialize default state
@@ -43,8 +42,7 @@ const initialState: WizardState = {
   portChannels: [],
   mlag: {},
   bgp: {},
-  prefix_lists: {},
-  qos: false
+  prefix_lists: {}
 };
 
 // Global state instance
@@ -212,20 +210,6 @@ export function setPrefixLists(lists: PrefixLists): void {
 }
 
 /**
- * Get QoS enabled state
- */
-export function getQosEnabled(): boolean {
-  return state.qos;
-}
-
-/**
- * Set QoS enabled state
- */
-export function setQosEnabled(enabled: boolean): void {
-  state.qos = enabled;
-}
-
-/**
  * Export state as StandardConfig
  */
 export function exportToStandardConfig(): StandardConfig {
@@ -236,8 +220,7 @@ export function exportToStandardConfig(): StandardConfig {
     port_channels: state.portChannels,
     mlag: Object.keys(state.mlag).length > 0 ? state.mlag as MLAG : undefined,
     bgp: Object.keys(state.bgp).length > 0 ? state.bgp as BGP : undefined,
-    prefix_lists: Object.keys(state.prefix_lists).length > 0 ? state.prefix_lists : undefined,
-    qos: state.qos
+    prefix_lists: Object.keys(state.prefix_lists).length > 0 ? state.prefix_lists : undefined
   };
 }
 
@@ -252,5 +235,4 @@ export function importFromStandardConfig(config: StandardConfig): void {
   state.mlag = config.mlag || {};
   state.bgp = config.bgp || {};
   state.prefix_lists = config.prefix_lists || {};
-  state.qos = config.qos || false;
 }

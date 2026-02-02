@@ -1,0 +1,40 @@
+{# interface.j2 - Interface configuration template #}
+{# Replace [VENDOR-SYNTAX] with actual vendor commands #}
+
+{% for intf in interfaces %}
+{% if intf.type == 'Trunk' %}
+! Trunk interface: {{ intf.name }}
+{% if intf.start_intf is defined and intf.end_intf is defined %}
+! Range: {{ intf.start_intf }} to {{ intf.end_intf }}
+[VENDOR-SYNTAX] interface range ethernet {{ intf.start_intf }} - {{ intf.end_intf }}
+{% else %}
+[VENDOR-SYNTAX] interface ethernet {{ intf.intf }}
+{% endif %}
+  description {{ intf.name }}
+  switchport mode trunk
+  switchport trunk native vlan {{ intf.native_vlan }}
+  switchport trunk allowed vlan {{ intf.tagged_vlans }}
+{% if intf.qos is defined and intf.qos %}
+  ! QoS for RDMA
+  [VENDOR-SYNTAX] priority-flow-control mode on
+{% endif %}
+  no shutdown
+
+{% elif intf.type == 'L3' %}
+! L3 interface: {{ intf.name }}
+[VENDOR-SYNTAX] interface {{ intf.intf_type | default('ethernet') }} {{ intf.intf }}
+  description {{ intf.name }}
+  no switchport
+  ip address {{ intf.ipv4 }}
+  no shutdown
+
+{% elif intf.type == 'Access' %}
+! Access interface: {{ intf.name }}
+[VENDOR-SYNTAX] interface ethernet {{ intf.intf }}
+  description {{ intf.name }}
+  switchport mode access
+  switchport access vlan {{ intf.access_vlan }}
+  no shutdown
+
+{% endif %}
+{% endfor %}

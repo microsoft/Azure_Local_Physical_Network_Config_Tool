@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/azure-local/network-config-tool/schema/standard.json",
-  "title": "Azure Local Network Switch Configuration",
+  "$id": "https://github.com/microsoft/Azure_Local_Physical_Network_Config_Tool/schema/standard.json",
+  "title": "Azure Local Physical Network Switch Configuration",
   "description": "Standard JSON schema for network switch configurations in Azure Local deployments",
   "type": "object",
   "required": ["switch"],
@@ -537,11 +537,6 @@
         }
       },
       "additionalProperties": false
-    },
-    "qos": {
-      "type": "boolean",
-      "description": "Enable QoS globally (for RDMA/RoCE)",
-      "default": false
     },
     "_metadata": {
       "type": "object",

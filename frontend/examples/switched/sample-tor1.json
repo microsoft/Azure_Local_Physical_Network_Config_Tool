@@ -1,4 +1,10 @@
 {
+  "_metadata": {
+    "description": "Sample TOR1 configuration for Azure Local switched deployment pattern",
+    "pattern": "switched",
+    "generated_by": "Azure Local Physical Network Config Tool",
+    "version": "1.0"
+  },
   "switch": {
     "vendor": "dellemc",
     "model": "s5248f-on",
@@ -96,8 +102,10 @@
       "end_intf": "1/1/18",
       "native_vlan": "99",
       "tagged_vlans": "711",
+      "qos": true,
       "service_policy": {
-        "qos_input": "AZLOCAL-QOS-MAP"
+        "qos_input": "AZLOCAL_PFC",
+        "qos_output": "AZLOCAL_ETS"
       }
     }
   ],
@@ -127,6 +135,10 @@
   "bgp": {
     "asn": 65001,
     "router_id": "203.0.113.1",
+    "networks": [
+      "192.0.2.0/24",
+      "198.51.100.0/24"
+    ],
     "neighbors": [
       {
         "ip": "198.51.100.5",
@@ -142,6 +154,5 @@
       }
     ]
   },
-  "prefix_lists": {},
-  "qos": true
+  "prefix_lists": {}
 }

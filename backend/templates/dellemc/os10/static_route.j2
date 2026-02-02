@@ -1,0 +1,22 @@
+{# 
+  Static Route Configuration for Dell EMC OS10
+  
+  Renders IP static routes for environments not using BGP.
+  Only renders if static_routes array is non-empty.
+  
+  Expected static_route object structure:
+  {
+    "destination": "0.0.0.0/0",    // Network prefix with CIDR mask
+    "next_hop": "10.0.0.1",        // Next hop IP address
+    "name": "default-gateway"      // Optional descriptive name
+  }
+#}
+{% if has_static_routes -%}
+! === STATIC ROUTE CONFIGURATION ===
+{% for route in static_routes %}
+{% if route.name is defined and route.name %}
+! Route: {{ route.name }}
+{% endif %}
+ip route {{ route.destination }} {{ route.next_hop }}
+{% endfor %}
+{%- endif %}

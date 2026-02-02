@@ -600,3 +600,317 @@ test.describe('14. UI Components', () => {
     await expect(page.locator('#btn-remove-mgmt')).not.toBeVisible();
   });
 });
+
+// ============================================================================
+// 15. STATIC ROUTING CONFIGURATION
+// ============================================================================
+
+test.describe('15. Static Routing Configuration', () => {
+  
+  test('static routing option is selectable', async ({ page }) => {
+    await page.goto('/');
+    await loadTemplate(page, 'Switchless', 'TOR1');
+    
+    // Static routing card should be visible
+    await expect(page.locator('.routing-card[data-routing="static"]')).toBeVisible();
+    
+    // Click static routing option
+    await page.click('.routing-card[data-routing="static"]');
+    await page.waitForTimeout(200);
+    
+    // Should be selected
+    await expect(page.locator('.routing-card[data-routing="static"]')).toHaveClass(/selected/);
+  });
+
+  test('can add static route', async ({ page }) => {
+    await page.goto('/');
+    await loadTemplate(page, 'Switchless', 'TOR1');
+    
+    // Select static routing
+    await page.click('.routing-card[data-routing="static"]');
+    await page.waitForTimeout(200);
+    
+    // Add static route button should be visible
+    const addButton = page.locator('#btn-add-static-route, button:has-text("Add Static Route")');
+    if (await addButton.isVisible()) {
+      const initialCount = await page.locator('.static-route-entry').count();
+      await addButton.click();
+      await page.waitForTimeout(200);
+      
+      await expect(page.locator('.static-route-entry')).toHaveCount(initialCount + 1);
+    }
+  });
+
+  test('switchless example has static_routes in JSON', async ({ page }) => {
+    await page.goto('/');
+    await loadTemplate(page, 'Switchless', 'TOR1');
+    
+    await page.waitForTimeout(500);
+    
+    const jsonText = await page.locator('#json-preview').textContent();
+    const config = JSON.parse(jsonText || '{}');
+    
+    // Switchless template should have static_routes
+    expect(config.static_routes).toBeDefined();
+    expect(Array.isArray(config.static_routes)).toBeTruthy();
+    expect(config.static_routes.length).toBeGreaterThan(0);
+    
+    // Each route should have destination and next_hop
+    const firstRoute = config.static_routes[0];
+    expect(firstRoute.destination).toBeDefined();
+    expect(firstRoute.next_hop).toBeDefined();
+  });
+});
+
+
+// ============================================================================
+// 16. QOS CONFIGURATION
+// ============================================================================
+
+test.describe('16. QoS Configuration', () => {
+  
+  test('interface QoS is present in fully-converged template', async ({ page }) => {
+    await page.goto('/');
+    await loadTemplate(page, 'Fully Converged', 'TOR1');
+    
+    await page.waitForTimeout(500);
+    
+    const jsonText = await page.locator('#json-preview').textContent();
+    const config = JSON.parse(jsonText || '{}');
+    
+    // Find interfaces with qos: true
+    const qosInterfaces = config.interfaces?.filter((i: any) => i.qos === true);
+    expect(qosInterfaces?.length).toBeGreaterThan(0);
+  });
+
+  test('storage interface has QoS in switched template', async ({ page }) => {
+    await page.goto('/');
+    await loadTemplate(page, 'Switched', 'TOR1');
+    
+    await page.waitForTimeout(500);
+    
+    const jsonText = await page.locator('#json-preview').textContent();
+    const config = JSON.parse(jsonText || '{}');
+    
+    // Find storage trunk interface
+    const storageInterface = config.interfaces?.find((i: any) => 
+      i.name?.toLowerCase().includes('storage')
+    );
+    
+    if (storageInterface) {
+      expect(storageInterface.qos).toBe(true);
+    }
+  });
+});
+
+
+// ============================================================================
+// 17. BGP NETWORKS CONFIGURATION
+// ============================================================================
+
+test.describe('17. BGP Networks Configuration', () => {
+  
+  test('BGP networks array exists in template', async ({ page }) => {
+    await page.goto('/');
+    await loadTemplate(page, 'Fully Converged', 'TOR1');
+    
+    await page.waitForTimeout(500);
+    
+    const jsonText = await page.locator('#json-preview').textContent();
+    const config = JSON.parse(jsonText || '{}');
+    
+    // BGP should have networks array
+    expect(config.bgp).toBeDefined();
+    expect(config.bgp.networks).toBeDefined();
+    expect(Array.isArray(config.bgp.networks)).toBeTruthy();
+    expect(config.bgp.networks.length).toBeGreaterThan(0);
+  });
+});
+
+
+// ============================================================================
+// 18. SWITCHED PATTERN PEER-LINK VALIDATION
+// ============================================================================
+
+test.describe('18. Switched Pattern Validation', () => {
+  
+  test('switched pattern peer-link excludes storage VLANs', async ({ page }) => {
+    await page.goto('/');
+    await loadTemplate(page, 'Switched', 'TOR1');
+    
+    await page.waitForTimeout(500);
+    
+    const jsonText = await page.locator('#json-preview').textContent();
+    const config = JSON.parse(jsonText || '{}');
+    
+    // Find peer-link port channel
+    const peerLink = config.port_channels?.find((pc: any) => pc.vpc_peer_link === true);
+    if (peerLink) {
+      // Peer-link tagged_vlans should NOT include storage VLANs (711, 712)
+      const taggedVlans = peerLink.tagged_vlans || '';
+      expect(taggedVlans).not.toContain('711');
+      expect(taggedVlans).not.toContain('712');
+    }
+  });
+
+  test('switched pattern has separate storage VLAN per TOR', async ({ page }) => {
+    await page.goto('/');
+    await loadTemplate(page, 'Switched', 'TOR1');
+    
+    await page.waitForTimeout(500);
+    
+    const jsonText = await page.locator('#json-preview').textContent();
+    const config = JSON.parse(jsonText || '{}');
+    
+    // TOR1 should have storage_1 VLAN (711), NOT storage_2 (712)
+    const storage1 = config.vlans?.find((v: any) => v.purpose === 'storage_1');
+    const storage2 = config.vlans?.find((v: any) => v.purpose === 'storage_2');
+    
+    expect(storage1).toBeDefined();
+    expect(storage2).toBeUndefined();
+  });
+});
+
+
+// ============================================================================
+// 19. END-TO-END USER WORKFLOW
+// ============================================================================
+
+test.describe('19. End-to-End User Workflow', () => {
+
+  test('user can fill wizard from scratch and export valid JSON', async ({ page }) => {
+    await page.goto('/');
+    
+    // Use the setupSwitch helper which is more reliable
+    await setupSwitch(page, { 
+      pattern: 'fully_converged', 
+      vendor: 'dellemc', 
+      model: 's5248f-on', 
+      role: 'TOR1' 
+    });
+    
+    // Check hostname is auto-generated
+    await page.waitForTimeout(300);
+    const hostnameInput = page.locator('#hostname');
+    await expect(hostnameInput).toHaveValue(/.+/);
+    
+    // Fill management VLAN with correct selectors (trigger change events)
+    const mgmtIdInput = page.locator('.vlan-mgmt-id');
+    await mgmtIdInput.fill('7');
+    await mgmtIdInput.dispatchEvent('change');
+    
+    const mgmtIpInput = page.locator('.vlan-mgmt-ip');
+    await mgmtIpInput.fill('192.168.1.2/24');
+    
+    // Fill compute VLAN
+    const computeIdInput = page.locator('.vlan-compute-id');
+    await computeIdInput.fill('201');
+    await computeIdInput.dispatchEvent('change');
+    
+    // Fill storage VLANs (for fully_converged)
+    const storage1Input = page.locator('#vlan-storage1-id');
+    if (await storage1Input.isVisible()) {
+      await storage1Input.fill('711');
+      await storage1Input.dispatchEvent('change');
+      
+      const storage2Input = page.locator('#vlan-storage2-id');
+      await storage2Input.fill('712');
+      await storage2Input.dispatchEvent('change');
+    }
+    
+    // Wait for state to update
+    await page.waitForTimeout(800);
+    
+    // Verify JSON preview has valid config
+    const jsonText = await page.locator('#json-preview').textContent();
+    expect(jsonText).toBeTruthy();
+    
+    const config = JSON.parse(jsonText || '{}');
+    
+    // Verify switch section
+    expect(config.switch).toBeDefined();
+    expect(config.switch.vendor).toBe('dellemc');
+    expect(config.switch.model).toBe('s5248f-on');
+    expect(config.switch.role).toBe('TOR1');
+    expect(config.switch.deployment_pattern).toBe('fully_converged');
+    
+    // Export JSON file (don't require vlans for this basic test)
+    const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
+    await page.click('#btn-export');
+    const download = await downloadPromise;
+    
+    // Verify download has correct filename format
+    expect(download.suggestedFilename()).toMatch(/.+-config\.json$/);
+  });
+
+  test('user can configure Cisco switch with BGP routing', async ({ page }) => {
+    await page.goto('/');
+    
+    // Use the setupSwitch helper for Cisco
+    await setupSwitch(page, { 
+      pattern: 'fully_converged', 
+      vendor: 'cisco', 
+      model: '93180yc-fx3', 
+      role: 'TOR1' 
+    });
+    
+    // Scroll to routing section and select BGP
+    await page.evaluate(() => document.querySelector('#phase3')?.scrollIntoView());
+    await page.waitForTimeout(300);
+    
+    const bgpCard = page.locator('.routing-card[data-routing="bgp"]');
+    if (await bgpCard.isVisible()) {
+      await page.click('.routing-card[data-routing="bgp"]');
+      
+      // Fill BGP details
+      await page.fill('#bgp-asn', '65001');
+      await page.fill('#bgp-router-id', '10.0.0.1');
+    }
+    
+    await page.waitForTimeout(500);
+    
+    // Verify JSON has Cisco config
+    const jsonText = await page.locator('#json-preview').textContent();
+    const config = JSON.parse(jsonText || '{}');
+    
+    expect(config.switch.vendor).toBe('cisco');
+    expect(config.switch.firmware).toBe('nxos');
+  });
+
+  test('exported JSON contains all configured sections', async ({ page }) => {
+    await page.goto('/');
+    
+    // Load a complete template
+    await loadTemplate(page, 'Fully Converged', 'TOR1');
+    await page.waitForTimeout(500);
+    
+    // Get the JSON preview content
+    const jsonText = await page.locator('#json-preview').textContent();
+    const config = JSON.parse(jsonText || '{}');
+    
+    // Verify all major sections are present
+    expect(config.switch).toBeDefined();
+    expect(config.vlans).toBeDefined();
+    expect(config.interfaces).toBeDefined();
+    expect(config.port_channels).toBeDefined();
+    expect(config.mlag).toBeDefined();
+    expect(config.bgp).toBeDefined();
+    
+    // Verify VLANs have required fields
+    for (const vlan of config.vlans) {
+      expect(vlan.vlan_id).toBeDefined();
+      expect(typeof vlan.vlan_id).toBe('number');
+    }
+    
+    // Verify interfaces have required fields
+    for (const intf of config.interfaces) {
+      expect(intf.name).toBeDefined();
+      expect(intf.type).toBeDefined();
+      expect(intf.intf_type).toBeDefined();
+    }
+    
+    // Verify BGP has required fields
+    expect(config.bgp.asn).toBeDefined();
+    expect(config.bgp.router_id).toBeDefined();
+  });
+});

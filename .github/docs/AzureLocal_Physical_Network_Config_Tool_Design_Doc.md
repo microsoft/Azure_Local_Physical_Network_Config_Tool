@@ -1,8 +1,20 @@
 # Azure Local Network Configuration Tool — Design Document
 
-**Version:** 3.1  
-**Date:** January 30, 2025  
+**Version:** 3.2  
+**Date:** February 2, 2026  
 **Status:** Ready for Implementation
+
+---
+
+## Core Principle: Reference Only
+
+> [!IMPORTANT]
+> **This tool provides REFERENCE configurations only.**
+> 
+> - Generated configs are **starting points**, not production-ready solutions
+> - Customers are **fully responsible** for validating and testing in their environment
+> - This repository provides **no production support or liability**
+> - All configurations must be reviewed and adapted for specific deployment requirements
 
 ---
 
@@ -23,7 +35,9 @@
 
 ### Purpose
 
-This tool generates vendor-specific switch configurations for Azure Local deployments. Users fill a web wizard → tool outputs Standard JSON → backend renders vendor `.cfg` files.
+This tool generates **reference** vendor-specific switch configurations for Azure Local deployments. Users fill a web wizard → tool outputs Standard JSON → backend renders vendor `.cfg` files.
+
+**Important:** Generated configurations require customer validation before production use.
 
 ### Scope
 
@@ -34,6 +48,15 @@ This tool generates vendor-specific switch configurations for Azure Local deploy
 | MLAG/vPC, QoS for RDMA | VXLAN/EVPN |
 | Cisco NXOS, Dell OS10 | Server/cluster config |
 
+### Responsibility
+
+| This Repo Provides | Customer Responsible For |
+|--------------------|--------------------------|
+| Reference configurations | Validating for their environment |
+| Azure Local pattern guidance | Testing before production |
+| Community-driven templates | Compliance with their policies |
+| Best-effort support | All production deployment issues |
+
 ### Design Principles
 
 | Principle | How |
@@ -42,17 +65,18 @@ This tool generates vendor-specific switch configurations for Azure Local deploy
 | **90% coverage** | Minimal required fields cover most scenarios |
 | **Vendor neutral** | Same JSON works for Cisco, Dell, etc. |
 | **Fail early** | Validate before generating |
+| **Reference only** | Customer validates and tests all configs |
 
 ---
 
 ## Repository Structure
 
 ```
-azure-local-network-config-tool/
+Azure_Local_Physical_Network_Config_Tool/
 │
 ├── .github/
 │   ├── docs/                        # Project documentation
-│   │   ├── AzureLocal_NetworkConfTool_Project_Design_Doc.md
+│   │   ├── AzureLocal_Physical_Network_Config_Tool_Design_Doc.md
 │   │   └── Project_Roadmap.md
 │   └── workflows/                   # CI/CD pipelines
 │       └── pages.yml

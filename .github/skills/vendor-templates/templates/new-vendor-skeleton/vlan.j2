@@ -1,0 +1,25 @@
+{# vlan.j2 - VLAN configuration template #}
+{# Replace [VENDOR-SYNTAX] with actual vendor commands #}
+
+{% for vlan in vlans %}
+! VLAN {{ vlan.vlan_id }} - {{ vlan.name }}
+[VENDOR-SYNTAX] vlan {{ vlan.vlan_id }}
+  name {{ vlan.name }}
+{% if vlan.shutdown is defined and vlan.shutdown %}
+  shutdown
+{% endif %}
+
+{% if vlan.interface is defined %}
+! SVI for VLAN {{ vlan.vlan_id }}
+[VENDOR-SYNTAX] interface vlan {{ vlan.vlan_id }}
+  ip address {{ vlan.interface.ip }}/{{ vlan.interface.cidr }}
+{% if vlan.interface.redundancy is defined %}
+  ! HSRP/VRRP
+  [VENDOR-SYNTAX] {{ vlan.interface.redundancy.type }} {{ vlan.vlan_id }}
+    priority {{ vlan.interface.redundancy.priority }}
+    ip {{ vlan.interface.redundancy.virtual_ip }}
+{% endif %}
+  no shutdown
+{% endif %}
+
+{% endfor %}

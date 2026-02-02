@@ -1,0 +1,57 @@
+{#
+  VLAN Configuration for Cisco NX-OS
+  
+  Creates VLANs and SVI (Switched Virtual Interface) configurations.
+  Includes DHCP relay and HSRP/VRRP redundancy support.
+#}
+{% if has_vlans -%}
+! === VLAN CONFIGURATION ===
+
+{# -------- VLAN Definitions -------- #}
+{% for vlan in vlans %}
+vlan {{ vlan.vlan_id }}
+  name {{ vlan.name }}
+{% if vlan.shutdown is defined and vlan.shutdown %}
+  shutdown
+{% endif %}
+{% endfor %}
+
+{# -------- SVI (VLAN Interfaces) -------- #}
+{% for vlan in vlans if vlan.interface is defined %}
+interface Vlan{{ vlan.vlan_id }}
+  description {{ vlan.name }}
+  mtu {{ vlan.interface.mtu | default(9216) }}
+{% if vlan.shutdown is defined and vlan.shutdown %}
+  shutdown
+{% else %}
+  no shutdown
+{% endif %}
+  ip address {{ vlan.interface.ip }}/{{ vlan.interface.cidr }}
+  no ip redirects
+  no ipv6 redirects
+{% if vlan.interface.dhcp_relay is defined %}
+{% for relay_ip in vlan.interface.dhcp_relay %}
+  ip dhcp relay address {{ relay_ip }}
+{% endfor %}
+{% endif %}
+{% if vlan.interface.redundancy is defined %}
+{% if vlan.interface.redundancy.type == "hsrp" %}
+  hsrp version 2
+  hsrp {{ vlan.interface.redundancy.group }}
+    priority {{ vlan.interface.redundancy.priority }}
+    ip {{ vlan.interface.redundancy.virtual_ip }}
+{% if vlan.interface.redundancy.preempt is defined and vlan.interface.redundancy.preempt %}
+    preempt
+{% endif %}
+{% elif vlan.interface.redundancy.type == "vrrp" %}
+  vrrp {{ vlan.interface.redundancy.group }}
+    priority {{ vlan.interface.redundancy.priority }}
+    address {{ vlan.interface.redundancy.virtual_ip }}
+{% if vlan.interface.redundancy.preempt is not defined or not vlan.interface.redundancy.preempt %}
+    no preempt
+{% endif %}
+{% endif %}
+{% endif %}
+
+{% endfor %}
+{%- endif %}

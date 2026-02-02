@@ -1,0 +1,44 @@
+{#
+  Full Configuration Template for Cisco NX-OS
+  
+  Aggregates all sub-templates in the correct order for a complete switch configuration.
+  Order: system → login → qos → vlan → interface → port_channel → vpc → prefix_list → bgp/static_routes
+#}
+{% include "cisco/nxos/system.j2" %}
+
+! === LOGIN CONFIGURATION ===
+! Replace $CREDENTIAL_PLACEHOLDER$ with actual credentials after generation
+fips mode enable
+user max-logins 1
+password prompt username
+userpassphrase min-length 15 max-length 80
+username admin password 0 $CREDENTIAL_PLACEHOLDER$ role network-admin
+
+no feature ssh
+no ssh key ecdsa
+no ssh key rsa
+ssh key rsa 2048 force
+ssh key ecdsa 256 force
+feature ssh
+
+line console
+  exec-timeout 10
+line vty
+  exec-timeout 10
+  session-limit 3
+
+{% include "cisco/nxos/qos.j2" %}
+
+{% include "cisco/nxos/vlan.j2" %}
+
+{% include "cisco/nxos/interface.j2" %}
+
+{% include "cisco/nxos/port_channel.j2" %}
+
+{% include "cisco/nxos/vpc.j2" %}
+
+{% include "cisco/nxos/prefix_list.j2" %}
+
+{% include "cisco/nxos/bgp.j2" %}
+
+{% include "cisco/nxos/static_route.j2" %}

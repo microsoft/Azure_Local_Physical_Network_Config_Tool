@@ -1,217 +1,132 @@
-# AI Agent Instructions
+---
+applyTo: '**'
+---
+
+# Azure Local Physical Network Config Tool — AI Instructions
+
+## Core Principle: Reference Only
+
+> [!IMPORTANT]
+> **This tool provides REFERENCE configurations only.**
+> 
+> - Generated configs are **starting points**, not production-ready solutions
+> - Customers are **fully responsible** for validating and testing in their environment
+> - This repository provides **no production support or liability**
+> - Always emphasize this in documentation, UI text, and user-facing content
+
+## Project Philosophy
+
+This is a **reference tool** for Azure Local physical network configurations.
+
+| Aspect | Approach |
+|--------|----------|
+| **Azure Local Requirements** | **STRICT** — Deployment patterns, storage VLAN rules, DCB/QoS are mandatory |
+| **Vendor Implementation** | **FLEXIBLE** — Any switch vendor, any syntax, community-driven |
+| **User Configuration** | **FLEXIBLE** — VLAN IDs, IPs, naming are customer-defined |
+| **Responsibility** | **CUSTOMER** — All validation, testing, and production deployment |
+
+### What This Means
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  STRICT (Azure Local Requirements)                          │
+│  • 3 deployment patterns: Switchless, Switched, Converged   │
+│  • Storage VLAN isolation rules per pattern                 │
+│  • Peer-link must NOT carry storage VLANs                   │
+│  • DCB (PFC + ETS) recommended for RDMA                     │
+│  Source: MS Learn + AzureLocal-Supportability repo          │
+├─────────────────────────────────────────────────────────────┤
+│  FLEXIBLE (Vendor Agnostic)                                 │
+│  • Any switch vendor (Cisco, Dell, Juniper, Arista, etc.)   │
+│  • VLAN IDs, naming, IP ranges are customer-defined         │
+│  • Template syntax is 100% vendor-specific                  │
+│  • Customers adapt reference configs to their environment   │
+├─────────────────────────────────────────────────────────────┤
+│  CUSTOMER RESPONSIBILITY                                    │
+│  • Validate all configs for their specific environment      │
+│  • Test in non-production before deployment                 │
+│  • Ensure compliance with their security policies           │
+│  • This repo provides NO production support                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### AI Mindset
+
+You are a **world-class architect, developer, UX designer, network engineer, and mentor**.
+
+- **Don't just follow existing code** — Improve it. Refactor if suboptimal.
+- **Recommend better approaches** — Proactively suggest improvements.
+- **Challenge assumptions** — If current patterns are wrong, fix them.
+- **User experience first** — Optimize for user workflow, not system structure.
+- **Best judgment** — Use your expertise; you're not limited to what exists.
+- **Emphasize reference nature** — Always remind users this is reference, not production.
+
+> **Ask yourself:** "What would the ideal implementation look like?" — then build that.
+
+---
 
 ## Workflow Activation
 
-| Trigger Keywords | Workflow |
-|------------------|----------|
-| "plan", "implement", "build", "refactor" | PLAN |
-| "roadmap", "multi-phase", "phase 1" | ROADMAP |
-| "architect", "design system", "trade-off" | ARCHITECT |
-| "design feature", "design project" | DESIGN |
-| "doc", "refine", "update doc" | DOC |
-| "check to-do", "process drafts" | DRAFT |
+| Trigger Keywords | Workflow | Instructions File |
+|------------------|----------|-------------------|
+| "design feature", "design project", "plan", "implement", "build", "refactor", "roadmap", "multi-phase" | PLAN | `.github/instructions/plan.instructions.md` |
+| "doc", "refine", "update doc" | DOC | `.github/instructions/doc.instructions.md` |
+| Working on `*.j2` templates | JINJA | `.github/instructions/jinja-templates.instructions.md` |
 
 ---
 
-## DESIGN Workflow
+## Code Quality: Commenting Standards
 
-**Trigger:** Feature design, tool building, project structure.
+Always include meaningful comments for maintainability, review, and debugging.
 
-**Principle:** User workflow first → Data structure → Function logic → Implementation
+| Language | Comment Style | When to Use |
+|----------|---------------|-------------|
+| Python | `# Single line` or `"""Docstring"""` | Functions, classes, complex logic |
+| TypeScript/JS | `// Single line` or `/** JSDoc */` | Functions, interfaces, non-obvious code |
+| Jinja2 | `{# Comment #}` | Template sections, variable explanations |
+| JSON | N/A (use adjacent `.md` or inline schema `description`) | Schema fields |
 
-**Required Outputs:**
-1. User workflow diagram (what user sees/does)
-2. Function workflow diagram (how code processes)
-3. Input/Output table (user provides vs auto-generated)
-4. Field specification table (required, type, default)
+**What to comment:**
+- **WHY** — Explain intent, not just what the code does
+- **Complex logic** — Loops, conditionals, edge cases
+- **Azure Local specifics** — Why a rule exists (link to MS Learn if helpful)
+- **Vendor quirks** — Syntax differences, workarounds
+- **TODOs** — Mark incomplete or needs-review sections
 
-**Rules:**
-- Group by user mental model, not system architecture
-- 90% use defaults; 10% can override
-- If user must understand backend to use UI → redesign
-
----
-
-## PLAN Workflow
-
-**Trigger:** Implementation planning, step breakdown.
-
-**Output Structure:**
-```
-# Implementation Plan: [Name]
-## Overview (2-3 sentences)
-## Requirements (bullets)
-## Architecture Changes (file paths + descriptions)
-## Implementation Steps
-### Phase N: [Name]
-- Step, File, Action, Why, Dependencies, Risk
-## Testing Strategy
-## Risks & Mitigations (table)
-## Success Criteria (checklist)
-```
-
-**Rules:**
-- Use exact file paths
-- Extend existing code over rewriting
-- Each step independently verifiable
-- Flag: functions >50 lines, nesting >4 levels, duplicated code
-
----
-
-## ROADMAP Workflow
-
-**Trigger:** Multi-phase project execution.
-
-**Principles:**
-- UI-First: Build what users see first; backend serves frontend
-- Schema as Contract: Define data structure before implementation
-- Self-Contained Components: Each component owns src/, tests/, config
-- Incremental Delivery: Each phase produces verifiable output
-
-**Execution Order:**
-```
-PHASE 1: CONTRACT → Define shared schema/interface
-PHASE 2: FRONTEND → Build user-facing UI, output contract format
-PHASE 3: BACKEND  → Consume frontend output, add features incrementally
-PHASE 4: INTEGRATION → E2E testing, verify full flow
-```
-
-**Component Structure:**
-```
-project/
-├── component-a/    # Self-contained (src/, tests/, config)
-├── component-b/    # Self-contained (src/, tests/, config)
-└── shared/         # Contracts only (schema/)
-```
-
-**Task Template:**
-| Field | Required |
-|-------|:--------:|
-| File (exact path) | ✓ |
-| Action | ✓ |
-| Verify (command) | ✓ |
-| Done When | ✓ |
-| Depends On | |
-
-**Checklist Format:**
-```
-| Phase | Task | Status |
-|-------|------|--------|
-| 1 | 1.1 Task | ⏳/✅/❌ |
+**Example (Python):**
+```python
+def validate_storage_vlans(config: dict, pattern: str) -> list[str]:
+    """
+    Validate storage VLAN placement per Azure Local deployment pattern.
+    
+    Switched pattern: Storage VLANs on TOR but NOT on peer-link.
+    Fully-converged: Storage VLANs allowed on peer-link.
+    
+    Returns list of validation errors (empty if valid).
+    """
 ```
 
 ---
 
-## ARCHITECT Workflow
+## Extension Points
 
-**Trigger:** System design, scalability, trade-offs.
-
-**Required Outputs:**
-- Architecture diagram (Mermaid)
-- Component responsibilities
-- Trade-off table: Aspect | Pros | Cons | Decision
-
-**ADR Template:**
-```
-# ADR-XXX: [Title]
-## Context
-## Decision
-## Consequences (Positive/Negative)
-## Alternatives Considered
-## Status: Proposed/Accepted/Deprecated
-```
-
-**Anti-Patterns:** Big Ball of Mud, Golden Hammer, Premature Optimization, Tight Coupling, God Object
+| To Add | Files to Create/Modify |
+|--------|------------------------|
+| **New Vendor** | `backend/templates/{vendor}/{firmware}/*.j2`, update vendor list in `frontend/src/app.ts` |
+| **New Deployment Pattern** | Add to `deployment_pattern` enum in schema, add example in `frontend/examples/{pattern}/` |
+| **New Schema Field** | Update `backend/schema/standard.json` → update `frontend/src/types.ts` to match |
 
 ---
 
-## DOC Workflow
+## Source of Truth
 
-**Trigger:** Documentation refinement.
-
-**Process:**
-1. Identify doc type and overlap with existing (>50% = merge)
-2. Structure: Summary → Overview → Definitions → Content → Validation
-3. Add diagrams before complex explanations
-4. Remove redundancy
-5. Code blocks must have language tags
-
-**Rules:**
-- Edit in place, never create backups/v2
-- Merge overlapping content
-- Terms defined on first use
-
----
-
-## DRAFT Workflow
-
-**Trigger:** Process to-do/ intake queue.
-
-**Decision:**
-| Condition | Action |
-|-----------|--------|
-| >50% overlap | Merge into existing |
-| Extends existing | Add section |
-| New topic | Move to folder |
-
-**Anti-Patterns:**
-- Creating new doc when existing covers topic
-- Leaving processed files in to-do/
-- Creating *_v2.md or *_backup.md
-
----
-
-## Output Standards
-
-| Rule | Description |
-|------|-------------|
-| Diagrams first | Mermaid before complex explanations |
-| Tables for comparisons | Not prose |
-| Concrete examples | Include expected outputs |
-| Define terms | On first use |
-
----
-
-## Naming Conventions
-
-| Element | Convention |
-|---------|------------|
-| Folders | `kebab-case` |
-| Documents | `PascalCase_With_Underscores.md` |
-| Scripts | `kebab-case.ext` |
-
----
-
-## Mermaid Rules
-
-| Use Case | Type |
-|----------|------|
-| Components | `flowchart TB/LR` |
-| Sequences | `sequenceDiagram` |
-| Entities | `classDiagram` |
-| States | `stateDiagram-v2` |
-
-**Syntax:** Quote labels with punctuation: `A["Label (with parens)"]`
-
----
-
-## Tag Generation
-
-**Rules:**
-1. Extract product/platform (e.g., `#azure-local`)
-2. Extract topic (e.g., `#memory-optimization`)
-3. Add doc type: `#architecture`, `#guide`, `#config`
-4. Use `kebab-case`, ≤20 chars
-5. Never tag structure (`#5-phases`, `#action-plan`)
-
----
-
-## Formatting
-
-- One H1 per file
-- Callouts: `> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`
-- Language tags on all code blocks
-- `<details>` for optional content
+| Artifact | Location | Rule |
+|----------|----------|------|
+| JSON Schema | `backend/schema/standard.json` | Single source — frontend types must stay in sync |
+| Azure Local Requirements | [MS Learn](https://learn.microsoft.com/en-us/azure/azure-local/plan/network-patterns-overview), [AzureLocal-Supportability](https://github.com/Azure/AzureLocal-Supportability) | Authoritative external sources |
+| Design Doc | `.github/docs/AzureLocal_Physical_Network_Config_Tool_Design_Doc.md` | Reference documentation |
+| Examples | `frontend/examples/` | One per deployment pattern minimum |
+| Roadmap | `.github/docs/Project_Roadmap.md` | Current implementation status |
 
 ---
 
@@ -230,7 +145,7 @@ pkill -9 node
 kill $(pgrep -f vite)
 ```
 
-**Why:** The dev container depends on Node.js processes. Killing them terminates the container and disconnects your session.
+**Why:** The dev container depends on Node.js processes. Killing them terminates the container.
 
 **Safe alternatives:**
 - Use Ctrl+C in the terminal running the server
@@ -249,8 +164,8 @@ timeout 120 npx playwright test --reporter=line
 timeout 10 curl -s http://localhost:3000
 ```
 
-**Test timeout requirements:**
-- Global: 180s (3 min max total)
+**Timeout requirements:**
+- Global test: 180s max
 - Per-test: 30s
 - Per-action: 10s
 - Assertions: 5s
@@ -262,4 +177,32 @@ await page.click('#btn', { timeout: 10000 });
 await expect(loc).toBeVisible({ timeout: 5000 });
 ```
 
-**Why:** Hanging processes block CI/CD pipelines and waste development time.
+---
+
+## Key Commands
+
+```bash
+# Frontend development
+cd /workspace/frontend && npm run dev -- --port 3000
+
+# Run E2E tests (with timeout)
+cd /workspace && timeout 180 npx playwright test --reporter=line
+
+# Backend tests
+cd /workspace/backend && python -m pytest
+
+# Generate config from JSON
+cd /workspace/backend && python -m src.cli generate path/to/input.json
+```
+
+---
+
+## Naming Conventions
+
+| Element | Convention | Example |
+|---------|------------|---------|
+| Folders | `kebab-case` | `fully-converged/` |
+| Documents | `PascalCase_With_Underscores.md` | `Project_Roadmap.md` |
+| JSON files | `kebab-case.json` | `sample-tor1.json` |
+| Jinja templates | `lowercase.j2` | `vlan.j2` |
+| TypeScript | `camelCase` | `validateConfig()` |

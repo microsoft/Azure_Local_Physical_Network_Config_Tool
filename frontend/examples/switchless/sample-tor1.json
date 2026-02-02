@@ -1,4 +1,10 @@
 {
+  "_metadata": {
+    "description": "Sample TOR1 configuration for Azure Local switchless deployment pattern with static routing",
+    "pattern": "switchless",
+    "generated_by": "Azure Local Physical Network Config Tool",
+    "version": "1.0"
+  },
   "switch": {
     "vendor": "dellemc",
     "model": "s5248f-on",
@@ -107,24 +113,22 @@
       "destination_ip": "192.0.2.3"
     }
   },
-  "bgp": {
-    "asn": 65001,
-    "router_id": "203.0.113.1",
-    "neighbors": [
-      {
-        "ip": "198.51.100.5",
-        "description": "TO_BORDER1",
-        "remote_as": 65010,
-        "af_ipv4_unicast": {}
-      },
-      {
-        "ip": "198.51.100.9",
-        "description": "TO_BORDER2",
-        "remote_as": 65010,
-        "af_ipv4_unicast": {}
-      }
-    ]
-  },
-  "prefix_lists": {},
-  "qos": true
+  "static_routes": [
+    {
+      "destination": "0.0.0.0/0",
+      "next_hop": "198.51.100.5",
+      "name": "Default_Gateway_Border1"
+    },
+    {
+      "destination": "10.0.0.0/8",
+      "next_hop": "198.51.100.9",
+      "name": "Internal_Networks_Border2"
+    },
+    {
+      "destination": "172.16.0.0/12",
+      "next_hop": "198.51.100.5",
+      "name": "Private_Networks_Border1"
+    }
+  ],
+  "prefix_lists": {}
 }

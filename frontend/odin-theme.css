@@ -613,7 +613,15 @@ body.font-large span {
 }
 
 .form-group input::placeholder {
-    color: var(--text-muted);
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+/* Improved placeholder visibility in dark mode */
+.form-group select::placeholder,
+.form-group textarea::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
 }
 
 .form-group small {
@@ -922,8 +930,8 @@ body.font-large span {
     font-size: 11px;
     color: var(--text-secondary);
     overflow: auto;
-    max-height: 400px;
-    min-height: 300px;
+    max-height: 500px;
+    min-height: 400px;
     white-space: pre-wrap;
     word-break: break-all;
 }
@@ -973,7 +981,7 @@ body.font-large span {
 }
 
 .sidebar-actions .btn-export.tertiary {
-    background: transparent;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
 }

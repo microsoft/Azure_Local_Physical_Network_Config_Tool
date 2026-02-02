@@ -1,0 +1,16 @@
+{#
+  Static Route Configuration for Cisco NX-OS
+  
+  Configures IP static routes for environments not using BGP.
+  Only renders if static_routes array is non-empty.
+#}
+{% if has_static_routes -%}
+! === STATIC ROUTE CONFIGURATION ===
+
+{% for route in static_routes %}
+{% if route.name is defined and route.name %}
+! Route: {{ route.name }}
+{% endif %}
+ip route {{ route.destination }} {{ route.next_hop }}
+{% endfor %}
+{%- endif %}

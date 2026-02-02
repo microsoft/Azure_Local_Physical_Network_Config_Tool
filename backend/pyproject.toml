@@ -1,7 +1,7 @@
 [project]
-name = "azure-local-network-config-backend"
+name = "azure-local-physical-network-config-backend"
 version = "1.0.0"
-description = "Backend CLI for Azure Local network switch configuration generation"
+description = "Backend CLI for Azure Local physical network switch configuration generation"
 requires-python = ">=3.9"
 dependencies = [
     "jinja2>=3.1.0",

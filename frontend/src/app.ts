@@ -45,6 +45,7 @@ import {
   formatJSON
 } from './utils';
 import { updateBreadcrumbCompletion } from './main';
+import { validatePeerLinkVlans } from './validator';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -2269,6 +2270,18 @@ function validateRedundancyStep(): boolean {
     return false;
   }
   
+  // Validate peer-link does not carry storage VLANs (Azure Local rule for switched pattern)
+  const deploymentPattern = state.config.switch?.deployment_pattern || 'fully_converged';
+  const vlans = state.config.vlans || [];
+  const portChannels = state.config.port_channels || [];
+  
+  const peerLinkValidation = validatePeerLinkVlans(vlans, portChannels, deploymentPattern);
+  if (!peerLinkValidation.valid && peerLinkValidation.errors.length > 0) {
+    const errorMessage = peerLinkValidation.errors[0]?.message || 'Peer-link validation failed';
+    showValidationError(`⚠️ ${errorMessage}`);
+    return false;
+  }
+  
   return true;
 }
 
@@ -2727,6 +2740,38 @@ function loadConfig(config: Partial<StandardConfig>): void {
           if (asnInput) asnInput.value = String(neighbor.remote_as || '');
         }
       });
+    }
+  }
+  
+  // Step 6: Routing (Static Routes)
+  if (config.static_routes && config.static_routes.length > 0) {
+    state.config.static_routes = config.static_routes; // Update state
+    
+    // Load static routes into UI
+    const routesContainer = getElement('#static-routes-container');
+    if (routesContainer) {
+      routesContainer.innerHTML = '';
+      config.static_routes.forEach(route => {
+        addStaticRoute();
+        const entries = getElements('.static-route-entry');
+        const lastEntry = entries[entries.length - 1];
+        if (lastEntry) {
+          const destInput = lastEntry.querySelector<HTMLInputElement>('.route-dest');
+          const nextHopInput = lastEntry.querySelector<HTMLInputElement>('.route-nexthop');
+          const nameInput = lastEntry.querySelector<HTMLInputElement>('.route-name');
+          if (destInput) destInput.value = route.destination || '';
+          if (nextHopInput) nextHopInput.value = route.next_hop || '';
+          if (nameInput) nameInput.value = route.name || '';
+        }
+      });
+    }
+    
+    // Also select static routing mode if routes exist
+    const staticCard = getElement('.routing-card[data-routing="static"]');
+    if (staticCard) {
+      // Deselect BGP
+      getElements('.routing-card').forEach(c => c.classList.remove('selected'));
+      staticCard.classList.add('selected');
     }
   }
   

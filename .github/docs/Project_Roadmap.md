@@ -1,307 +1,365 @@
-# Azure Local Switch Configuration Wizard — Project Roadmap
+# Azure Local Physical Network Config Tool — Project Roadmap
 
-**Version:** 10.2  
-**Date:** February 1, 2026  
-**Status:** UI Polish Phase 2  
-**Reference:** [Odin for Azure Local](https://neilbird.github.io/Odin-for-AzureLocal/)
-
----
-
-## Executive Summary
-
-The Odin UI redesign is complete. Phase 1 UI Polish & Code Cleanup has been completed (breadcrumb active state, button styling, text contrast, typography system, CSS consolidation, E2E test refresh). Phase 2 focuses on VLAN section UX improvements (move Remove button to header, fix placeholder contrast), JSON preview enhancements, and final button styling consistency.
+**Version:** 17.0  
+**Date:** February 2, 2026  
+**Status:** E2E MVP Complete — UI Export Config Feature Next  
+**Reference:** [Design Doc](AzureLocal_Physical_Network_Config_Tool_Design_Doc.md)
 
 ---
 
-## Open Issues
+## Core Principle: Reference Only
 
-| Issue | Description | Priority |
-|-------|-------------|----------|
-| **VLAN Remove button position** | Remove button inside each card; should be in section header next to Add | HIGH |
-| **Placeholder text contrast** | `--text-muted` (#64748b) too dark; should match input text (#f1f5f9) | HIGH |
-| **BMC section unnecessary** | BMC VLAN section not needed; remove from VLANs | MEDIUM |
-| **JSON preview too small** | Need larger min-height for better visibility | LOW |
-| **Copy button label** | "Copy to Clipboard" should be "Export Switch Config" | LOW |
-| **Start Over button style** | Doesn't match other action buttons | LOW |
+> [!IMPORTANT]
+> **This tool provides REFERENCE configurations only.**
+> 
+> | Aspect | This Repo's Responsibility | Customer's Responsibility |
+> |--------|---------------------------|--------------------------|
+> | **Purpose** | Help understand Azure Local network patterns | Validate for your specific environment |
+> | **Configs** | Provide reference templates & examples | Test and modify for production use |
+> | **Support** | Community-driven, best-effort | Your IT/Network team |
+> | **Liability** | None — use at your own risk | Full responsibility for deployment |
+> 
+> **Generated configurations are starting points, not production-ready solutions.**
 
 ---
 
-## Architecture Overview (Updated)
+## Current Focus
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│ HEADER: Azure Local Switch Configuration Wizard         [📋 Load] [📁 Import]  │
+│  ✅ E2E MVP COMPLETE (Phases 1-6)                                               │
+│     • Frontend wizard: Schema-aligned, validated, 48 E2E tests                  │
+│     • Backend: 67 unit tests, full schema validation                            │
+│     • Dell EMC OS10: 10/10 templates                                            │
+│     • Cisco NX-OS: 10/10 templates                                              │
+│     • All 3 deployment patterns working (fully_converged, switched, switchless) │
 ├─────────────────────────────────────────────────────────────────────────────────┤
-│ BREADCRUMB: [1 Pattern] › [2 VLANs] › [3 Ports] › [4 Redund] › [5 Routing]    │
-├────────────────────────────────────────────────────┬────────────────────────────┤
-│                                                    │                            │
-│  ┌──────────────────────────────────────────────┐  │  ┌──────────────────────┐  │
-│  │ 01 Pattern & Switch                          │  │  │ Progress    80% 4/5  │  │
-│  │ ┌─────────┐ ┌─────────┐ ┌─────────┐         │  │  │ ████████████████░░░  │  │
-│  │ │Switchless│ │ Switched │ │Fully FC │         │  │  ├──────────────────────┤  │
-│  │ └─────────┘ └─────────┘ └─────────┘         │  │  │ Font: [A-][A+]       │  │
-│  │                                              │  │  │ Theme: [🌙/☀️]        │  │
-│  │ Vendor: [▼ Dell EMC    ]                    │  │  ├──────────────────────┤  │
-│  │ Model:  [▼ S5248F-ON   ]                    │  │  │ CONFIG SUMMARY       │  │
-│  │                                              │  │  │ Pattern: Fully Conv  │  │
-│  │ Role: [TOR1 ✓] [TOR2]  Hostname: [______]  │  │  │ Vendor: Dell EMC     │  │
-│  └──────────────────────────────────────────────┘  │  │ ...                  │  │
-│                                                    │  ├──────────────────────┤  │
-│  ┌──────────────────────────────────────────────┐  │  │ 📄 JSON Preview [▼]  │  │
-│  │ 02 VLANs                                     │  │  │ ┌──────────────────┐ │  │
-│  │ ...                                          │  │  │ │ { "switch": ... }│ │  │
-│  └──────────────────────────────────────────────┘  │  │ └──────────────────┘ │  │
-│                                                    │  ├──────────────────────┤  │
-│  ┌──────────────────────────────────────────────┐  │  │ [💾 Export JSON    ] │  │
-│  │ 03 Host Ports                                │  │  │ [📋 Copy Clipboard ] │  │
-│  │ ...                                          │  │  │ [📋 Load Template  ] │  │
-│  └──────────────────────────────────────────────┘  │  │ [📁 Import JSON    ] │  │
-│                                                    │  │ [🔄 Start Over     ] │  │
-│  ┌──────────────────────────────────────────────┐  │  └──────────────────────┘  │
-│  │ 04 Redundancy                                │  │                            │
-│  │ ...                                          │  │                            │
-│  └──────────────────────────────────────────────┘  │                            │
-│                                                    │                            │
-│  ┌──────────────────────────────────────────────┐  │                            │
-│  │ 05 Routing                                   │  │                            │
-│  │ ...                                          │  │                            │
-│  └──────────────────────────────────────────────┘  │                            │
-│                                                    │                            │
-└────────────────────────────────────────────────────┴────────────────────────────┘
+│  🔄 NEXT: Phase 7 — UI Export Config Feature                                    │
+│     • Add "Export Config" button to generate final switch config in browser     │
+│     • Users download ready-to-deploy config without CLI                         │
+│     • Integrate backend renderer logic into frontend (WASM or API)              │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Key Changes:**
-- **5 sections** instead of 6 (Review removed)
-- **JSON Preview** moved to collapsible section in sidebar
-- **Export/Copy/Template/Import buttons** consolidated in sidebar
-- **Progress** tracks 5 sections (20% each)
+---
+
+## Progress Tracker
+
+| Phase | Description | Status | Notes |
+|-------|-------------|--------|-------|
+| 1-6 | E2E MVP Implementation | ✅ **Complete** | See [Completed Phases Archive](#completed-phases-archive) |
+| 7 | UI Export Config Feature | 🔄 **Next** | Generate final config in browser |
+| 8 | Lab-Based Workflow Testing | 📋 **Planned** | Config-to-template workflow |
+| 9 | GitHub Community Workflow | 📋 **Planned** | Issue templates + PR automation |
 
 ---
 
-## Typography System (New)
+## Phase 7: UI Export Config Feature 🔄 NEXT
 
-### Design Tokens
+**Goal:** Allow users to download the final switch configuration directly from the wizard — no CLI required.
 
-```css
-:root {
-  /* Type Scale (rem for accessibility) */
-  --text-xs: 0.75rem;     /* 12px - captions, hints */
-  --text-sm: 0.875rem;    /* 14px - body, labels */
-  --text-base: 1rem;      /* 16px - card titles */
-  --text-lg: 1.125rem;    /* 18px - section titles */
-  --text-xl: 1.5rem;      /* 24px - page title */
-  
-  /* Font Weights */
-  --font-normal: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
-  
-  /* Line Heights */
-  --leading-tight: 1.25;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
-}
+### Current State vs. Target
+
+| Aspect | Current | Target |
+|--------|---------|--------|
+| Export button | Exports JSON | Exports final switch config |
+| User workflow | Wizard → JSON → CLI → Config | Wizard → Config |
+| CLI dependency | Required | Optional (for power users) |
+
+### Implementation Options
+
+| Option | Approach | Pros | Cons |
+|--------|----------|------|------|
+| **A: API Call** | Frontend calls backend API | Reuses existing renderer | Requires backend server |
+| **B: WASM** | Compile Python renderer to WASM | Fully client-side | Complex build, larger bundle |
+| **C: JS Port** | Rewrite renderer in TypeScript | Fast, no dependencies | Duplicated logic to maintain |
+| **D: Bundled Templates** | Include templates in frontend, use JS Jinja2 lib | Client-side, moderate effort | Need Jinja2 JS library |
+
+**Recommended: Option A (API Call)** for initial release — simplest to implement, keeps single source of truth for templates.
+
+### Implementation Steps
+
+| Step | Task | Description |
+|------|------|-------------|
+| 7.1 | Add backend API endpoint | `/api/generate` accepts JSON, returns config |
+| 7.2 | Add UI "Export Config" button | Separate from "Export JSON" |
+| 7.3 | Call API and download result | Fetch → blob → download |
+| 7.4 | Add loading state | Show spinner while generating |
+| 7.5 | Error handling | Display errors if generation fails |
+| 7.6 | E2E tests | Test export flow |
+
+### Success Criteria
+
+- [ ] "Export Config" button visible in UI
+- [ ] Click generates and downloads `.cfg` file
+- [ ] Config is valid vendor syntax (Cisco/Dell)
+- [ ] Works for all 3 deployment patterns
+- [ ] E2E test validates export flow
+
+---
+
+## Phase 8: Lab-Based Workflow Testing 📋 PLANNED
+
+**Goal:** Create an isolated lab environment to test the config-to-template workflow before implementing GitHub automation.
+
+### Why Lab First?
+
+| Approach | Speed | Risk | Debuggability |
+|----------|-------|------|---------------|
+| **Lab folder (isolated)** | Fast iteration | Zero | Easy - all local |
+| GitHub Issues directly | Slower | Medium | Harder - round trips |
+
+### Lab Structure
+
+```
+lab/
+├── README.md                      # Lab usage guide
+├── templates/                     # COPY of backend/templates/ (safe to modify)
+│   ├── cisco/nxos/*.j2
+│   └── dellemc/os10/*.j2
+├── schema/                        # COPY of backend/schema/
+│   └── standard.json
+├── scripts/                       # Processing logic
+│   ├── process.py                 # Main entry point
+│   ├── vendor_detector.py         # Auto-detect vendor from config
+│   ├── config_sectioner.py        # Split config into sections
+│   └── template_updater.py        # Update/create .j2 templates
+├── submissions/                   # Test inputs (customer submissions)
+│   ├── example-cisco-tor1/
+│   │   ├── metadata.yaml          # Vendor, model, role, pattern
+│   │   └── config.txt             # Raw switch config
+│   └── example-dell-tor1/
+│       ├── metadata.yaml
+│       └── config.txt
+└── output/                        # Generated outputs (gitignored)
 ```
 
-### Hierarchy
+### Sample metadata.yaml
 
-| Element | Size | Weight | Use Case |
-|---------|------|--------|----------|
-| Page Title (h1) | `--text-xl` | `--font-bold` | Main header only |
-| Section Title (h2) | `--text-lg` | `--font-semibold` | Step headers (01-05) |
-| Card Title (h3) | `--text-base` | `--font-semibold` | Option cards, subsections |
-| Sidebar Header (h4) | `--text-sm` | `--font-semibold` | Summary section titles |
-| Body Text | `--text-sm` | `--font-normal` | Descriptions, paragraphs |
-| Form Labels | `--text-sm` | `--font-medium` | Input labels |
-| Helper Text | `--text-xs` | `--font-normal` | Hints, captions, small text |
-| Buttons | `--text-sm` | `--font-semibold` | All buttons |
-
----
-
-## Implementation Plan
-
-### Phase 1: VLAN Section UX (Priority: HIGH) — CURRENT
-
-**1.1 Move Remove Button to Section Header**
-
-**Files:** `frontend/index.html`, `frontend/src/app.ts`, `frontend/odin-theme.css`
-
-| Task | Status |
-|------|--------|
-| Add `.btn-group` container in section header with "+ Add" then "− Remove" | ⏳ |
-| Remove button hidden when only 1 VLAN exists | ⏳ |
-| Remove "× Remove" button from `createVlanCardHTML()` card-header | ⏳ |
-| Add click handlers for `#btn-remove-mgmt` and `#btn-remove-compute` | ⏳ |
-| Toggle Remove button visibility based on VLAN count (show when >1) | ⏳ |
-| Add `.btn-group` flexbox CSS styling | ⏳ |
-
-**1.2 Fix Placeholder/Helper Text Contrast**
-
-**File:** `frontend/odin-theme.css`
-
-| Task | Status |
-|------|--------|
-| Change `--text-muted` from `#64748b` to `#f1f5f9` | ⏳ |
-| Placeholder text now matches filled input text (white) | ⏳ |
-
-**1.3 Remove BMC Section**
-
-**File:** `frontend/index.html`
-
-| Task | Status |
-|------|--------|
-| Delete entire BMC VLAN collapsible section (`#vlan-bmc-section`) | ⏳ |
-
-### Phase 2: Sidebar Polish (Priority: MEDIUM)
-
-**2.1 JSON Preview Sizing**
-
-**File:** `frontend/odin-theme.css`
-
-| Task | Status |
-|------|--------|
-| Increase `#json-preview` min-height to ~400px | ⏳ |
-
-**2.2 Button Labeling**
-
-**File:** `frontend/index.html`
-
-| Task | Status |
-|------|--------|
-| Change "📋 Copy to Clipboard" to "📤 Export Switch Config" | ⏳ |
-
-**2.3 Start Over Button Styling**
-
-**File:** `frontend/odin-theme.css`
-
-| Task | Status |
-|------|--------|
-| Style `#btn-reset` to match Export/Copy buttons | ⏳ |
-
-### Phase 3: Test Updates (Priority: MEDIUM)
-
-**File:** `tests/wizard-e2e.spec.ts`
-
-| Task | Status |
-|------|--------|
-| Update Remove button selector to `#btn-remove-mgmt` | ⏳ |
-| Remove BMC collapsible test | ⏳ |
-| Update copy button text selector | ⏳ |
-
----
-
-## Standard Development Practices
-
-> [!IMPORTANT]
-> These practices must be followed after completing any implementation phase.
-
-### 1. Code Review & Cleanup
-
-After finishing all tasks in a phase:
-- Review the entire `frontend/` folder for cleanliness
-- Ensure logic is clear and well-organized
-- Remove any duplicates, unused code, or dead imports
-- Verify no conflicting styles or redundant CSS
-
-### 2. Test Maintenance
-
-After any code changes:
-- Refresh and refine unit tests to match current implementation
-- Remove unused, outdated, or invalidated tests
-- Keep only the most relevant and focused test cases
-- Ensure all tests pass with proper timeouts
-
-### 3. Code Documentation
-
-For all code changes:
-- Add JSDoc comments to exported functions
-- Include inline comments for complex logic
-- Document any workarounds or non-obvious decisions
-- Add section headers (`// === SECTION NAME ===`) for organization
-- Write comments that help future debugging and review
-
----
-
-## Section Mapping (Final)
-
-| Number | Section | Completion Criteria |
-|--------|---------|---------------------|
-| 01 | Pattern & Switch | Pattern + Vendor + Model + Role + Hostname |
-| 02 | VLANs | Management VLAN ID > 0 |
-| 03 | Host Ports | Converged OR Storage port range defined |
-| 04 | Redundancy | Peer-link + Keepalive IPs configured |
-| 05 | Routing | BGP (ASN + Router ID) OR Static routes |
-
----
-
-## Files to Modify
-
-| File | Action | Description |
-|------|--------|-------------|
-| `frontend/index.html` | **Modify** | Add btn-group for Add/Remove, remove BMC section, rename copy button |
-| `frontend/odin-theme.css` | **Modify** | Fix --text-muted contrast, add btn-group CSS, enlarge JSON preview, style Start Over |
-| `frontend/src/app.ts` | **Modify** | Remove button from createVlanCardHTML, add section Remove handlers |
-| `tests/wizard-e2e.spec.ts` | **Modify** | Update Remove button selector, remove BMC test |
-
----
-
-## Files to Keep (No Changes)
-
-| File | Reason |
-|------|--------|
-| `frontend/src/state.ts` | State management working correctly |
-| `frontend/src/types.ts` | TypeScript interfaces stable |
-| `frontend/src/utils.ts` | Utility functions stable |
-| `frontend/src/validator.ts` | Validation logic stable |
-| `frontend/src/main.ts` | Entry point stable |
-| `frontend/vite.config.ts` | Build config stable |
-| `frontend/tsconfig.json` | TypeScript config stable |
-| `frontend/package.json` | Dependencies stable |
-| `playwright.config.ts` | Test config has correct timeouts |
-
----
-
-## Switch Logic (Preserved - Do Not Modify)
-
-These core functions in `frontend/src/app.ts` must remain unchanged:
-
-| Category | Functions |
-|----------|-----------|
-| **Pattern Logic** | `getPatternVlans()`, `getPatternHostVlans()`, `updateHostPortsSections()` |
-| **Config Building** | `collectConfig()`, `collectVLANs()`, `collectInterfaces()`, `collectPortChannels()`, `collectRouting()` |
-| **Validation** | `validateConfig()`, `showValidationError()`, `showSuccessMessage()` |
-| **Import/Export** | `exportConfig()`, `importJSON()`, `loadConfig()` |
-
----
-
-## Acceptance Criteria
-
-| Requirement | Verification |
-|-------------|--------------|
-| VLAN Add/Remove buttons in section header | Both buttons visible, Remove hidden when 1 VLAN |
-| Placeholder text white like input text | Visual check - same contrast |
-| BMC section removed | No BMC collapsible in VLANs |
-| JSON preview larger | Min-height ~400px |
-| Copy button renamed | Shows "Export Switch Config" |
-| Start Over button styled | Matches Export/Copy buttons |
-
----
-
-## Risk Mitigation
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Breaking switch logic | Export fails | Keep all app.ts config logic intact |
-| CSS conflicts | Layout broken | Consolidate to single CSS file |
-| Tests timeout | CI blocked | 30s per-test, 3min global |
-| Template loading fails | UX broken | Verify glob import, add fallback |
-| Progress/breadcrumb mismatch | User confusion | Use same criteria for both |
-
-**Rollback:**
-```bash
-git checkout HEAD~1 -- frontend/
+```yaml
+# Customer fills this (maps to GitHub Issue form fields)
+vendor: cisco
+firmware: nxos
+model: 93180YC-FX3
+os_version: "10.2(3)"
+role: TOR1
+deployment_pattern: fully_converged
+hostname: az-tor1-r01
 ```
+
+### Implementation Steps
+
+| Step | Task | Description |
+|------|------|-------------|
+| 8.1 | Create lab folder structure | Directories, README, .gitignore for output |
+| 8.2 | Copy templates and schema | Mirror `backend/templates/` and `backend/schema/` |
+| 8.3 | Create sample submissions | Use existing fixtures as examples |
+| 8.4 | Build vendor detector | Auto-detect vendor/model from config patterns |
+| 8.5 | Build config sectioner | Split full config into feature sections |
+| 8.6 | Validate round-trip | Submit → process → render → compare to original |
+
+### Success Criteria
+
+- [ ] `lab/scripts/process.py` reads submission folder
+- [ ] Vendor auto-detected from config content
+- [ ] Config sectioned into system, vlan, interface, etc.
+- [ ] Output JSON validates against schema
+- [ ] Generated config renders correctly with existing templates
+
+---
+
+## Phase 9: GitHub Community Workflow 📋 PLANNED
+
+**Goal:** Once lab workflow proven, implement GitHub Issue-based template submissions.
+
+### Workflow Overview
+
+```mermaid
+flowchart LR
+    subgraph "Submit"
+        A[Customer opens Issue] --> B[Fills template form]
+    end
+    
+    subgraph "Develop"
+        B --> C[Maintainer creates branch]
+        C --> D[Creates .j2 templates + tests]
+        D --> E[Opens PR]
+    end
+    
+    subgraph "Review"
+        E --> F[CI: pytest + Jinja2 validation]
+        F --> G[Copilot Review]
+        G --> H[Human Review]
+    end
+    
+    subgraph "Merge"
+        H -->|Approved| I[Merge to main]
+        H -->|Changes| D
+    end
+```
+
+### Components to Create
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| Issue Template | `.github/ISSUE_TEMPLATE/template-submission.yml` | Structured form for config submission |
+| PR Template | `.github/PULL_REQUEST_TEMPLATE.md` | Checklist for template PRs |
+| Contributing Guide | `CONTRIBUTING.md` | How to submit templates |
+| Validation Workflow | `.github/workflows/validate-templates.yml` | CI for template PRs |
+
+### Issue Template Fields
+
+| Field | Type | Options | Required |
+|-------|------|---------|----------|
+| **Vendor** | dropdown | `cisco`, `dellemc`, `arista`, `juniper`, `Other` | ✅ |
+| **Firmware/OS** | dropdown | `nxos`, `os10`, `eos`, `junos`, `Other` | ✅ |
+| **Deployment Pattern** | checkboxes | fully_converged, switched, switchless | ✅ |
+| **Switch Role** | dropdown | TOR1, TOR2, BMC | ✅ |
+| **Model** | text | Free text (e.g., `S5248F-ON`) | ✅ |
+| **OS Version** | text | Free text (e.g., `10.5.5.5`) | ✅ |
+| **Config Paste** | textarea | Full switch config | ✅ |
+| **Additional Context** | textarea | Notes, special features | ❌ |
+
+---
+
+## Completed Phases Archive
+
+<details>
+<summary><strong>Phases 1-6: E2E MVP Implementation (Click to expand)</strong></summary>
+
+### Phase 1: Frontend Schema Sync & Validation ✅
+
+- Synced `types.ts` with schema (StaticRoute, native_vlan, vpc_id, deployment_pattern required)
+- Added peer-link storage VLAN validation for switched pattern
+- Verified static routing UI works
+
+### Phase 2: Backend Schema Extension ✅
+
+- Removed global `qos` field (interface-level only)
+- Removed `login` object (hardcoded in templates)
+- Added `has_qos_interfaces` helper
+- Added role helpers: `is_tor1`, `is_tor2`, `is_bmc`
+- Added pattern helpers: `is_fully_converged`, `is_switched`, `is_switchless`
+- Added VLAN filters: `storage_vlans`, `management_vlans`, `compute_vlans`
+
+### Phase 3: Dell OS10 Template Completion ✅
+
+- Created `qos.j2` with DCB/PFC for RDMA
+- Created `static_route.j2` with route loop and guard
+- Updated `full_config.j2` with QoS, static_route includes, and hardcoded login section
+
+### Phase 3.5: E2E Test Refresh & Examples Update ✅
+
+- Added `qos: true` to host/storage interfaces in examples
+- Added `networks` array to BGP, `static_routes` array
+- Added `_metadata` section to all examples
+- 45 E2E tests passing
+
+### Phase 4: Cisco NX-OS Templates ✅
+
+All 10 templates created:
+- `system.j2`, `vlan.j2`, `interface.j2`, `port_channel.j2`, `vpc.j2`
+- `bgp.j2`, `prefix_list.j2`, `qos.j2`, `static_route.j2`, `full_config.j2`
+
+### Phase 4.5: Type/Schema Sync Fix ✅
+
+- Fixed `intf_type` and `af_ipv4_unicast` to be required in types.ts
+
+### Phase 5: Integration Testing ✅
+
+- Created Cisco test fixtures
+- 38 renderer tests in `backend/tests/test_renderer.py`
+- 67 total backend tests passing
+
+### Phase 6: UI Polish ✅
+
+- JSON preview min-height increased to 400px
+- Placeholder contrast improved
+- Start Over button styling fixed
+- 48 total E2E tests passing
+
+</details>
+
+---
+
+## E2E MVP Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           FRONTEND (TypeScript/Vite)                            │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐      │
+│  │   Wizard    │───▶│   State     │───▶│  Validator  │───▶│ JSON Export │      │
+│  │     UI      │    │ Management  │    │   Rules     │    │  Standard   │      │
+│  └─────────────┘    └─────────────┘    └─────────────┘    └──────┬──────┘      │
+└──────────────────────────────────────────────────────────────────┼──────────────┘
+                                                                   │
+                                                          standard.json
+                                                                   │
+┌──────────────────────────────────────────────────────────────────┼──────────────┐
+│                           BACKEND (Python)                       ▼              │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐      │
+│  │     CLI     │───▶│  Validator  │───▶│ Transformer │───▶│  Renderer   │      │
+│  │   Entry     │    │   Schema    │    │   Context   │    │   Jinja2    │      │
+│  └─────────────┘    └─────────────┘    └─────────────┘    └──────┬──────┘      │
+│                                                                  │              │
+│  ┌───────────────────────────────────────────────────────────────┼────────────┐ │
+│  │                        TEMPLATES                              ▼            │ │
+│  │  ┌─────────────────────────┐    ┌─────────────────────────┐              │ │
+│  │  │      Dell EMC OS10      │    │     Cisco NX-OS         │              │ │
+│  │  │  ├─ full_config.j2  ✅  │    │  ├─ full_config.j2  ✅  │   ──▶ .cfg  │ │
+│  │  │  ├─ system.j2       ✅  │    │  ├─ system.j2       ✅  │              │ │
+│  │  │  ├─ vlan.j2         ✅  │    │  ├─ vlan.j2         ✅  │              │ │
+│  │  │  ├─ interface.j2    ✅  │    │  ├─ interface.j2    ✅  │              │ │
+│  │  │  ├─ port_channel.j2 ✅  │    │  ├─ port_channel.j2 ✅  │              │ │
+│  │  │  ├─ bgp.j2          ✅  │    │  ├─ bgp.j2          ✅  │              │ │
+│  │  │  ├─ prefix_list.j2  ✅  │    │  ├─ prefix_list.j2  ✅  │              │ │
+│  │  │  ├─ qos.j2          ✅  │    │  ├─ qos.j2          ✅  │              │ │
+│  │  │  ├─ mlag.j2         ✅  │    │  ├─ vpc.j2          ✅  │              │ │
+│  │  │  └─ static_route.j2 ✅  │    │  └─ static_route.j2 ✅  │              │ │
+│  │  └─────────────────────────┘    └─────────────────────────┘              │ │
+│  └──────────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Architectural Decisions
+
+<details>
+<summary><strong>ADR-001 to ADR-003 (Click to expand)</strong></summary>
+
+### ADR-001: Template Include Path Convention
+
+**Decision:** Use vendor-prefixed paths for all template includes.
+
+```jinja2
+{# ✅ Current pattern (use this) #}
+{% include "dellemc/os10/vlan.j2" %}
+{% include "cisco/nxos/vlan.j2" %}
+```
+
+### ADR-002: Interface-Level QoS Architecture
+
+**Decision:** QoS is configured per-interface, not globally. Templates render global QoS policies once if ANY interface has `qos: true`.
+
+- **Schema:** `interfaces[].qos: boolean`
+- **Context helper:** `has_qos_interfaces`
+
+### ADR-003: Login/Credential Handling
+
+**Decision:** Login configuration is hardcoded in `full_config.j2` templates with `$CREDENTIAL_PLACEHOLDER$` markers. No login data in JSON schema.
+
+</details>
+
+---
+
+## Test Summary
+
+| Category | Count | Status |
+|----------|-------|--------|
+| E2E Tests (Playwright) | 48 | ✅ All passing |
+| Backend Tests (pytest) | 67 | ✅ All passing |
+| **Total** | **115** | ✅ |
 
 ---
 
@@ -364,7 +422,7 @@ await expect(locator).toBeVisible({ timeout: 5000 });
 ## Commands Reference
 
 ```bash
-# Development
+# Frontend development
 cd /workspace/frontend && npm run dev -- --port 3000
 
 # Type Check
@@ -373,11 +431,17 @@ cd /workspace/frontend && npm run typecheck
 # Run Tests (with timeout)
 cd /workspace && timeout 180 npx playwright test --reporter=line
 
+# Backend tests
+cd /workspace/backend && python -m pytest
+
+# Generate config from JSON
+cd /workspace/backend && python -m src.cli generate path/to/input.json
+
 # Build
 cd /workspace/frontend && npm run build
 
 # Git
-git add -A && git commit -m "Odin UI redesign"
+git add -A && git commit -m "message"
 ```
 
 ---
@@ -386,8 +450,9 @@ git add -A && git commit -m "Odin UI redesign"
 
 | Resource | Path/URL |
 |----------|----------|
-| **Design Document** | [.github/docs/AzureLocal_NetworkConfTool_Project_Design_Doc.md](.github/docs/AzureLocal_NetworkConfTool_Project_Design_Doc.md) |
-| Odin Live Demo | https://neilbird.github.io/Odin-for-AzureLocal/ |
-| Odin Source | `/workspace/archive/Odin-for-AzureLocal/` |
+| **Design Document** | [AzureLocal_Physical_Network_Config_Tool_Design_Doc.md](AzureLocal_Physical_Network_Config_Tool_Design_Doc.md) |
 | JSON Schema | `backend/schema/standard.json` |
-| Azure Patterns | [GitHub](https://github.com/Azure/AzureLocal-Supportability/blob/main/TSG/Networking/Top-Of-Rack-Switch/Overview-Azure-Local-Deployment-Pattern.md) |
+| Azure Patterns | [GitHub - AzureLocal-Supportability](https://github.com/Azure/AzureLocal-Supportability/blob/main/TSG/Networking/Top-Of-Rack-Switch/Overview-Azure-Local-Deployment-Pattern.md) |
+| MS Learn - Network Patterns | [Azure Local Network Patterns](https://learn.microsoft.com/en-us/azure/azure-local/plan/network-patterns-overview) |
+| Archived Cisco Templates | `archive/v1/templates_backup/cisco/nxos/` |
+| Archived Dell Templates | `archive/v1/templates_backup/dellemc/os10/` |
