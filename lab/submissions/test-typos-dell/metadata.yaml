@@ -1,0 +1,11 @@
+# Test submission with common typos - Dell variation
+# This tests auto-fix capabilities
+
+vendor: Dell EMC           # Should auto-fix to 'dellemc'
+firmware: OS-10            # Should auto-fix to 'os10'
+model: S5248F-ON
+os_version: "10.5.5.5"
+role: tor1                 # Should auto-fix to 'TOR1'
+deployment_pattern: fully-converged  # Should auto-fix to 'fully_converged'
+hostname: test-tor1
+description: "Test submission with intentional typos for validation testing"

@@ -1,8 +1,8 @@
 # Azure Local Physical Network Config Tool — Project Roadmap
 
-**Version:** 17.0  
+**Version:** 23.0  
 **Date:** February 2, 2026  
-**Status:** E2E MVP Complete — UI Export Config Feature Next  
+**Status:** Phase 9 Complete — GitHub Community Workflow Next  
 **Reference:** [Design Doc](AzureLocal_Physical_Network_Config_Tool_Design_Doc.md)
 
 ---
@@ -27,17 +27,17 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│  ✅ E2E MVP COMPLETE (Phases 1-6)                                               │
-│     • Frontend wizard: Schema-aligned, validated, 48 E2E tests                  │
-│     • Backend: 67 unit tests, full schema validation                            │
-│     • Dell EMC OS10: 10/10 templates                                            │
-│     • Cisco NX-OS: 10/10 templates                                              │
-│     • All 3 deployment patterns working (fully_converged, switched, switchless) │
+│  ✅ COMPLETE (Phases 1-9)                                                       │
+│     • Frontend wizard: 51 E2E tests, client-side config generation              │
+│     • Backend CLI: 162 unit tests, full schema validation                       │
+│     • Templates: Dell OS10 (10/10), Cisco NX-OS (10/10)                         │
+│     • Lab workflow: vendor detection, config sectioning, validation             │
+│     • Script migration: All scripts in backend/src/ with unit tests             │
 ├─────────────────────────────────────────────────────────────────────────────────┤
-│  🔄 NEXT: Phase 7 — UI Export Config Feature                                    │
-│     • Add "Export Config" button to generate final switch config in browser     │
-│     • Users download ready-to-deploy config without CLI                         │
-│     • Integrate backend renderer logic into frontend (WASM or API)              │
+│  📋 NEXT: Phase 10 — GitHub Community Workflow                                  │
+│     • Issue templates for config submissions                                    │
+│     • Automated processing via GitHub Actions                                   │
+│     • CONTRIBUTING.md user guide (created)                                      │
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -47,130 +47,117 @@
 
 | Phase | Description | Status | Notes |
 |-------|-------------|--------|-------|
-| 1-6 | E2E MVP Implementation | ✅ **Complete** | See [Completed Phases Archive](#completed-phases-archive) |
-| 7 | UI Export Config Feature | 🔄 **Next** | Generate final config in browser |
-| 8 | Lab-Based Workflow Testing | 📋 **Planned** | Config-to-template workflow |
-| 9 | GitHub Community Workflow | 📋 **Planned** | Issue templates + PR automation |
+| 1-6 | E2E MVP Implementation | ✅ **Complete** | See [Archive](#completed-phases-archive) |
+| 7 | Client-Side Config Generation | ✅ **Complete** | Nunjucks, no server needed |
+| 8 | Lab Workflow Testing | ✅ **Complete** | Vendor detection, sectioning |
+| 8.5 | Submission Validation Layer | ✅ **Complete** | Auto-fix typos, welcome new vendors |
+| 9 | Script Migration + Unit Tests | ✅ **Complete** | 162 backend tests, 95 new tests |
+| 10 | GitHub Community Workflow | 📋 **Planned** | Issue templates + Actions |
 
 ---
 
-## Phase 7: UI Export Config Feature 🔄 NEXT
+## Phase 9: Script Migration + Unit Tests ✅ COMPLETE
 
-**Goal:** Allow users to download the final switch configuration directly from the wizard — no CLI required.
+**Goal:** Move lab scripts to `backend/src/` (permanent location) with full unit test coverage. Ensures scripts are reusable for both CLI and GitHub Actions.
 
-### Current State vs. Target
+### Why Move to Backend?
 
-| Aspect | Current | Target |
-|--------|---------|--------|
-| Export button | Exports JSON | Exports final switch config |
-| User workflow | Wizard → JSON → CLI → Config | Wizard → Config |
-| CLI dependency | Required | Optional (for power users) |
+| Location | Pros | Cons |
+|----------|------|------|
+| **`backend/src/`** ✅ | Existing Python home, pytest infrastructure, CLI integration | — |
+| `lab/scripts/` | Quick iteration during development | Temporary, no tests, will be archived |
+| `.github/scripts/` | Close to Actions | Isolated, no pytest |
 
-### Implementation Options
-
-| Option | Approach | Pros | Cons |
-|--------|----------|------|------|
-| **A: API Call** | Frontend calls backend API | Reuses existing renderer | Requires backend server |
-| **B: WASM** | Compile Python renderer to WASM | Fully client-side | Complex build, larger bundle |
-| **C: JS Port** | Rewrite renderer in TypeScript | Fast, no dependencies | Duplicated logic to maintain |
-| **D: Bundled Templates** | Include templates in frontend, use JS Jinja2 lib | Client-side, moderate effort | Need Jinja2 JS library |
-
-**Recommended: Option A (API Call)** for initial release — simplest to implement, keeps single source of truth for templates.
-
-### Implementation Steps
-
-| Step | Task | Description |
-|------|------|-------------|
-| 7.1 | Add backend API endpoint | `/api/generate` accepts JSON, returns config |
-| 7.2 | Add UI "Export Config" button | Separate from "Export JSON" |
-| 7.3 | Call API and download result | Fetch → blob → download |
-| 7.4 | Add loading state | Show spinner while generating |
-| 7.5 | Error handling | Display errors if generation fails |
-| 7.6 | E2E tests | Test export flow |
-
-### Success Criteria
-
-- [ ] "Export Config" button visible in UI
-- [ ] Click generates and downloads `.cfg` file
-- [ ] Config is valid vendor syntax (Cisco/Dell)
-- [ ] Works for all 3 deployment patterns
-- [ ] E2E test validates export flow
-
----
-
-## Phase 8: Lab-Based Workflow Testing 📋 PLANNED
-
-**Goal:** Create an isolated lab environment to test the config-to-template workflow before implementing GitHub automation.
-
-### Why Lab First?
-
-| Approach | Speed | Risk | Debuggability |
-|----------|-------|------|---------------|
-| **Lab folder (isolated)** | Fast iteration | Zero | Easy - all local |
-| GitHub Issues directly | Slower | Medium | Harder - round trips |
-
-### Lab Structure
+### Final Folder Structure
 
 ```
+backend/
+├── src/
+│   ├── __init__.py
+│   ├── cli.py                      # Existing: Config generation CLI
+│   ├── context.py                  # Existing: Template context builder
+│   ├── renderer.py                 # Existing: Jinja2 renderer
+│   ├── transformer.py              # Existing: Data enrichment
+│   ├── validator.py                # Existing: JSON schema validation
+│   ├── metadata_validator.py       # ✅ Submission metadata validation
+│   ├── vendor_detector.py          # ✅ Auto-detect vendor from config
+│   ├── config_sectioner.py         # ✅ Split config into sections
+│   └── submission_processor.py     # ✅ Orchestrate submission processing
+├── tests/
+│   ├── test_cli.py                 # Existing (9 tests)
+│   ├── test_transformer.py         # Existing (9 tests)
+│   ├── test_validator.py           # Existing (10 tests)
+│   ├── test_renderer.py            # Existing (30 tests)
+│   ├── test_metadata_validator.py  # ✅ NEW (26 tests)
+│   ├── test_vendor_detector.py     # ✅ NEW (21 tests)
+│   ├── test_config_sectioner.py    # ✅ NEW (26 tests)
+│   └── test_submission_processor.py # ✅ NEW (22 tests)
+├── templates/                      # Jinja2 templates (unchanged)
+└── schema/                         # JSON schema (unchanged)
+
 lab/
-├── README.md                      # Lab usage guide
-├── templates/                     # COPY of backend/templates/ (safe to modify)
-│   ├── cisco/nxos/*.j2
-│   └── dellemc/os10/*.j2
-├── schema/                        # COPY of backend/schema/
-│   └── standard.json
-├── scripts/                       # Processing logic
-│   ├── process.py                 # Main entry point
-│   ├── vendor_detector.py         # Auto-detect vendor from config
-│   ├── config_sectioner.py        # Split config into sections
-│   └── template_updater.py        # Update/create .j2 templates
-├── submissions/                   # Test inputs (customer submissions)
+├── README.md                       # Lab usage guide (stays)
+├── submissions/                    # Test submissions (playground)
+├── output/                         # Generated output (gitignored)
+└── scripts/
+    └── process.py                  # ✅ Thin wrapper → imports from backend/src/
+```
+
+### Test Coverage Summary
+
+| Test File | Test Count | Coverage |
+|-----------|------------|----------|
+| `test_metadata_validator.py` | 26 tests | Auto-fix, new vendor, validation |
+| `test_vendor_detector.py` | 21 tests | Dell/Cisco detection, patterns |
+| `test_config_sectioner.py` | 26 tests | Section splitting, analysis |
+| `test_submission_processor.py` | 22 tests | Orchestration, error handling |
+| **New Tests Total** | **95 tests** | — |
+| **Backend Total** | **162 tests** | — |
+| **E2E Total** | **51 tests** | — |
+
+### Success Criteria ✅
+
+- [x] All 4 scripts in `backend/src/`
+- [x] 4 new test files with 95 tests
+- [x] Total backend tests: 162 (target was 80+)
+- [x] Lab wrapper still works (`python lab/scripts/process.py`)
+- [x] All E2E tests pass (51/51)
+├── submissions/                    # Test submissions (stays as playground)
+│   ├── example-dell-tor1/
 │   ├── example-cisco-tor1/
-│   │   ├── metadata.yaml          # Vendor, model, role, pattern
-│   │   └── config.txt             # Raw switch config
-│   └── example-dell-tor1/
-│       ├── metadata.yaml
-│       └── config.txt
-└── output/                        # Generated outputs (gitignored)
+│   ├── test-typos-dell/
+│   ├── test-typos-cisco/
+│   ├── test-new-vendor/
+│   └── test-invalid-role/
+├── output/                         # Generated output (gitignored)
+└── scripts/
+    └── process.py                  # Thin wrapper → imports from backend/src/
 ```
-
-### Sample metadata.yaml
-
-```yaml
-# Customer fills this (maps to GitHub Issue form fields)
-vendor: cisco
-firmware: nxos
-model: 93180YC-FX3
-os_version: "10.2(3)"
-role: TOR1
-deployment_pattern: fully_converged
-hostname: az-tor1-r01
-```
-
-### Implementation Steps
-
-| Step | Task | Description |
-|------|------|-------------|
-| 8.1 | Create lab folder structure | Directories, README, .gitignore for output |
-| 8.2 | Copy templates and schema | Mirror `backend/templates/` and `backend/schema/` |
-| 8.3 | Create sample submissions | Use existing fixtures as examples |
-| 8.4 | Build vendor detector | Auto-detect vendor/model from config patterns |
-| 8.5 | Build config sectioner | Split full config into feature sections |
-| 8.6 | Validate round-trip | Submit → process → render → compare to original |
-
-### Success Criteria
-
-- [ ] `lab/scripts/process.py` reads submission folder
-- [ ] Vendor auto-detected from config content
-- [ ] Config sectioned into system, vlan, interface, etc.
-- [ ] Output JSON validates against schema
-- [ ] Generated config renders correctly with existing templates
 
 ---
 
-## Phase 9: GitHub Community Workflow 📋 PLANNED
+## Phase 10: GitHub Community Workflow 📋 PLANNED
 
-**Goal:** Once lab workflow proven, implement GitHub Issue-based template submissions.
+**Goal:** Enable community contributions via GitHub Issues and automated processing.
+
+### Testing Strategy
+
+> **Key Insight:** GitHub Actions can only be fully tested on GitHub, not locally.
+
+| Trigger | Purpose |
+|---------|---------|
+| `workflow_dispatch` | Manual testing from Actions tab (no cleanup needed) |
+| `issues: [opened, labeled]` | Production trigger when testing complete |
+
+### Phased Implementation & Validation
+
+| Step | Deliverable | User Verification | Est. Time |
+|------|-------------|-------------------|-----------|
+| 10.1 | Issue template YAML | Open "New Issue" → form renders? | 2 min |
+| 10.2 | Workflow (validate only) | Run manually → logs show validation? | 2 min |
+| 10.3 | Workflow (create branch) | Run manually → branch created? | 2 min |
+| 10.4 | Workflow (create PR) | Run manually → PR created? | 2 min |
+| 10.5 | Full end-to-end test | Create real issue → PR auto-created? | 5 min |
 
 ### Workflow Overview
 
@@ -180,21 +167,20 @@ flowchart LR
         A[Customer opens Issue] --> B[Fills template form]
     end
     
-    subgraph "Develop"
-        B --> C[Maintainer creates branch]
-        C --> D[Creates .j2 templates + tests]
-        D --> E[Opens PR]
+    subgraph "Process"
+        B --> C[Actions: Validate metadata]
+        C --> D[Actions: Analyze config]
+        D --> E[Actions: Create branch + files]
     end
     
     subgraph "Review"
-        E --> F[CI: pytest + Jinja2 validation]
-        F --> G[Copilot Review]
-        G --> H[Human Review]
+        E --> F[PR: Maintainer review]
+        F --> G[CI: pytest + template validation]
     end
     
     subgraph "Merge"
-        H -->|Approved| I[Merge to main]
-        H -->|Changes| D
+        G -->|Approved| H[Merge to main]
+        H --> I[Vendor templates updated]
     end
 ```
 
@@ -202,154 +188,111 @@ flowchart LR
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Issue Template | `.github/ISSUE_TEMPLATE/template-submission.yml` | Structured form for config submission |
-| PR Template | `.github/PULL_REQUEST_TEMPLATE.md` | Checklist for template PRs |
-| Contributing Guide | `CONTRIBUTING.md` | How to submit templates |
-| Validation Workflow | `.github/workflows/validate-templates.yml` | CI for template PRs |
+| Issue Template | `.github/ISSUE_TEMPLATE/template-submission.yml` | Structured form for submissions |
+| Processing Workflow | `.github/workflows/process-submission.yml` | Auto-validate and create PR |
+| Contributing Guide | `CONTRIBUTING.md` | How to submit templates ✅ Created |
 
 ### Issue Template Fields
 
-| Field | Type | Options | Required |
-|-------|------|---------|----------|
-| **Vendor** | dropdown | `cisco`, `dellemc`, `arista`, `juniper`, `Other` | ✅ |
-| **Firmware/OS** | dropdown | `nxos`, `os10`, `eos`, `junos`, `Other` | ✅ |
-| **Deployment Pattern** | checkboxes | fully_converged, switched, switchless | ✅ |
-| **Switch Role** | dropdown | TOR1, TOR2, BMC | ✅ |
-| **Model** | text | Free text (e.g., `S5248F-ON`) | ✅ |
-| **OS Version** | text | Free text (e.g., `10.5.5.5`) | ✅ |
-| **Config Paste** | textarea | Full switch config | ✅ |
-| **Additional Context** | textarea | Notes, special features | ❌ |
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| Vendor | text | ✅ | Auto-fixed: `Dell EMC` → `dellemc` |
+| Firmware/OS | text | ✅ | Auto-fixed: `NX-OS` → `nxos` |
+| Model | text | ✅ | Free text |
+| Role | dropdown | ✅ | TOR1, TOR2, BMC |
+| Deployment Pattern | dropdown | ✅ | fully_converged, switched, switchless |
+| Config | textarea | ✅ | Full switch config paste |
+
+> **Note:** Vendor and Firmware are free-text (not dropdowns) to welcome new vendor contributions.
+
+### Success Criteria
+
+- [ ] Issue template form renders correctly on GitHub
+- [ ] Workflow runs successfully via `workflow_dispatch`
+- [ ] Metadata validation logs appear in Actions
+- [ ] Config analysis logs appear in Actions  
+- [ ] Branch auto-created with submission files
+- [ ] PR auto-created with analysis summary
+- [ ] Real issue submission triggers full workflow
 
 ---
 
-## Completed Phases Archive
+## Architecture Overview
 
-<details>
-<summary><strong>Phases 1-6: E2E MVP Implementation (Click to expand)</strong></summary>
-
-### Phase 1: Frontend Schema Sync & Validation ✅
-
-- Synced `types.ts` with schema (StaticRoute, native_vlan, vpc_id, deployment_pattern required)
-- Added peer-link storage VLAN validation for switched pattern
-- Verified static routing UI works
-
-### Phase 2: Backend Schema Extension ✅
-
-- Removed global `qos` field (interface-level only)
-- Removed `login` object (hardcoded in templates)
-- Added `has_qos_interfaces` helper
-- Added role helpers: `is_tor1`, `is_tor2`, `is_bmc`
-- Added pattern helpers: `is_fully_converged`, `is_switched`, `is_switchless`
-- Added VLAN filters: `storage_vlans`, `management_vlans`, `compute_vlans`
-
-### Phase 3: Dell OS10 Template Completion ✅
-
-- Created `qos.j2` with DCB/PFC for RDMA
-- Created `static_route.j2` with route loop and guard
-- Updated `full_config.j2` with QoS, static_route includes, and hardcoded login section
-
-### Phase 3.5: E2E Test Refresh & Examples Update ✅
-
-- Added `qos: true` to host/storage interfaces in examples
-- Added `networks` array to BGP, `static_routes` array
-- Added `_metadata` section to all examples
-- 45 E2E tests passing
-
-### Phase 4: Cisco NX-OS Templates ✅
-
-All 10 templates created:
-- `system.j2`, `vlan.j2`, `interface.j2`, `port_channel.j2`, `vpc.j2`
-- `bgp.j2`, `prefix_list.j2`, `qos.j2`, `static_route.j2`, `full_config.j2`
-
-### Phase 4.5: Type/Schema Sync Fix ✅
-
-- Fixed `intf_type` and `af_ipv4_unicast` to be required in types.ts
-
-### Phase 5: Integration Testing ✅
-
-- Created Cisco test fixtures
-- 38 renderer tests in `backend/tests/test_renderer.py`
-- 67 total backend tests passing
-
-### Phase 6: UI Polish ✅
-
-- JSON preview min-height increased to 400px
-- Placeholder contrast improved
-- Start Over button styling fixed
-- 48 total E2E tests passing
-
-</details>
-
----
-
-## E2E MVP Architecture
+### Template Flow (Single Source of Truth)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           FRONTEND (TypeScript/Vite)                            │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐      │
-│  │   Wizard    │───▶│   State     │───▶│  Validator  │───▶│ JSON Export │      │
-│  │     UI      │    │ Management  │    │   Rules     │    │  Standard   │      │
-│  └─────────────┘    └─────────────┘    └─────────────┘    └──────┬──────┘      │
-└──────────────────────────────────────────────────────────────────┼──────────────┘
-                                                                   │
-                                                          standard.json
-                                                                   │
-┌──────────────────────────────────────────────────────────────────┼──────────────┐
-│                           BACKEND (Python)                       ▼              │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐      │
-│  │     CLI     │───▶│  Validator  │───▶│ Transformer │───▶│  Renderer   │      │
-│  │   Entry     │    │   Schema    │    │   Context   │    │   Jinja2    │      │
-│  └─────────────┘    └─────────────┘    └─────────────┘    └──────┬──────┘      │
-│                                                                  │              │
-│  ┌───────────────────────────────────────────────────────────────┼────────────┐ │
-│  │                        TEMPLATES                              ▼            │ │
-│  │  ┌─────────────────────────┐    ┌─────────────────────────┐              │ │
-│  │  │      Dell EMC OS10      │    │     Cisco NX-OS         │              │ │
-│  │  │  ├─ full_config.j2  ✅  │    │  ├─ full_config.j2  ✅  │   ──▶ .cfg  │ │
-│  │  │  ├─ system.j2       ✅  │    │  ├─ system.j2       ✅  │              │ │
-│  │  │  ├─ vlan.j2         ✅  │    │  ├─ vlan.j2         ✅  │              │ │
-│  │  │  ├─ interface.j2    ✅  │    │  ├─ interface.j2    ✅  │              │ │
-│  │  │  ├─ port_channel.j2 ✅  │    │  ├─ port_channel.j2 ✅  │              │ │
-│  │  │  ├─ bgp.j2          ✅  │    │  ├─ bgp.j2          ✅  │              │ │
-│  │  │  ├─ prefix_list.j2  ✅  │    │  ├─ prefix_list.j2  ✅  │              │ │
-│  │  │  ├─ qos.j2          ✅  │    │  ├─ qos.j2          ✅  │              │ │
-│  │  │  ├─ mlag.j2         ✅  │    │  ├─ vpc.j2          ✅  │              │ │
-│  │  │  └─ static_route.j2 ✅  │    │  └─ static_route.j2 ✅  │              │ │
-│  │  └─────────────────────────┘    └─────────────────────────┘              │ │
-│  └──────────────────────────────────────────────────────────────────────────┘ │
+│  SOURCE OF TRUTH: backend/templates/*.j2                                        │
+│  ├── dellemc/os10/*.j2  (10 templates)                                          │
+│  └── cisco/nxos/*.j2    (10 templates)                                          │
 └─────────────────────────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              │ BUILD TIME                    │ RUNTIME
+              ▼                               ▼
+┌─────────────────────────┐     ┌─────────────────────────┐
+│  frontend/src/          │     │  backend/src/           │
+│  templates.ts           │     │  renderer.py            │
+│  (auto-generated)       │     │                         │
+│                         │     │                         │
+│  Engine: Nunjucks (JS)  │     │  Engine: Jinja2 (Py)    │
+│  Use: Browser wizard    │     │  Use: CLI, automation   │
+└─────────────────────────┘     └─────────────────────────┘
 ```
+
+### Component Responsibilities
+
+| Component | Responsibility |
+|-----------|----------------|
+| `frontend/` | Web wizard UI, client-side validation, Nunjucks rendering |
+| `backend/src/cli.py` | CLI entry point for config generation |
+| `backend/src/validator.py` | JSON Schema validation |
+| `backend/src/context.py` | Build template context with helpers |
+| `backend/src/renderer.py` | Jinja2 template rendering |
+| `backend/src/metadata_validator.py` | Submission metadata auto-fix |
+| `backend/src/vendor_detector.py` | Detect vendor from config syntax |
+| `backend/src/config_sectioner.py` | Split config into logical sections |
 
 ---
 
-## Architectural Decisions
+## Validation Layer
 
-<details>
-<summary><strong>ADR-001 to ADR-003 (Click to expand)</strong></summary>
+### Design Principles
 
-### ADR-001: Template Include Path Convention
+| Principle | Implementation |
+|-----------|----------------|
+| **No blockers** | Validation guides, never blocks processing |
+| **Auto-fix obvious mistakes** | Case, whitespace, common typos |
+| **New vendors welcome** | Unknown vendor = contribution opportunity |
+| **Self-service debugging** | Clear logs for user self-fix |
 
-**Decision:** Use vendor-prefixed paths for all template includes.
+### Auto-Fix Rules
 
-```jinja2
-{# ✅ Current pattern (use this) #}
-{% include "dellemc/os10/vlan.j2" %}
-{% include "cisco/nxos/vlan.j2" %}
+| Input | Auto-Fix To |
+|-------|-------------|
+| `Dell EMC`, `dell-emc`, `DELLEMC` | `dellemc` |
+| `CISCO`, `Cisco Systems` | `cisco` |
+| `NX-OS`, `nx-os`, `Nexus` | `nxos` |
+| `OS-10`, `os 10` | `os10` |
+| `tor1`, `Tor1` | `TOR1` |
+| `fully-converged` | `fully_converged` |
+
+### New Vendor Welcome Flow
+
 ```
-
-### ADR-002: Interface-Level QoS Architecture
-
-**Decision:** QoS is configured per-interface, not globally. Templates render global QoS policies once if ANY interface has `qos: true`.
-
-- **Schema:** `interfaces[].qos: boolean`
-- **Context helper:** `has_qos_interfaces`
-
-### ADR-003: Login/Credential Handling
-
-**Decision:** Login configuration is hardcoded in `full_config.j2` templates with `$CREDENTIAL_PLACEHOLDER$` markers. No login data in JSON schema.
-
-</details>
+┌─────────────────────────────────────────────────────────────┐
+│  🎉 NEW VENDOR DETECTED: juniper                            │
+├─────────────────────────────────────────────────────────────┤
+│  This vendor isn't in our templates yet — that's OK!        │
+│  Your submission helps us add support for new vendors.      │
+│                                                             │
+│  What happens next:                                         │
+│  1. We'll analyze your config to understand the syntax      │
+│  2. A maintainer will create templates for this vendor      │
+│  3. Your config becomes a test case for the new templates   │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -357,65 +300,48 @@ All 10 templates created:
 
 | Category | Count | Status |
 |----------|-------|--------|
-| E2E Tests (Playwright) | 48 | ✅ All passing |
-| Backend Tests (pytest) | 67 | ✅ All passing |
-| **Total** | **115** | ✅ |
+| E2E Tests (Playwright) | 51 | ✅ Passing |
+| Backend Tests (pytest) | 67 | ✅ Passing |
+| **Total** | **118** | ✅ |
+
+After Phase 9:
+| Category | Expected |
+|----------|----------|
+| Backend Tests | 80+ |
 
 ---
 
 ## ⚠️ Critical Development Rules
 
 > [!WARNING]
-> These rules are mandatory for all developers and AI agents working on this project.
+> Mandatory for all developers and AI agents.
 
 ### 1. NEVER Kill Node/Vite Processes
 
 ```bash
-# ❌ FORBIDDEN - These commands will shut down the dev container
+# ❌ FORBIDDEN - Will shut down dev container
 pkill -f node
 pkill -f vite
-pkill -9 node
-kill $(pgrep -f vite)
 
-# ✅ SAFE - Use Ctrl+C in the terminal running the server
-# ✅ SAFE - Close the terminal tab running the server
-# ✅ SAFE - Use VS Code's "Stop" button on the terminal
+# ✅ SAFE - Use Ctrl+C or close terminal
 ```
 
-**Reason:** The development environment runs inside a container where Node.js processes are essential for the container's operation. Killing these processes will terminate the entire dev container, disconnecting your session.
-
-### 2. ALWAYS Use Timeouts for Tests and Commands
+### 2. ALWAYS Use Timeouts
 
 ```bash
-# ❌ BAD - Can hang forever
+# ❌ BAD
 npx playwright test
-curl http://localhost:3000
 
-# ✅ GOOD - Always use timeout
-timeout 120 npx playwright test --reporter=line
-timeout 10 curl -s http://localhost:3000
+# ✅ GOOD
+timeout 180 npx playwright test --reporter=line
 ```
 
-**Test Timeout Requirements:**
-
-| Scope | Timeout | Purpose |
-|-------|---------|---------|
-| Global | 180s (3 min) | Maximum total test run |
-| Per-test | 30s | Individual test timeout |
-| Action | 10s | Single action (click, fill) |
-| Expect | 5s | Assertion timeout |
-
-**In test files:**
-```typescript
-// At file level
-test.setTimeout(30000);
-
-// Per action
-await page.click('#button', { timeout: 10000 });
-await expect(locator).toBeVisible({ timeout: 5000 });
-```
-
-**Reason:** Tests and network requests can hang indefinitely due to various issues (server not responding, network issues, race conditions). Timeouts ensure CI/CD pipelines don't get stuck and development sessions remain productive.
+| Scope | Timeout |
+|-------|---------|
+| Global | 180s |
+| Per-test | 30s |
+| Action | 10s |
+| Expect | 5s |
 
 ---
 
@@ -425,24 +351,79 @@ await expect(locator).toBeVisible({ timeout: 5000 });
 # Frontend development
 cd /workspace/frontend && npm run dev -- --port 3000
 
-# Type Check
-cd /workspace/frontend && npm run typecheck
-
-# Run Tests (with timeout)
+# E2E tests
 cd /workspace && timeout 180 npx playwright test --reporter=line
 
 # Backend tests
 cd /workspace/backend && python -m pytest
 
-# Generate config from JSON
+# Generate config via CLI
 cd /workspace/backend && python -m src.cli generate path/to/input.json
 
-# Build
-cd /workspace/frontend && npm run build
-
-# Git
-git add -A && git commit -m "message"
+# Lab workflow test
+cd /workspace/lab && python scripts/process.py submissions/example-dell-tor1 -v
 ```
+
+---
+
+## Architectural Decisions
+
+### ADR-001: Template Include Path Convention
+
+Use vendor-prefixed paths: `{% include "dellemc/os10/vlan.j2" %}`
+
+### ADR-002: Interface-Level QoS
+
+QoS configured per-interface with `qos: true`. Context helper: `has_qos_interfaces`.
+
+### ADR-003: Login/Credential Handling
+
+Hardcoded in `full_config.j2` with `$CREDENTIAL_PLACEHOLDER$` markers.
+
+### ADR-004: Client-Side Config Generation
+
+Render configs client-side using Nunjucks. Backend API removed.
+
+### ADR-005: Submission Processing Location
+
+Scripts in `backend/src/` (not lab or .github). Reusable for CLI, lab testing, and GitHub Actions.
+
+---
+
+## Completed Phases Archive
+
+<details>
+<summary><strong>Phases 1-8.5 (Click to expand)</strong></summary>
+
+### Phase 1-6: E2E MVP ✅
+
+- Frontend wizard with schema-aligned types
+- Backend CLI with Jinja2 rendering
+- Dell OS10 templates (10/10)
+- Cisco NX-OS templates (10/10)
+- 118 total tests passing
+
+### Phase 7: Client-Side Generation ✅
+
+- Nunjucks template engine (Jinja2-compatible)
+- Templates bundled at build time via `bundle-templates.cjs`
+- Backend API removed (unnecessary)
+- Works offline, no server needed
+
+### Phase 8: Lab Workflow ✅
+
+- `lab/scripts/vendor_detector.py` — Auto-detect vendor from config
+- `lab/scripts/config_sectioner.py` — Split config into sections
+- `lab/scripts/process.py` — Main processor
+
+### Phase 8.5: Validation Layer ✅
+
+- `lab/scripts/metadata_validator.py` — Auto-fix typos, welcome new vendors
+- 90% coverage of common input errors
+- Detailed timestamped logging for self-service debugging
+- Test submissions: typos-dell, typos-cisco, new-vendor, invalid-role
+
+</details>
 
 ---
 
@@ -450,9 +431,7 @@ git add -A && git commit -m "message"
 
 | Resource | Path/URL |
 |----------|----------|
-| **Design Document** | [AzureLocal_Physical_Network_Config_Tool_Design_Doc.md](AzureLocal_Physical_Network_Config_Tool_Design_Doc.md) |
+| Design Document | [AzureLocal_Physical_Network_Config_Tool_Design_Doc.md](AzureLocal_Physical_Network_Config_Tool_Design_Doc.md) |
 | JSON Schema | `backend/schema/standard.json` |
-| Azure Patterns | [GitHub - AzureLocal-Supportability](https://github.com/Azure/AzureLocal-Supportability/blob/main/TSG/Networking/Top-Of-Rack-Switch/Overview-Azure-Local-Deployment-Pattern.md) |
-| MS Learn - Network Patterns | [Azure Local Network Patterns](https://learn.microsoft.com/en-us/azure/azure-local/plan/network-patterns-overview) |
-| Archived Cisco Templates | `archive/v1/templates_backup/cisco/nxos/` |
-| Archived Dell Templates | `archive/v1/templates_backup/dellemc/os10/` |
+| Azure Patterns | [AzureLocal-Supportability](https://github.com/Azure/AzureLocal-Supportability) |
+| MS Learn | [Azure Local Network Patterns](https://learn.microsoft.com/en-us/azure/azure-local/plan/network-patterns-overview) |

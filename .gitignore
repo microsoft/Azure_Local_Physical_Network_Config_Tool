@@ -114,4 +114,6 @@ node_modules/
 # Frontend build output
 frontend/dist/
 frontend/node_modules/
+# Auto-generated template bundle (regenerated from backend/templates/*.j2)
+frontend/src/templates.ts
 archive/Odin-for-AzureLocal

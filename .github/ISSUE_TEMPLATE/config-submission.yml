@@ -1,0 +1,120 @@
+name: "🔧 Switch Config Submission"
+description: "Submit a switch configuration to help improve Azure Local network templates"
+title: "[Config] "
+labels: ["config-submission", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thank you for contributing! 🎉
+        
+        Your switch configuration helps the community build better Azure Local network templates.
+        
+        > **Important:** Please sanitize your config before submitting:
+        > - Remove passwords, secrets, SNMP strings
+        > - Replace sensitive IPs if needed
+        > - See [CONTRIBUTING.md](../../CONTRIBUTING.md) for details
+
+  - type: input
+    id: vendor
+    attributes:
+      label: Switch Vendor
+      description: "The switch manufacturer (e.g., Dell EMC, Cisco, Arista)"
+      placeholder: "Dell EMC"
+    validations:
+      required: true
+
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware/OS Version
+      description: "The operating system or firmware (e.g., OS10, NX-OS 10.2)"
+      placeholder: "OS10"
+    validations:
+      required: true
+
+  - type: input
+    id: model
+    attributes:
+      label: Switch Model
+      description: "The specific switch model"
+      placeholder: "S5248F-ON"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: Switch Role
+      description: "The role of this switch in Azure Local deployment"
+      options:
+        - TOR1 (Top-of-Rack Switch 1)
+        - TOR2 (Top-of-Rack Switch 2)
+        - BMC (Baseboard Management Controller Switch)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment_pattern
+    attributes:
+      label: Deployment Pattern
+      description: "Azure Local network deployment pattern"
+      options:
+        - fully_converged (Storage + Compute on same network)
+        - switched (Dedicated storage switches)
+        - switchless (Direct host-to-host storage)
+    validations:
+      required: true
+
+  - type: input
+    id: hostname
+    attributes:
+      label: Switch Hostname
+      description: "The hostname configured on the switch (optional)"
+      placeholder: "rack1-tor1"
+    validations:
+      required: false
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Switch Configuration
+      description: |
+        Paste your full switch running configuration here.
+        This will be automatically analyzed and processed.
+      placeholder: |
+        hostname my-switch
+        !
+        interface vlan99
+         description Management
+         ip address 10.0.0.1/24
+        !
+        ... (paste full config)
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: "Any additional context about this configuration (optional)"
+      placeholder: |
+        - This config is for a 4-node cluster
+        - Using jumbo frames for storage
+        - BGP peering with datacenter spine
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Pre-submission Checklist
+      description: "Please confirm the following before submitting"
+      options:
+        - label: "I have removed all passwords, secrets, and SNMP community strings"
+          required: true
+        - label: "I have reviewed [CONTRIBUTING.md](../../CONTRIBUTING.md)"
+          required: true
+        - label: "This configuration is from a working Azure Local deployment (or test lab)"
+          required: false

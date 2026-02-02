@@ -773,6 +773,9 @@ export function setupEventListeners(): void {
   const exportBtn = getElement('#btn-export');
   if (exportBtn) exportBtn.addEventListener('click', exportJSONFile);
 
+  const generateConfigBtn = getElement('#btn-generate-config');
+  if (generateConfigBtn) generateConfigBtn.addEventListener('click', generateAndDownloadConfig);
+
   const copyBtn = getElement('#btn-copy');
   if (copyBtn) copyBtn.addEventListener('click', copyJSON);
 
@@ -2486,6 +2489,73 @@ function buildExportConfig(): Partial<StandardConfig> {
 // ============================================================================
 // EXPORT FUNCTIONS
 // ============================================================================
+
+/**
+ * Generates switch configuration client-side using Nunjucks and downloads it.
+ * No backend server required.
+ */
+async function generateAndDownloadConfig(): Promise<void> {
+  const statusEl = getElement('#generate-status');
+  const loadingEl = getElement('#generate-loading');
+  const errorEl = getElement('#generate-error');
+  const successEl = getElement('#generate-success');
+  const btn = getElement<HTMLButtonElement>('#btn-generate-config');
+  
+  // Reset and show status area
+  if (statusEl) statusEl.style.display = 'block';
+  if (loadingEl) loadingEl.style.display = 'flex';
+  if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+  if (successEl) { successEl.style.display = 'none'; successEl.textContent = ''; }
+  if (btn) btn.disabled = true;
+  
+  try {
+    const config = buildExportConfig();
+    
+    // Import and use the client-side renderer
+    const { generateConfig } = await import('./renderer');
+    // Cast to StandardConfig - the renderer will validate required fields
+    const result = generateConfig(config as import('./types').StandardConfig);
+    
+    if (loadingEl) loadingEl.style.display = 'none';
+    
+    if (result.success && result.config) {
+      // Download the config file
+      const blob = new Blob([result.config], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = result.filename || `${state.config.switch?.hostname || 'switch'}.cfg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      if (successEl) {
+        successEl.textContent = `✅ Configuration generated: ${result.filename}`;
+        successEl.style.display = 'block';
+      }
+      showSuccessMessage('Configuration generated and downloaded!');
+    } else {
+      // Show error
+      const errorMsg = result.error || 'Unknown error';
+      if (errorEl) {
+        errorEl.textContent = `❌ ${errorMsg}`;
+        errorEl.style.display = 'block';
+      }
+      showValidationError(errorMsg);
+    }
+  } catch (err) {
+    if (loadingEl) loadingEl.style.display = 'none';
+    const errorMsg = err instanceof Error ? err.message : 'Failed to generate configuration';
+    if (errorEl) {
+      errorEl.textContent = `❌ ${errorMsg}`;
+      errorEl.style.display = 'block';
+    }
+    showValidationError(`Generation failed: ${errorMsg}`);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 
 /**
  * Exports the current configuration as a JSON file download.

@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run bundle-templates && tsc && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "bundle-templates": "node scripts/bundle-templates.cjs"
   },
   "devDependencies": {
     "@types/node": "^25.1.0",
@@ -15,6 +16,8 @@
     "vite": "^6.0.7"
   },
   "dependencies": {
-    "ajv": "^8.17.1"
+    "@types/nunjucks": "^3.2.6",
+    "ajv": "^8.17.1",
+    "nunjucks": "^3.2.4"
   }
 }

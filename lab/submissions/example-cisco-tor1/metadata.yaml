@@ -1,0 +1,11 @@
+# Cisco NX-OS TOR1 - Fully Converged Pattern
+# This is a sample submission for testing the lab workflow
+
+vendor: cisco
+firmware: nxos
+model: 93180YC-FX3
+os_version: "10.2(3)"
+role: TOR1
+deployment_pattern: fully_converged
+hostname: cisco-tor1
+description: "Sample Cisco NX-OS TOR1 switch for fully converged Azure Local deployment"

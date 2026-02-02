@@ -914,3 +914,42 @@ test.describe('19. End-to-End User Workflow', () => {
     expect(config.bgp.router_id).toBeDefined();
   });
 });
+
+// ============================================================================
+// 20. GENERATE CONFIG BUTTON (Requires Backend)
+// ============================================================================
+
+test.describe('20. Generate Config Button', () => {
+  test('generate config button is visible', async ({ page }) => {
+    await page.goto('/');
+    
+    // The button should be visible in the sidebar
+    const generateBtn = page.locator('#btn-generate-config');
+    await expect(generateBtn).toBeVisible({ timeout: 5000 });
+    await expect(generateBtn).toContainText('Generate Config');
+  });
+  
+  test('generate status area exists', async ({ page }) => {
+    await page.goto('/');
+    
+    // Status area should exist but be hidden initially
+    const statusArea = page.locator('#generate-status');
+    await expect(statusArea).toBeAttached();
+  });
+  
+  test('clicking generate config shows loading state', async ({ page }) => {
+    await page.goto('/');
+    
+    // Setup a basic config with valid Dell EMC config
+    await setupSwitch(page, { pattern: 'fully_converged', vendor: 'dellemc', model: 's5248f-on' });
+    await page.waitForTimeout(300);
+    
+    // Click generate - even if backend fails, loading should show briefly
+    const generateBtn = page.locator('#btn-generate-config');
+    await generateBtn.click();
+    
+    // The status area should become visible
+    const statusArea = page.locator('#generate-status');
+    await expect(statusArea).toBeVisible({ timeout: 5000 });
+  });
+});

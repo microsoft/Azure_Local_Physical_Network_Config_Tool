@@ -1,0 +1,101 @@
+
+! header.go.tmpl-hostname
+! Name: s46-r21-93180hl-24-1a
+! Make: Cisco
+! Model: 93180YC-FX3
+hostname s46-r21-93180hl-24-1a
+
+banner motd #
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+
+hostname s46-r21-93180hl-24-1a
+BuildVersion: 1.2305.01
+Unauthorized access and/or use prohibited.
+All access and/or use subject to monitoring.
+
+NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE
+#
+
+! stig.go.tmpl-tor_feature
+no feature telnet
+feature scp-server
+feature bgp
+feature interface-vlan
+feature lldp
+feature dhcp
+feature vpc
+feature hsrp
+feature lacp
+feature ssh
+feature tacacs+
+
+! stig.go.tmpl-stig_ssh
+no feature ssh
+no ssh key ecdsa
+no ssh key rsa
+ssh key rsa 2048 force
+ssh key ecdsa 256 force
+feature ssh
+
+no cdp enable
+lldp tlv-select dcbxp egress-queuing
+
+! stig.go.tmpl-stig_user
+fips mode enable
+user max-logins 1
+password prompt username
+userpassphrase min-length 15 max-length 80
+username admin password 0 $CREDENTIAL_PLACEHOLDER$ role network-admin
+username $CREDENTIAL_PLACEHOLDER$ password 0 $CREDENTIAL_PLACEHOLDER$ role network-admin
+!
+! SSH Key based authentication. Post process this section before applying the initial configuration.
+!
+! Remove the ability to login with a password
+! username <sshAuthUsername> password 5 ! role network-admin
+! 
+! Add the public key to the config
+! username <sshAuthUsername> sshkey <PublicKey>
+!
+
+
+
+! qos.go.tmpl-qos
+!
+! Ingress traffic to the Interface
+policy-map type network-qos QOS_NETWORK
+  class type network-qos c-8q-nq3
+    pause pfc-cos 3
+    mtu 9216
+  class type network-qos c-8q-nq-default
+    mtu 9216
+  class type network-qos c-8q-nq7
+    mtu 9216
+
+! Identify the traffic
+class-map type qos match-all RDMA
+  match cos 3
+class-map type qos match-all CLUSTER
+  match cos 7
+
+! Map the traffic to a queue map from the class-map
+policy-map type qos AZS_SERVICES
+  class RDMA
+    set qos-group 3
+  class CLUSTER
+    set qos-group 7
+
+! Egress traffic from the interface
+policy-map type queuing QOS_EGRESS_PORT
+  class type queuing c-out-8q-q3
+    bandwidth remaining percent 50
+    random-detect minimum-threshold 300 kbytes maximum-threshold 300 kbytes drop-probability 100 weight 0 ecn
+  class type queuing c-out-8q-q-default
+    bandwidth remaining percent 48
+  class type queuing c-out-8q-q1
+    bandwidth remaining percent 0
+  class type queuing c-out-8q-q2
+    bandwidth remaining percent 0
+  class type queuing c-out-8q-q4
+    bandwidth remaining percent 0
+  class type queuing c-out-8q-q5
+... (truncated)
