@@ -116,4 +116,7 @@ frontend/dist/
 frontend/node_modules/
 # Auto-generated template bundle (regenerated from backend/templates/*.j2)
 frontend/src/templates.ts
-archive/Odin-for-AzureLocal
+
+# Archive and Lab folders (development only, not for production)
+archive/
+lab/
