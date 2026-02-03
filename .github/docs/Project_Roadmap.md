@@ -1,8 +1,8 @@
 # Azure Local Physical Network Config Tool — Project Roadmap
 
-**Version:** 23.0  
-**Date:** February 2, 2026  
-**Status:** Phase 9 Complete — GitHub Community Workflow Next  
+**Version:** 24.0  
+**Date:** February 3, 2026  
+**Status:** Phase 10 Complete — Copilot-Assisted Submission Workflow  
 **Reference:** [Design Doc](AzureLocal_Physical_Network_Config_Tool_Design_Doc.md)
 
 ---
@@ -27,17 +27,17 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│  ✅ COMPLETE (Phases 1-9)                                                       │
+│  ✅ COMPLETE (Phases 1-10)                                                      │
 │     • Frontend wizard: 51 E2E tests, client-side config generation              │
 │     • Backend CLI: 162 unit tests, full schema validation                       │
 │     • Templates: Dell OS10 (10/10), Cisco NX-OS (10/10)                         │
-│     • Lab workflow: vendor detection, config sectioning, validation             │
-│     • Script migration: All scripts in backend/src/ with unit tests             │
+│     • Submission workflow: Issue template + Copilot-assisted processing         │
+│     • Test reorganization: E2E in frontend/tests, fixtures in backend/tests     │
 ├─────────────────────────────────────────────────────────────────────────────────┤
-│  📋 NEXT: Phase 10 — GitHub Community Workflow                                  │
-│     • Issue templates for config submissions                                    │
-│     • Automated processing via GitHub Actions                                   │
-│     • CONTRIBUTING.md user guide (created)                                      │
+│  🎉 MVP COMPLETE — Ready for community contributions!                           │
+│     • Users submit configs via GitHub Issues                                    │
+│     • Maintainers process with Copilot "Code with agent mode"                   │
+│     • No custom GitHub Actions needed (simpler, safer)                          │
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -52,7 +52,7 @@
 | 8 | Lab Workflow Testing | ✅ **Complete** | Vendor detection, sectioning |
 | 8.5 | Submission Validation Layer | ✅ **Complete** | Auto-fix typos, welcome new vendors |
 | 9 | Script Migration + Unit Tests | ✅ **Complete** | 162 backend tests, 95 new tests |
-| 10 | GitHub Community Workflow | 📋 **Planned** | Issue templates + Actions |
+| 10 | Copilot Submission Workflow | ✅ **Complete** | Issue template + Copilot processing |
 
 ---
 
@@ -136,84 +136,94 @@ lab/
 
 ---
 
-## Phase 10: GitHub Community Workflow 📋 PLANNED
+## Phase 10: Copilot-Assisted Submission Workflow ✅ COMPLETE
 
-**Goal:** Enable community contributions via GitHub Issues and automated processing.
+**Goal:** Enable community contributions via GitHub Issues with Copilot-assisted processing.
 
-### Testing Strategy
+### Why Copilot Instead of Custom GitHub Actions?
 
-> **Key Insight:** GitHub Actions can only be fully tested on GitHub, not locally.
+| Approach | Pros | Cons |
+|----------|------|------|
+| **Custom GitHub Actions** | Fully automated | Complex, security risks (spam/bots), maintenance burden |
+| **Copilot Agent Mode** ✅ | Human-in-loop, no custom code, leverages existing scripts | Requires maintainer action |
 
-| Trigger | Purpose |
-|---------|---------|
-| `workflow_dispatch` | Manual testing from Actions tab (no cleanup needed) |
-| `issues: [opened, labeled]` | Production trigger when testing complete |
+**Decision:** Use Copilot "Code with agent mode" for safety and simplicity.
 
-### Phased Implementation & Validation
-
-| Step | Deliverable | User Verification | Est. Time |
-|------|-------------|-------------------|-----------|
-| 10.1 | Issue template YAML | Open "New Issue" → form renders? | 2 min |
-| 10.2 | Workflow (validate only) | Run manually → logs show validation? | 2 min |
-| 10.3 | Workflow (create branch) | Run manually → branch created? | 2 min |
-| 10.4 | Workflow (create PR) | Run manually → PR created? | 2 min |
-| 10.5 | Full end-to-end test | Create real issue → PR auto-created? | 5 min |
-
-### Workflow Overview
+### Submission Workflow
 
 ```mermaid
 flowchart LR
     subgraph "Submit"
-        A[Customer opens Issue] --> B[Fills template form]
+        A[User opens Issue] --> B[Fills template form]
     end
     
-    subgraph "Process"
-        B --> C[Actions: Validate metadata]
-        C --> D[Actions: Analyze config]
-        D --> E[Actions: Create branch + files]
-    end
-    
-    subgraph "Review"
-        E --> F[PR: Maintainer review]
-        F --> G[CI: pytest + template validation]
+    subgraph "Review & Process"
+        B --> C[Maintainer reviews issue]
+        C --> D[Clicks 'Code with agent mode']
+        D --> E[Copilot validates metadata]
+        E --> F[Copilot analyzes config]
+        F --> G[Copilot creates PR]
     end
     
     subgraph "Merge"
-        G -->|Approved| H[Merge to main]
-        H --> I[Vendor templates updated]
+        G --> H[Maintainer reviews PR]
+        H --> I[Merge to main]
     end
 ```
 
-### Components to Create
+### Components Created
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| Issue Template | `.github/ISSUE_TEMPLATE/template-submission.yml` | Structured form for submissions |
-| Processing Workflow | `.github/workflows/process-submission.yml` | Auto-validate and create PR |
-| Contributing Guide | `CONTRIBUTING.md` | How to submit templates ✅ Created |
+| Component | Location | Status |
+|-----------|----------|--------|
+| Issue Template | `.github/ISSUE_TEMPLATE/config-submission.yml` | ✅ Created |
+| Copilot Instructions | `.github/instructions/process-submission.instructions.md` | ✅ Created |
+| Contributing Guide | `CONTRIBUTING.md` | ✅ Created |
+| Validation Scripts | `backend/src/metadata_validator.py` | ✅ Created (Phase 9) |
+| Vendor Detection | `backend/src/vendor_detector.py` | ✅ Created (Phase 9) |
+| Config Sectioner | `backend/src/config_sectioner.py` | ✅ Created (Phase 9) |
 
-### Issue Template Fields
+### Issue Template Features
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| Vendor | text | ✅ | Auto-fixed: `Dell EMC` → `dellemc` |
-| Firmware/OS | text | ✅ | Auto-fixed: `NX-OS` → `nxos` |
-| Model | text | ✅ | Free text |
-| Role | dropdown | ✅ | TOR1, TOR2, BMC |
-| Deployment Pattern | dropdown | ✅ | fully_converged, switched, switchless |
-| Config | textarea | ✅ | Full switch config paste |
+| Feature | Description |
+|---------|-------------|
+| **Reference disclaimer** | Prominent notice that configs are reference-only |
+| **Paste OR attach** | Users can paste config or attach file |
+| **Auto-fix friendly** | Free-text vendor/firmware fields allow typos (auto-fixed) |
+| **BMC optional** | Clearly marked as optional role |
+| **Pattern link** | Links to Azure Local Supportability for pattern help |
+| **Required checkboxes** | Sanitization + responsibility acknowledgment |
 
-> **Note:** Vendor and Firmware are free-text (not dropdowns) to welcome new vendor contributions.
+### Security & Safety
 
-### Success Criteria
+| Protection | Implementation |
+|------------|----------------|
+| **No auto-processing** | Workflow requires maintainer to click "Code with agent mode" |
+| **Human review** | Maintainer sees issue before any processing |
+| **No bot triggers** | No `issues: [opened]` workflow that bots can abuse |
+| **Copilot guardrails** | Copilot follows `.github/instructions/` guidelines |
 
-- [ ] Issue template form renders correctly on GitHub
-- [ ] Workflow runs successfully via `workflow_dispatch`
-- [ ] Metadata validation logs appear in Actions
-- [ ] Config analysis logs appear in Actions  
-- [ ] Branch auto-created with submission files
-- [ ] PR auto-created with analysis summary
-- [ ] Real issue submission triggers full workflow
+### How to Process a Submission
+
+1. **User submits issue** via template form
+2. **Maintainer receives notification** 
+3. **Maintainer reviews issue** (sanity check: not spam, no credentials)
+4. **Maintainer clicks "Code with agent mode"** on the issue
+5. **Copilot follows instructions** in `.github/instructions/process-submission.instructions.md`:
+   - Validates metadata (auto-fixes typos)
+   - Detects vendor from config
+   - Sections the config
+   - Creates submission folder
+   - Opens PR with summary
+6. **Maintainer reviews PR** and merges
+
+### Success Criteria ✅
+
+- [x] Issue template renders correctly with all fields
+- [x] Copilot instructions file created
+- [x] CONTRIBUTING.md guides users through submission
+- [x] Validation scripts available in `backend/src/`
+- [x] No custom GitHub Actions workflow needed (simpler)
+- [x] Human-in-loop for all processing (safer)
 
 ---
 

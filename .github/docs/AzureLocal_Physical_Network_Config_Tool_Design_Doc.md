@@ -1,8 +1,8 @@
 # Azure Local Network Configuration Tool — Design Document
 
-**Version:** 4.0  
-**Date:** February 2, 2026  
-**Status:** Production Ready  
+**Version:** 5.0  
+**Date:** February 3, 2026  
+**Status:** Production Ready — Copilot-Assisted Submissions  
 **Roadmap:** [Project_Roadmap.md](Project_Roadmap.md)
 
 ---
@@ -91,34 +91,29 @@ flowchart TB
     M -->|Runtime Load| K
 ```
 
-### Submission Processing Workflow (Phase 9+)
+### Submission Processing Workflow (Copilot-Assisted)
 
 ```mermaid
 flowchart LR
-    subgraph "Input"
-        A[Customer Config] --> B[metadata.yaml]
+    subgraph "Submit"
+        A[User opens Issue] --> B[Fills template form]
     end
     
-    subgraph "Validation"
-        B --> C{Metadata Validator}
-        C -->|Typo| D[Auto-Fix]
-        C -->|New Vendor| E[Welcome Flow]
-        C -->|Valid| F[Continue]
-        D --> F
-        E --> F
+    subgraph "Review & Process"
+        B --> C[Maintainer reviews]
+        C --> D["Clicks 'Code with agent mode'"]
+        D --> E[Copilot validates metadata]
+        E --> F[Copilot analyzes config]
+        F --> G[Copilot creates PR]
     end
     
-    subgraph "Processing"
-        F --> G[Vendor Detector]
-        G --> H[Config Sectioner]
-        H --> I[Analysis Output]
-    end
-    
-    subgraph "Output"
-        I --> J[sections/*.txt]
-        I --> K[analysis.json]
+    subgraph "Merge"
+        G --> H[Maintainer reviews PR]
+        H --> I[Merge to main]
     end
 ```
+
+> **Why Copilot?** Human-in-loop for safety, no custom GitHub Actions to maintain, leverages existing validation scripts.
 
 ### Scope
 
@@ -149,7 +144,10 @@ Azure_Local_Physical_Network_Config_Tool/
 │   ├── docs/                           # Documentation
 │   │   ├── AzureLocal_Physical_Network_Config_Tool_Design_Doc.md
 │   │   └── Project_Roadmap.md
-│   ├── instructions/                   # AI instructions
+│   ├── instructions/                   # AI/Copilot instructions
+│   │   └── process-submission.instructions.md  # Copilot submission guide
+│   ├── ISSUE_TEMPLATE/                 # GitHub Issue forms
+│   │   └── config-submission.yml       # Config submission form
 │   └── workflows/                      # CI/CD pipelines
 │
 ├── backend/                            # Python CLI + Processing
@@ -159,15 +157,17 @@ Azure_Local_Physical_Network_Config_Tool/
 │   │   ├── transformer.py              # Data enrichment
 │   │   ├── context.py                  # Template context builder
 │   │   ├── renderer.py                 # Jinja2 rendering
-│   │   ├── metadata_validator.py       # Submission validation (Phase 9)
-│   │   ├── vendor_detector.py          # Auto-detect vendor (Phase 9)
-│   │   └── config_sectioner.py         # Config sectioning (Phase 9)
+│   │   ├── metadata_validator.py       # Submission validation
+│   │   ├── vendor_detector.py          # Auto-detect vendor
+│   │   ├── config_sectioner.py         # Config sectioning
+│   │   └── submission_processor.py     # Orchestrate processing
 │   ├── schema/
 │   │   └── standard.json               # JSON Schema (source of truth)
 │   ├── templates/
 │   │   ├── cisco/nxos/*.j2             # Cisco NX-OS (10 templates)
 │   │   └── dellemc/os10/*.j2           # Dell OS10 (10 templates)
-│   └── tests/                          # pytest unit tests
+│   └── tests/                          # pytest unit tests (162 tests)
+│       └── fixtures/                   # Backend test data
 │
 ├── frontend/                           # TypeScript Wizard
 │   ├── src/
@@ -179,25 +179,20 @@ Azure_Local_Physical_Network_Config_Tool/
 │   │   ├── context-builder.ts          # Template context (JS port)
 │   │   ├── renderer.ts                 # Nunjucks rendering
 │   │   └── templates.ts                # Bundled templates (auto-generated)
-│   ├── scripts/
-│   │   └── bundle-templates.cjs        # .j2 → .ts bundler
+│   ├── tests/                          # E2E tests (Playwright, 51 tests)
+│   │   └── e2e/
+│   │       └── wizard-e2e.spec.ts
 │   ├── examples/                       # Sample configs by pattern
 │   │   ├── fully-converged/
 │   │   ├── switched/
 │   │   └── switchless/
 │   └── index.html
 │
-├── lab/                                # Testing Playground
-│   ├── scripts/                        # Thin wrapper (imports from backend)
-│   ├── submissions/                    # Test submissions
-│   └── output/                         # Generated output (gitignored)
-│
-├── tests/                              # E2E tests (Playwright)
-│   ├── *.spec.ts
-│   └── fixtures/
-│
-└── archive/                            # Legacy reference
+├── CONTRIBUTING.md                     # How to submit configs
+└── playwright.config.ts                # E2E test configuration
 ```
+
+> **Note:** `lab/` and `archive/` folders are gitignored (local development only).
 
 ### Naming Conventions
 
