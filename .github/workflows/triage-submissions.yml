@@ -1,0 +1,236 @@
+name: Triage Config Submissions
+
+# Auto-validate and assign config submissions to Copilot
+# Human only needs to review final PR before merge
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  validate-and-assign:
+    # Only run for config submissions
+    if: contains(github.event.issue.labels.*.name, 'config-submission')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Validate submission
+        id: validate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+            const errors = [];
+            const warnings = [];
+            
+            console.log('=== Validating Config Submission ===');
+            console.log(`Issue #${context.issue.number}`);
+            
+            // ========================================
+            // CHECK 1: Config has minimum content
+            // ========================================
+            // Look for config section - could be in code block or plain text
+            const configSection = body.includes('### Switch Configuration') 
+              ? body.split('### Switch Configuration')[1]?.split('###')[0] || ''
+              : '';
+            const configLines = configSection.trim().split('\n').filter(l => l.trim()).length;
+            
+            console.log(`Config lines found: ${configLines}`);
+            
+            if (configLines < 10) {
+              errors.push('❌ Config appears too short (< 10 lines). Please provide full running config or attach a file.');
+            } else if (configLines < 30) {
+              warnings.push('⚠️ Config is relatively short. Make sure you included the full running config.');
+            }
+            
+            // ========================================
+            // CHECK 2: Has switch-like patterns
+            // ========================================
+            const switchPatterns = [
+              { pattern: /hostname\s+\S+/i, name: 'hostname' },
+              { pattern: /interface\s+(ethernet|vlan|port-channel|loopback)/i, name: 'interface' },
+              { pattern: /vlan\s+\d+/i, name: 'vlan' },
+              { pattern: /ip\s+address/i, name: 'ip address' },
+            ];
+            
+            const foundPatterns = switchPatterns.filter(p => p.pattern.test(body));
+            console.log(`Switch patterns found: ${foundPatterns.map(p => p.name).join(', ')}`);
+            
+            if (foundPatterns.length === 0) {
+              // Could be "see attached file"
+              if (body.toLowerCase().includes('attached') || body.toLowerCase().includes('see file')) {
+                warnings.push('⚠️ Config appears to be in an attached file. Maintainer will verify.');
+              } else {
+                errors.push('❌ Config missing typical switch patterns (hostname, interface, vlan, etc.)');
+              }
+            }
+            
+            // ========================================
+            // CHECK 3: No obvious spam/injection
+            // ========================================
+            const spamPatterns = [
+              /<script/i,
+              /javascript:/i,
+              /\$\{.*\}/,  // Template injection
+              /\{\{.*\}\}/,  // Template injection
+              /onclick=/i,
+              /onerror=/i,
+            ];
+            
+            const hasSpam = spamPatterns.some(p => p.test(body));
+            if (hasSpam) {
+              errors.push('❌ Submission contains suspicious patterns. Please remove any scripts or code injection attempts.');
+            }
+            
+            // ========================================
+            // CHECK 4: Required checkboxes completed
+            // ========================================
+            const checkedBoxes = (body.match(/- \[x\]/gi) || []).length;
+            const totalBoxes = (body.match(/- \[[ x]\]/gi) || []).length;
+            
+            console.log(`Checkboxes: ${checkedBoxes}/${totalBoxes} checked`);
+            
+            if (checkedBoxes < 3) {
+              errors.push('❌ Please check all required checkboxes (sanitization, responsibility acknowledgment, contributing guide).');
+            }
+            
+            // ========================================
+            // CHECK 5: Required fields present
+            // ========================================
+            const requiredFields = [
+              { name: 'Switch Vendor', pattern: /### Switch Vendor\s*\n\s*\S+/i },
+              { name: 'Firmware/OS', pattern: /### Firmware\/OS Version\s*\n\s*\S+/i },
+              { name: 'Switch Model', pattern: /### Switch Model\s*\n\s*\S+/i },
+              { name: 'Switch Role', pattern: /### Switch Role\s*\n\s*\S+/i },
+              { name: 'Deployment Pattern', pattern: /### Deployment Pattern\s*\n\s*\S+/i },
+            ];
+            
+            const missingFields = requiredFields.filter(f => !f.pattern.test(body));
+            if (missingFields.length > 0) {
+              errors.push(`❌ Missing required fields: ${missingFields.map(f => f.name).join(', ')}`);
+            }
+            
+            // ========================================
+            // RESULT
+            // ========================================
+            const result = {
+              valid: errors.length === 0,
+              errors,
+              warnings,
+              configLines,
+              patternsFound: foundPatterns.map(p => p.name),
+            };
+            
+            console.log('Validation result:', JSON.stringify(result, null, 2));
+            core.setOutput('result', JSON.stringify(result));
+            return result;
+
+      - name: Handle valid submission - Assign to Copilot
+        if: fromJson(steps.validate.outputs.result).valid
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const result = JSON.parse('${{ steps.validate.outputs.result }}');
+            const warnings = result.warnings || [];
+            
+            console.log('✅ Submission validated, assigning to Copilot');
+            
+            // Remove triage labels
+            const labelsToRemove = ['needs-triage', 'needs-info'];
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  name: label
+                });
+              } catch (e) {
+                // Label might not exist, ignore
+              }
+            }
+            
+            // Add Copilot assignment label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['copilot', 'validated']
+            });
+            
+            // Build comment
+            let comment = '## ✅ Submission Validated\n\n';
+            comment += 'Your config submission passed automated validation. ';
+            comment += '**Copilot will now process your submission** and create a PR.\n\n';
+            
+            if (warnings.length > 0) {
+              comment += '### Warnings\n';
+              comment += warnings.join('\n') + '\n\n';
+            }
+            
+            comment += '### What happens next?\n';
+            comment += '1. 🤖 **Copilot** analyzes your config and creates a PR\n';
+            comment += '2. 👤 **Maintainer** reviews the PR\n';
+            comment += '3. ✅ **Merge** — your config becomes part of the reference collection\n\n';
+            comment += '> **Reminder:** This repo provides reference configurations only. ';
+            comment += 'You are responsible for validating in your environment.\n';
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Handle invalid submission - Request fixes
+        if: "!fromJson(steps.validate.outputs.result).valid"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const result = JSON.parse('${{ steps.validate.outputs.result }}');
+            const errors = result.errors || [];
+            const warnings = result.warnings || [];
+            
+            console.log('❌ Submission needs fixes');
+            
+            // Add needs-info label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['needs-info']
+            });
+            
+            // Remove copilot label if present
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                name: 'copilot'
+              });
+            } catch (e) {}
+            
+            // Build comment
+            let comment = '## ⚠️ Submission Needs Attention\n\n';
+            comment += 'Please address the following before Copilot can process your submission:\n\n';
+            comment += '### Issues Found\n';
+            comment += errors.join('\n') + '\n\n';
+            
+            if (warnings.length > 0) {
+              comment += '### Warnings\n';
+              comment += warnings.join('\n') + '\n\n';
+            }
+            
+            comment += '### How to fix\n';
+            comment += '1. Click **Edit** on this issue\n';
+            comment += '2. Fix the issues listed above\n';
+            comment += '3. Save — the validation will run again automatically\n\n';
+            comment += 'If you believe this is an error, a maintainer will review manually.\n';
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
