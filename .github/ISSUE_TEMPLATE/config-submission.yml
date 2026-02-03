@@ -10,10 +10,18 @@ body:
         
         Your switch configuration helps the community build better Azure Local network templates.
         
-        > **Important:** Please sanitize your config before submitting:
-        > - Remove passwords, secrets, SNMP strings
-        > - Replace sensitive IPs if needed
-        > - See [CONTRIBUTING.md](../../CONTRIBUTING.md) for details
+        > **📋 Reference Tool — Your Responsibility**
+        > 
+        > This repository provides **reference configurations only** — starting points, not production-ready 
+        > solutions. You are responsible for validating and testing any configuration in your environment 
+        > before deployment. Thank you for helping improve the community resources!
+        
+        ---
+        
+        **Before submitting, please sanitize your config:**
+        - Remove passwords, secrets, SNMP community strings
+        - Replace sensitive IPs if needed
+        - See [CONTRIBUTING.md](../../CONTRIBUTING.md) for details
 
   - type: input
     id: vendor
@@ -80,8 +88,10 @@ body:
     attributes:
       label: Switch Configuration
       description: |
-        Paste your full switch running configuration here.
-        This will be automatically analyzed and processed.
+        **Option 1:** Paste your full switch running configuration below.
+        **Option 2:** Attach your config file to this issue after submitting (drag & drop or click "Attach files").
+        
+        Either way works! If attaching a file, you can leave this field with just a note like "See attached file".
       placeholder: |
         hostname my-switch
         !
@@ -89,7 +99,7 @@ body:
          description Management
          ip address 10.0.0.1/24
         !
-        ... (paste full config)
+        ... (paste full config, or write "See attached file")
       render: text
     validations:
       required: true
@@ -114,7 +124,7 @@ body:
       options:
         - label: "I have removed all passwords, secrets, and SNMP community strings"
           required: true
+        - label: "I understand this repo provides **reference configurations only** and I am responsible for validating in my environment"
+          required: true
         - label: "I have reviewed [CONTRIBUTING.md](../../CONTRIBUTING.md)"
           required: true
-        - label: "This configuration is from a working Azure Local deployment (or test lab)"
-          required: false
