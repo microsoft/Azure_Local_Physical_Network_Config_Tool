@@ -13,7 +13,7 @@ import { defineConfig, devices } from '@playwright/test';
  * Updated for container environment with strict timeouts to prevent hangs.
  */
 export default defineConfig({
-  testDir: './tests',
+  testDir: './frontend/tests/e2e',
   /* Run tests in files in parallel */
   fullyParallel: false,  // Sequential to avoid resource contention in container
   /* Fail the build on CI if you accidentally left test.only in the source code. */

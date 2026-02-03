@@ -62,7 +62,7 @@ def dell_switchless_config():
 @pytest.fixture
 def cisco_fully_converged_config():
     """Load Cisco NX-OS fully-converged fixture"""
-    config_path = Path(__file__).parent.parent.parent / "tests" / "fixtures" / "cisco-nxos" / "sample-tor1.json"
+    config_path = Path(__file__).parent / "fixtures" / "cisco-nxos" / "sample-tor1.json"
     with open(config_path, 'r') as f:
         return json.load(f)
 
@@ -70,7 +70,7 @@ def cisco_fully_converged_config():
 @pytest.fixture
 def cisco_switchless_config():
     """Load Cisco NX-OS switchless fixture"""
-    config_path = Path(__file__).parent.parent.parent / "tests" / "fixtures" / "cisco-nxos" / "sample-switchless.json"
+    config_path = Path(__file__).parent / "fixtures" / "cisco-nxos" / "sample-switchless.json"
     with open(config_path, 'r') as f:
         return json.load(f)
 

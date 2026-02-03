@@ -46,11 +46,11 @@ body:
     id: role
     attributes:
       label: Switch Role
-      description: "The role of this switch in Azure Local deployment"
+      description: "The role of this switch in Azure Local deployment (BMC is optional — not all deployments have a BMC switch)"
       options:
         - TOR1 (Top-of-Rack Switch 1)
         - TOR2 (Top-of-Rack Switch 2)
-        - BMC (Baseboard Management Controller Switch)
+        - BMC (Baseboard Management Controller Switch) - Optional
     validations:
       required: true
 
@@ -58,7 +58,7 @@ body:
     id: deployment_pattern
     attributes:
       label: Deployment Pattern
-      description: "Azure Local network deployment pattern"
+      description: "Azure Local network deployment pattern. See [Network Patterns Overview](https://github.com/Azure/AzureLocal-Supportability/blob/main/TSG/Networking/Network-Patterns-Overview.md) for details."
       options:
         - fully_converged (Storage + Compute on same network)
         - switched (Dedicated storage switches)
