@@ -32,7 +32,7 @@ This is a **reference tool** for Azure Local physical network configurations.
 │  STRICT (Azure Local Requirements)                          │
 │  • 3 deployment patterns: Switchless, Switched, Converged   │
 │  • Storage VLAN isolation rules per pattern                 │
-│  • Peer-link must NOT carry storage VLANs                   │
+│  • Keep storage VLANs off the ToR peer-link                 │
 │  • DCB (PFC + ETS) recommended for RDMA                     │
 │  Source: MS Learn + AzureLocal-Supportability repo          │
 ├─────────────────────────────────────────────────────────────┤
@@ -99,8 +99,8 @@ def validate_storage_vlans(config: dict, pattern: str) -> list[str]:
     """
     Validate storage VLAN placement per Azure Local deployment pattern.
     
-    Switched pattern: Storage VLANs on TOR but NOT on peer-link.
-    Fully-converged: Storage VLANs allowed on peer-link.
+    Switched pattern: Storage VLANs are isolated to the TORs per pattern rules.
+    Fully-converged: Storage VLANs are present on both TORs for failover.
     
     Returns list of validation errors (empty if valid).
     """

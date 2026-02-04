@@ -4,7 +4,7 @@ applyTo: '**'
 
 # Processing Config Submissions with Copilot
 
-> **Role:** You are the first-tier processor for config submissions. Your job is to validate, analyze, and create PRs. Human maintainers only review the final PR.
+> **Role:** You are the first-tier processor for config submissions. Your job is to validate, analyze, and create a PR with **sanitized test fixtures**. Human maintainers review and merge.
 
 ## Principles
 
@@ -12,7 +12,7 @@ applyTo: '**'
 2. **Auto-Fix Friendly** — Fix typos in vendor/firmware names, don't reject
 3. **Welcome New Vendors** — Unknown vendors are contributions, not errors
 4. **No Credentials** — Never commit passwords/secrets; stop and comment if found
-5. **Structured Output** — Create consistent folder structure and PR format
+5. **Fixtures-First Output** — Store sanitized configs as versioned fixtures to keep pytest regression coverage strong
 
 ---
 
@@ -181,15 +181,18 @@ grep -iE "(password|secret|community|key|credential)" <<< "<config_text>"
 3. Add label: `needs-sanitization`
 4. Stop processing
 
+> [!IMPORTANT]
+> Even if credentials are removed, strongly prefer sanitizing **hostnames, IPs/subnets, and internal endpoints** by replacing them with placeholders (e.g., `$HOSTNAME$`, `$MGMT_IP$`) or RFC5737 test-net ranges.
+
 ---
 
-## Step 6: Create Submission Files
+## Step 6: Create Fixture Files (Sanitized Corpus)
 
 Create folder structure:
 
 ```
-submissions/
- <vendor>-<model>-<role>-issue<number>/
+backend/tests/fixtures/submissions/
+ <vendor>-<model>-<role>-<pattern>-issue<number>/
     ├── metadata.yaml
     ├── config.txt
     ├── analysis.json
@@ -220,6 +223,10 @@ validation:
   is_new_vendor: <true/false>
   detected_vendor: <vendor_from_config>
   vendor_match: <true/false>
+
+sanitization:
+  placeholders_used: true
+  notes: "Credentials must be replaced with $CREDENTIAL_PLACEHOLDER$"
 ```
 
 ### config.txt
@@ -292,15 +299,15 @@ validation:
 ### Branch Name
 
 ```
-submission/issue-<number>-<vendor>-<model>-<role>
+ fixtures/issue-<number>-<vendor>-<model>-<role>
 ```
 
-Example: `submission/issue-86-dellemc-s5248f-tor1`
+Example: `fixtures/issue-86-dellemc-s5248f-tor1`
 
 ### PR Title
 
 ```
-feat(submissions): Add <vendor> <model> <role> config from #<number>
+feat(fixtures): Add sanitized <vendor> <model> <role> fixture from #<number>
 ```
 
 ### PR Body
@@ -339,10 +346,10 @@ Closes #<issue_number>
 - **Port Channels:** <count>
 
 ### Files Created
-- `submissions/<folder>/metadata.yaml`
-- `submissions/<folder>/config.txt`
-- `submissions/<folder>/analysis.json`
-- `submissions/<folder>/README.md`
+- `backend/tests/fixtures/submissions/<folder>/metadata.yaml`
+- `backend/tests/fixtures/submissions/<folder>/config.txt`
+- `backend/tests/fixtures/submissions/<folder>/analysis.json`
+- `backend/tests/fixtures/submissions/<folder>/README.md`
 
 ---
 

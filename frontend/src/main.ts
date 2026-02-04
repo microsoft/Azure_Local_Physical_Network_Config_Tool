@@ -307,6 +307,14 @@ declare global {
     scrollToSection: (sectionId: string) => void;
     showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
     toggleJsonPreviewSection: () => void;
+    // TOR Pair functions (Phase 13)
+    updateBaseHostname: () => void;
+    updateTor1Hostname: () => void;
+    updateTor2Hostname: () => void;
+    selectSwitchTab: (tab: 'A' | 'B') => void;
+    onVipChange: (inputEl: HTMLInputElement, vlanType: string) => void;
+    onTor1LoopbackChange: () => void;
+    onTor1KeepaliveChange: () => void;
   }
 }
 
@@ -337,6 +345,24 @@ window.decreaseFontSize = decreaseFontSize;
 window.scrollToSection = scrollToSection;
 window.showToast = showToast;
 window.toggleJsonPreviewSection = toggleJsonPreviewSection;
+
+// TOR Pair functions (Phase 13)
+import { 
+  updateBaseHostname, 
+  updateTor1Hostname, 
+  updateTor2Hostname, 
+  selectSwitchTab,
+  onVipChange,
+  onTor1LoopbackChange,
+  onTor1KeepaliveChange
+} from './app';
+window.updateBaseHostname = updateBaseHostname;
+window.updateTor1Hostname = updateTor1Hostname;
+window.updateTor2Hostname = updateTor2Hostname;
+window.selectSwitchTab = selectSwitchTab;
+window.onVipChange = onVipChange;
+window.onTor1LoopbackChange = onTor1LoopbackChange;
+window.onTor1KeepaliveChange = onTor1KeepaliveChange;
 
 // Initialize the application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {

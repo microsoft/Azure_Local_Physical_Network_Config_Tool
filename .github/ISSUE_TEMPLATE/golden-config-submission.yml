@@ -11,8 +11,8 @@ body:
         By submitting your working switch configuration, you're helping the community expand vendor support for Azure Local physical network deployments.
         
         **Important:**
-        - Your config will be automatically sanitized (passwords, IPs, hostnames removed)
-        - Please review your submission to ensure no sensitive data remains
+        - Your config will be reviewed and sanitized before it can be included in this repo
+        - Please review your submission to ensure no sensitive data (credentials/PII) remains
         - Configs must be from working Azure Local deployments
         
   - type: input
@@ -48,9 +48,9 @@ body:
       label: Deployment Pattern
       description: "Which Azure Local deployment pattern is this config for?"
       options:
-        - Switchless (storage direct-connect, no storage VLANs on TOR)
-        - Switched (non-converged, storage VLANs on TOR but not on peer-link)
-        - Fully-Converged (storage VLANs allowed on peer-link)
+        - Switchless (storage direct-connect)
+        - Switched (non-converged; storage VLANs should NOT be on ToR peer-link)
+        - Fully-Converged (storage VLANs should NOT be on ToR peer-link)
     validations:
       required: true
 
@@ -92,9 +92,9 @@ body:
         Paste your switch configuration here.
         
         **Before pasting, please:**
-        1. Remove or replace actual passwords with `REDACTED`
-        2. Consider replacing real IP addresses with examples (10.x.x.x)
-        3. Remove any proprietary or company-specific naming
+        1. Replace passwords/secrets with `$CREDENTIAL_PLACEHOLDER$`
+        2. Replace real IPs/subnets with RFC5737 test-net ranges (e.g., `192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`)
+        3. Replace hostnames, domains, and internal endpoints with placeholders (e.g., `$HOSTNAME$`, `$DOMAIN$`, `$MGMT_IP$`)
         
         The config will be further sanitized during processing, but your initial review helps.
       placeholder: |

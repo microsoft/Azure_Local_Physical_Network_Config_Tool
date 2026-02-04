@@ -153,3 +153,118 @@ export function isValidCIDR(cidr?: string): boolean {
   const prefix = parseInt(prefixStr, 10);
   return !isNaN(prefix) && prefix >= 0 && prefix <= 32;
 }
+
+// ============================================================================
+// TOR PAIR VALIDATION (Phase 13)
+// ============================================================================
+
+import type { PerSwitchOverrides, SharedConfig } from './types';
+
+/**
+ * Validate per-switch overrides for TOR pair
+ */
+export function validatePerSwitchOverrides(
+  overrides: PerSwitchOverrides, 
+  switchLabel: string
+): ValidationError[] {
+  const errors: ValidationError[] = [];
+  
+  // Hostname is required
+  if (!overrides.hostname || overrides.hostname.trim() === '') {
+    errors.push({
+      path: `/${switchLabel.toLowerCase()}/hostname`,
+      message: `${switchLabel}: Hostname is required`
+    });
+  }
+  
+  // Hostname format validation
+  if (overrides.hostname && !/^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z]$/.test(overrides.hostname)) {
+    errors.push({
+      path: `/${switchLabel.toLowerCase()}/hostname`,
+      message: `${switchLabel}: Hostname must start with a letter, end with letter/number, and contain only letters, numbers, and hyphens`
+    });
+  }
+  
+  // Loopback IP validation (optional but must be valid if provided)
+  if (overrides.loopback_ip && !isValidCIDR(overrides.loopback_ip)) {
+    errors.push({
+      path: `/${switchLabel.toLowerCase()}/loopback_ip`,
+      message: `${switchLabel}: Invalid loopback IP format (expected x.x.x.x/32)`
+    });
+  }
+  
+  // Keepalive IP validation (optional but must be valid if provided)
+  if (overrides.keepalive_source_ip && !isValidIPv4(overrides.keepalive_source_ip)) {
+    errors.push({
+      path: `/${switchLabel.toLowerCase()}/keepalive_source_ip`,
+      message: `${switchLabel}: Invalid keepalive source IP format`
+    });
+  }
+  
+  if (overrides.keepalive_dest_ip && !isValidIPv4(overrides.keepalive_dest_ip)) {
+    errors.push({
+      path: `/${switchLabel.toLowerCase()}/keepalive_dest_ip`,
+      message: `${switchLabel}: Invalid keepalive destination IP format`
+    });
+  }
+  
+  return errors;
+}
+
+/**
+ * Validate complete TOR pair configuration
+ */
+export function validateTorPair(
+  shared: SharedConfig,
+  tor1: PerSwitchOverrides,
+  tor2: PerSwitchOverrides
+): ValidationResult {
+  const errors: ValidationError[] = [];
+  
+  // Validate shared config
+  if (!shared.deployment_pattern) {
+    errors.push({
+      path: '/shared/deployment_pattern',
+      message: 'Deployment pattern is required'
+    });
+  }
+  
+  if (!shared.vendor) {
+    errors.push({
+      path: '/shared/vendor',
+      message: 'Vendor is required'
+    });
+  }
+  
+  if (!shared.model) {
+    errors.push({
+      path: '/shared/model',
+      message: 'Model is required'
+    });
+  }
+  
+  // Validate per-switch overrides
+  errors.push(...validatePerSwitchOverrides(tor1, 'TOR1'));
+  errors.push(...validatePerSwitchOverrides(tor2, 'TOR2'));
+  
+  // Cross-validation: hostnames must be different
+  if (tor1.hostname && tor2.hostname && tor1.hostname === tor2.hostname) {
+    errors.push({
+      path: '/tor1/hostname',
+      message: 'TOR1 and TOR2 must have different hostnames'
+    });
+  }
+  
+  // Cross-validation: loopback IPs must be different (if both provided)
+  if (tor1.loopback_ip && tor2.loopback_ip && tor1.loopback_ip === tor2.loopback_ip) {
+    errors.push({
+      path: '/tor1/loopback_ip',
+      message: 'TOR1 and TOR2 must have different loopback IPs'
+    });
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}

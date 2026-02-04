@@ -27,7 +27,8 @@ import type {
   VLANPurpose,
   RedundancyType,
   Firmware,
-  DeploymentPattern
+  DeploymentPattern,
+  PerSwitchOverrides
 } from './types';
 import {
   DISPLAY_NAMES,
@@ -42,10 +43,23 @@ import {
   downloadJSON,
   copyToClipboard,
   parseIntSafe,
-  formatJSON
+  formatJSON,
+  buildTorConfig,
+  downloadTorPairZip,
+  generateHostname,
+  swapKeepaliveIps
 } from './utils';
 import { updateBreadcrumbCompletion } from './main';
 import { validatePeerLinkVlans } from './validator';
+import {
+  updateSharedConfig,
+  updateTor1Overrides,
+  updateTor2Overrides,
+  setActiveSwitch,
+  getTor1Overrides,
+  getTor2Overrides,
+  getSharedConfig
+} from './state';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -373,6 +387,347 @@ export function updateHostname(): void {
   }
 }
 
+// ============================================================================
+// TOR PAIR FUNCTIONS (Phase 13)
+// ============================================================================
+
+/**
+ * Update base hostname and auto-generate TOR1/TOR2 hostnames
+ */
+export function updateBaseHostname(): void {
+  const baseInput = getElement<HTMLInputElement>('#base-hostname');
+  if (!baseInput) return;
+  
+  const baseName = baseInput.value.trim();
+  
+  // Update shared config
+  updateSharedConfig({ base_hostname: baseName });
+  
+  // Auto-generate TOR1/TOR2 hostnames
+  const tor1Hostname = baseName ? generateHostname(baseName, 'TOR1') : '';
+  const tor2Hostname = baseName ? generateHostname(baseName, 'TOR2') : '';
+  
+  // Update TOR overrides
+  updateTor1Overrides({ hostname: tor1Hostname });
+  updateTor2Overrides({ hostname: tor2Hostname });
+  
+  // Update UI inputs
+  const tor1Input = getElement<HTMLInputElement>('#hostname-tor1');
+  const tor2Input = getElement<HTMLInputElement>('#hostname-tor2');
+  if (tor1Input) tor1Input.value = tor1Hostname;
+  if (tor2Input) tor2Input.value = tor2Hostname;
+  
+  // Show per-switch section when base hostname is entered
+  const perSwitchSection = getElement('#per-switch-section');
+  if (perSwitchSection && baseName) {
+    perSwitchSection.style.display = 'block';
+  }
+  
+  // Also update legacy state for backward compatibility
+  state.config.switch.hostname = tor1Hostname;
+  
+  updatePhase1NextButton();
+  updateTorPairSummary();
+}
+
+/**
+ * Update TOR1 hostname manually
+ */
+export function updateTor1Hostname(): void {
+  const input = getElement<HTMLInputElement>('#hostname-tor1');
+  if (input) {
+    updateTor1Overrides({ hostname: input.value.trim() });
+    updateTorPairSummary();
+  }
+}
+
+/**
+ * Update TOR2 hostname manually
+ */
+export function updateTor2Hostname(): void {
+  const input = getElement<HTMLInputElement>('#hostname-tor2');
+  if (input) {
+    updateTor2Overrides({ hostname: input.value.trim() });
+    updateTorPairSummary();
+  }
+}
+
+/**
+ * Switch between Switch A (TOR1) and Switch B (TOR2) tabs
+ */
+export function selectSwitchTab(tab: 'A' | 'B'): void {
+  setActiveSwitch(tab);
+  
+  // Update tab UI
+  getElements('.switch-tab').forEach(tabBtn => {
+    tabBtn.classList.remove('active');
+    if (tabBtn.dataset.switch === tab) {
+      tabBtn.classList.add('active');
+    }
+  });
+  
+  // Show/hide content
+  const contentA = getElement('#switch-a-content');
+  const contentB = getElement('#switch-b-content');
+  
+  if (contentA) contentA.style.display = tab === 'A' ? 'block' : 'none';
+  if (contentB) contentB.style.display = tab === 'B' ? 'block' : 'none';
+}
+
+/**
+ * Auto-swap keepalive IPs from TOR1 to TOR2
+ */
+export function syncKeepaliveIps(): void {
+  const tor1Src = getElement<HTMLInputElement>('#keepalive-src-tor1')?.value || '';
+  const tor1Dst = getElement<HTMLInputElement>('#keepalive-dst-tor1')?.value || '';
+  
+  // Swap for TOR2
+  const swapped = swapKeepaliveIps(tor1Src, tor1Dst);
+  
+  // Update TOR2 keepalive inputs (they're readonly)
+  const tor2Src = getElement<HTMLInputElement>('#keepalive-src-tor2');
+  const tor2Dst = getElement<HTMLInputElement>('#keepalive-dst-tor2');
+  
+  if (tor2Src) tor2Src.value = swapped.source;
+  if (tor2Dst) tor2Dst.value = swapped.dest;
+  
+  // Update state
+  updateTor1Overrides({ 
+    keepalive_source_ip: tor1Src, 
+    keepalive_dest_ip: tor1Dst 
+  });
+  updateTor2Overrides({ 
+    keepalive_source_ip: swapped.source, 
+    keepalive_dest_ip: swapped.dest 
+  });
+}
+
+/**
+ * Auto-populate TOR1 and TOR2 SVI IPs when VIP changes.
+ * Rule: TOR1 = VIP + 1, TOR2 = VIP + 2 (last octet)
+ * @param inputEl - The VIP input element that triggered the change
+ * @param vlanType - The VLAN type ('mgmt' or 'compute')
+ */
+export function onVipChange(inputEl: HTMLInputElement, vlanType: string): void {
+  const vip = inputEl.value.trim();
+  if (!vip) return;
+  
+  const parts = vip.split('.');
+  if (parts.length !== 4) return;
+  
+  const lastOctetStr = parts[3];
+  if (!lastOctetStr) return;
+  
+  const lastOctet = parseInt(lastOctetStr, 10);
+  if (isNaN(lastOctet) || lastOctet > 253) return; // Leave room for +2
+  
+  const prefix = `${parts[0]}.${parts[1]}.${parts[2]}`;
+  
+  // Find the parent VLAN card and update TOR1/TOR2 fields
+  const vlanCard = inputEl.closest('.vlan-card');
+  if (!vlanCard) return;
+  
+  const tor1Input = vlanCard.querySelector(`.vlan-${vlanType}-tor1-ip`) as HTMLInputElement;
+  const tor2Input = vlanCard.querySelector(`.vlan-${vlanType}-tor2-ip`) as HTMLInputElement;
+  
+  // Auto-fill TOR1 = VIP + 1
+  if (tor1Input && !tor1Input.dataset.userEdited) {
+    tor1Input.value = `${prefix}.${lastOctet + 1}`;
+  }
+  
+  // Auto-fill TOR2 = VIP + 2
+  if (tor2Input && !tor2Input.dataset.userEdited) {
+    tor2Input.value = `${prefix}.${lastOctet + 2}`;
+  }
+}
+
+/**
+ * Auto-populate TOR2 loopback when TOR1 loopback changes.
+ * Rule: TOR2 = TOR1 + 1 (last octet)
+ */
+export function onTor1LoopbackChange(): void {
+  const tor1Input = getElement<HTMLInputElement>('#loopback-tor1');
+  const tor2Input = getElement<HTMLInputElement>('#loopback-tor2');
+  
+  if (!tor1Input || !tor2Input) return;
+  
+  const tor1Value = tor1Input.value.trim();
+  if (!tor1Value) return;
+  
+  // Handle /32 suffix
+  const splitResult = tor1Value.includes('/') ? tor1Value.split('/') : [tor1Value, '32'];
+  const ip = splitResult[0] || '';
+  const cidr = splitResult[1] || '32';
+  const parts = ip.split('.');
+  if (parts.length !== 4) return;
+  
+  const lastOctetStr = parts[3];
+  if (!lastOctetStr) return;
+  
+  const lastOctet = parseInt(lastOctetStr, 10);
+  if (isNaN(lastOctet) || lastOctet > 254) return;
+  
+  const prefix = `${parts[0]}.${parts[1]}.${parts[2]}`;
+  
+  // Auto-fill TOR2 = TOR1 + 1 (only if not manually edited)
+  if (!tor2Input.dataset.userEdited) {
+    tor2Input.value = `${prefix}.${lastOctet + 1}/${cidr}`;
+  }
+  
+  // Update state
+  updateTor1Overrides({ loopback_ip: tor1Value });
+  updateTor2Overrides({ loopback_ip: tor2Input.value });
+}
+
+/**
+ * Auto-swap keepalive IPs when TOR1 keepalive changes.
+ * Rule: TOR2.src = TOR1.dst, TOR2.dst = TOR1.src
+ */
+export function onTor1KeepaliveChange(): void {
+  const tor1Src = getElement<HTMLInputElement>('#keepalive-src-tor1')?.value || '';
+  const tor1Dst = getElement<HTMLInputElement>('#keepalive-dst-tor1')?.value || '';
+  
+  // Swap for TOR2
+  const swapped = swapKeepaliveIps(tor1Src, tor1Dst);
+  
+  // Update TOR2 keepalive inputs
+  const tor2Src = getElement<HTMLInputElement>('#keepalive-src-tor2');
+  const tor2Dst = getElement<HTMLInputElement>('#keepalive-dst-tor2');
+  
+  if (tor2Src && !tor2Src.dataset.userEdited) {
+    tor2Src.value = swapped.source;
+  }
+  if (tor2Dst && !tor2Dst.dataset.userEdited) {
+    tor2Dst.value = swapped.dest;
+  }
+  
+  // Update state
+  updateTor1Overrides({ 
+    keepalive_source_ip: tor1Src, 
+    keepalive_dest_ip: tor1Dst 
+  });
+  updateTor2Overrides({ 
+    keepalive_source_ip: tor2Src?.value || swapped.source, 
+    keepalive_dest_ip: tor2Dst?.value || swapped.dest 
+  });
+}
+
+/**
+ * Update TOR pair summary in sidebar
+ */
+export function updateTorPairSummary(): void {
+  const tor1 = getTor1Overrides();
+  const tor2 = getTor2Overrides();
+  
+  setTextContent('#sum-hostname-tor1', tor1.hostname || '—');
+  setTextContent('#sum-hostname-tor2', tor2.hostname || '—');
+}
+
+/**
+ * Generate and download TOR pair as ZIP
+ */
+export async function generateAndDownloadTorPair(): Promise<void> {
+  const statusEl = getElement('#generate-status');
+  const loadingEl = getElement('#generate-loading');
+  const errorEl = getElement('#generate-error');
+  const successEl = getElement('#generate-success');
+  const btn = getElement<HTMLButtonElement>('#btn-generate-config');
+  
+  // Reset and show status area
+  if (statusEl) statusEl.style.display = 'block';
+  if (loadingEl) loadingEl.style.display = 'flex';
+  if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+  if (successEl) { successEl.style.display = 'none'; successEl.textContent = ''; }
+  if (btn) btn.disabled = true;
+  
+  try {
+    // Build shared config from current state
+    const sharedConfig = buildSharedConfigFromState();
+    const tor1Overrides = getTor1Overrides();
+    const tor2Overrides = getTor2Overrides();
+    
+    // Build StandardConfig for each TOR
+    const tor1Config = buildTorConfig(sharedConfig, tor1Overrides, 'TOR1');
+    const tor2Config = buildTorConfig(sharedConfig, tor2Overrides, 'TOR2');
+    
+    // Import renderer and generate configs
+    const { generateConfig } = await import('./renderer');
+    
+    const tor1Result = generateConfig(tor1Config);
+    const tor2Result = generateConfig(tor2Config);
+    
+    if (loadingEl) loadingEl.style.display = 'none';
+    
+    if (tor1Result.success && tor2Result.success && tor1Result.config && tor2Result.config) {
+      // Download as ZIP
+      const baseName = sharedConfig.base_hostname || tor1Overrides.hostname.replace(/-tor1$/i, '') || 'switch';
+      
+      await downloadTorPairZip(
+        tor1Config,
+        tor2Config,
+        tor1Result.config,
+        tor2Result.config,
+        baseName,
+        sharedConfig.deployment_pattern
+      );
+      
+      if (successEl) {
+        successEl.textContent = `✅ TOR pair generated: ${baseName}_${sharedConfig.deployment_pattern}.zip`;
+        successEl.style.display = 'block';
+      }
+      showSuccessMessage('TOR pair configuration generated and downloaded!');
+    } else {
+      // Show errors
+      const errors: string[] = [];
+      if (!tor1Result.success) errors.push(`TOR1: ${tor1Result.error}`);
+      if (!tor2Result.success) errors.push(`TOR2: ${tor2Result.error}`);
+      
+      const errorMsg = errors.join('; ') || 'Unknown error';
+      if (errorEl) {
+        errorEl.textContent = `❌ ${errorMsg}`;
+        errorEl.style.display = 'block';
+      }
+      showValidationError(errorMsg);
+    }
+  } catch (err) {
+    if (loadingEl) loadingEl.style.display = 'none';
+    const errorMsg = err instanceof Error ? err.message : 'Failed to generate TOR pair';
+    if (errorEl) {
+      errorEl.textContent = `❌ ${errorMsg}`;
+      errorEl.style.display = 'block';
+    }
+    showValidationError(`Generation failed: ${errorMsg}`);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/**
+ * Build SharedConfig from current wizard state
+ * This bridges the legacy single-switch state to the new TOR pair model
+ */
+function buildSharedConfigFromState(): import('./types').SharedConfig {
+  const config = state.config;
+  
+  return {
+    base_hostname: getSharedConfig().base_hostname || config.switch.hostname?.replace(/-tor[12]$/i, ''),
+    deployment_pattern: config.switch.deployment_pattern,
+    vendor: config.switch.vendor,
+    model: config.switch.model,
+    firmware: config.switch.firmware,
+    vlans: config.vlans || [],
+    interfaces: config.interfaces || [],
+    port_channels: config.port_channels || [],
+    mlag_domain_id: config.mlag?.domain_id,
+    mlag_peer_link_id: config.port_channels?.find(pc => pc.vpc_peer_link)?.id,
+    bgp_asn: config.bgp?.asn,
+    bgp_neighbors: config.bgp?.neighbors,
+    static_routes: config.static_routes,
+    prefix_lists: config.prefix_lists,
+    routing_type: config.routing_type
+  };
+}
+
 /**
  * Update Phase 1 next button state
  */
@@ -449,8 +804,9 @@ export function updateConfigSummary(): void {
   setTextContent('#sum-pattern', patternDisplay ? capitalize(patternDisplay) : '—');
   setTextContent('#sum-vendor', config.switch.vendor ? DISPLAY_NAMES.vendors[config.switch.vendor] || config.switch.vendor : '—');
   setTextContent('#sum-model', config.switch.model?.toUpperCase() || '—');
-  setTextContent('#sum-role', config.switch.role || '—');
-  setTextContent('#sum-hostname', config.switch.hostname || '—');
+  
+  // TOR Pair hostnames (Phase 13)
+  updateTorPairSummary();
   
   // VLANs section
   const vlans = config.vlans || [];
@@ -774,7 +1130,8 @@ export function setupEventListeners(): void {
   if (exportBtn) exportBtn.addEventListener('click', exportJSONFile);
 
   const generateConfigBtn = getElement('#btn-generate-config');
-  if (generateConfigBtn) generateConfigBtn.addEventListener('click', generateAndDownloadConfig);
+  // Use TOR pair generation (Phase 13) instead of single-switch generation
+  if (generateConfigBtn) generateConfigBtn.addEventListener('click', generateAndDownloadTorPair);
 
   const copyBtn = getElement('#btn-copy');
   if (copyBtn) copyBtn.addEventListener('click', copyJSON);
@@ -790,6 +1147,81 @@ export function setupEventListeners(): void {
         const ip = e.target.value.split('/')[0];
         routerIdField.value = ip || '';
       }
+    });
+  }
+
+  // TOR Pair: Auto-sync keepalive IPs from TOR1 to TOR2 (Phase 13)
+  const keepaliveSrcTor1 = getElement<HTMLInputElement>('#keepalive-src-tor1');
+  const keepaliveDstTor1 = getElement<HTMLInputElement>('#keepalive-dst-tor1');
+  if (keepaliveSrcTor1) keepaliveSrcTor1.addEventListener('input', syncKeepaliveIps);
+  if (keepaliveDstTor1) keepaliveDstTor1.addEventListener('input', syncKeepaliveIps);
+  
+  // Also track manual edits to TOR2 keepalive fields
+  const keepaliveSrcTor2 = getElement<HTMLInputElement>('#keepalive-src-tor2');
+  const keepaliveDstTor2 = getElement<HTMLInputElement>('#keepalive-dst-tor2');
+  if (keepaliveSrcTor2) {
+    keepaliveSrcTor2.addEventListener('input', () => {
+      updateTor2Overrides({ keepalive_source_ip: keepaliveSrcTor2.value });
+    });
+  }
+  if (keepaliveDstTor2) {
+    keepaliveDstTor2.addEventListener('input', () => {
+      updateTor2Overrides({ keepalive_dest_ip: keepaliveDstTor2.value });
+    });
+  }
+
+  // TOR Pair: Update loopback IPs
+  const loopbackTor1 = getElement<HTMLInputElement>('#loopback-tor1');
+  const loopbackTor2 = getElement<HTMLInputElement>('#loopback-tor2');
+  if (loopbackTor1) {
+    loopbackTor1.addEventListener('input', () => {
+      updateTor1Overrides({ loopback_ip: loopbackTor1.value });
+    });
+  }
+  if (loopbackTor2) {
+    loopbackTor2.addEventListener('input', () => {
+      updateTor2Overrides({ loopback_ip: loopbackTor2.value });
+    });
+  }
+
+  // TOR Pair: Update uplink IPs (Phase 13.5)
+  const uplink1Tor1 = getElement<HTMLInputElement>('#uplink1-tor1');
+  const uplink2Tor1 = getElement<HTMLInputElement>('#uplink2-tor1');
+  const uplink1Tor2 = getElement<HTMLInputElement>('#uplink1-tor2');
+  const uplink2Tor2 = getElement<HTMLInputElement>('#uplink2-tor2');
+  
+  if (uplink1Tor1) {
+    uplink1Tor1.addEventListener('input', () => {
+      updateTor1Overrides({ uplink1_ip: uplink1Tor1.value });
+    });
+  }
+  if (uplink2Tor1) {
+    uplink2Tor1.addEventListener('input', () => {
+      updateTor1Overrides({ uplink2_ip: uplink2Tor1.value });
+    });
+  }
+  if (uplink1Tor2) {
+    uplink1Tor2.addEventListener('input', () => {
+      updateTor2Overrides({ uplink1_ip: uplink1Tor2.value });
+    });
+  }
+  if (uplink2Tor2) {
+    uplink2Tor2.addEventListener('input', () => {
+      updateTor2Overrides({ uplink2_ip: uplink2Tor2.value });
+    });
+  }
+  
+  // TOR Pair: Update iBGP port-channel IPs (Phase 13.5)
+  const ibgpIpTor1 = getElement<HTMLInputElement>('#pc-ibgp-ip-tor1');
+  const ibgpIpTor2 = getElement<HTMLInputElement>('#pc-ibgp-ip-tor2');
+  if (ibgpIpTor1) {
+    ibgpIpTor1.addEventListener('input', () => {
+      updateTor1Overrides({ ibgp_pc_ip: ibgpIpTor1.value });
+    });
+  }
+  if (ibgpIpTor2) {
+    ibgpIpTor2.addEventListener('input', () => {
+      updateTor2Overrides({ ibgp_pc_ip: ibgpIpTor2.value });
     });
   }
 
@@ -851,6 +1283,113 @@ export async function loadTemplate(templateName: string): Promise<void> {
     showSuccessMessage(`Loaded template: ${templateName.split('/').pop()}`);
   } catch (error) {
     showValidationError(`Failed to load template: ${(error as Error).message}`);
+  }
+}
+
+/**
+ * Load a TOR pair template (both TOR1 and TOR2 templates from the same pattern).
+ * Extracts shared config from TOR1, per-switch overrides from both.
+ * 
+ * @param pattern - Pattern name (e.g., "fully-converged", "switched", "switchless")
+ */
+export async function loadTemplatePair(pattern: string): Promise<void> {
+  closeTemplateModal();
+  
+  try {
+    // Fetch both TOR1 and TOR2 templates
+    const [tor1Response, tor2Response] = await Promise.all([
+      fetch(resolveTemplateUrl(`${pattern}/sample-tor1`)),
+      fetch(resolveTemplateUrl(`${pattern}/sample-tor2`))
+    ]);
+    
+    if (!tor1Response.ok) {
+      throw new Error(`Failed to load TOR1 template: ${tor1Response.statusText}`);
+    }
+    
+    const tor1Config = await tor1Response.json() as StandardConfig;
+    
+    // TOR2 may not exist for some patterns (e.g., switchless with single switch)
+    let tor2Config: StandardConfig | null = null;
+    if (tor2Response.ok) {
+      tor2Config = await tor2Response.json() as StandardConfig;
+    }
+    
+    // Import extraction function
+    const { extractPerSwitchOverrides, extractBaseHostname } = await import('./utils');
+    
+    // Extract shared config from TOR1 (VLANs, interfaces, port_channels, etc.)
+    loadConfig(tor1Config);
+    
+    // Extract base hostname and update UI
+    const baseHostname = extractBaseHostname(tor1Config.switch?.hostname || 'sample');
+    const baseHostnameInput = getElement<HTMLInputElement>('#base-hostname');
+    if (baseHostnameInput) {
+      baseHostnameInput.value = baseHostname;
+      updateBaseHostname(); // Triggers hostname derivation
+    }
+    
+    // Extract per-switch overrides from TOR1
+    const tor1Overrides = extractPerSwitchOverrides(tor1Config);
+    updateTor1Overrides(tor1Overrides);
+    
+    // Populate TOR1 UI fields
+    populatePerSwitchFields('tor1', tor1Overrides);
+    
+    // Extract per-switch overrides from TOR2 (or auto-derive if not available)
+    if (tor2Config) {
+      const tor2Overrides = extractPerSwitchOverrides(tor2Config);
+      updateTor2Overrides(tor2Overrides);
+      populatePerSwitchFields('tor2', tor2Overrides);
+    }
+    
+    showSuccessMessage(`Loaded TOR pair template: ${pattern}`);
+  } catch (error) {
+    showValidationError(`Failed to load template pair: ${(error as Error).message}`);
+  }
+}
+
+/**
+ * Populate per-switch UI fields from overrides.
+ */
+function populatePerSwitchFields(tor: 'tor1' | 'tor2', overrides: PerSwitchOverrides): void {
+  // Hostname
+  setInputValue(`#hostname-${tor}`, overrides.hostname || '');
+  
+  // Loopback
+  setInputValue(`#loopback-${tor}`, overrides.loopback_ip || '');
+  
+  // Uplinks
+  setInputValue(`#uplink1-${tor}`, overrides.uplink1_ip || '');
+  setInputValue(`#uplink2-${tor}`, overrides.uplink2_ip || '');
+  
+  // Keepalive
+  setInputValue(`#keepalive-src-${tor}`, overrides.keepalive_source_ip || '');
+  setInputValue(`#keepalive-dst-${tor}`, overrides.keepalive_dest_ip || '');
+  
+  // iBGP Port-Channel IP
+  setInputValue(`#pc-ibgp-ip-${tor}`, overrides.ibgp_pc_ip || '');
+  
+  // SVI IPs per VLAN (if available)
+  if (overrides.svi_ips) {
+    // Management VLAN
+    const mgmtSviField = document.querySelector(`.vlan-mgmt-${tor}-ip`) as HTMLInputElement;
+    const mgmtVlanId = getInputValue('.vlan-mgmt-id') || '';
+    const mgmtSviIp = overrides.svi_ips[parseInt(mgmtVlanId)];
+    if (mgmtSviField && mgmtVlanId && mgmtSviIp) {
+      mgmtSviField.value = mgmtSviIp;
+    }
+    
+    // Compute VLANs
+    document.querySelectorAll('.vlan-card[data-vlan-type="compute"]').forEach((card) => {
+      const vlanIdInput = card.querySelector('.vlan-compute-id') as HTMLInputElement;
+      const sviInput = card.querySelector(`.vlan-compute-${tor}-ip`) as HTMLInputElement;
+      if (vlanIdInput?.value && sviInput && overrides.svi_ips) {
+        const vlanId = parseInt(vlanIdInput.value);
+        if (overrides.svi_ips[vlanId]) {
+          sviInput.value = overrides.svi_ips[vlanId];
+        }
+      }
+    });
   }
 }
 
@@ -2023,25 +2562,6 @@ function addBgpNeighbor(): void {
 
 const EXAMPLE_TEMPLATES = import.meta.glob('../examples/**/*.json', { eager: true, query: '?url', import: 'default' });
 
-type TemplateCard = {
-  key: string;
-  pattern: string;
-  name: string;
-};
-
-function getTemplateCards(): TemplateCard[] {
-  return Object.keys(EXAMPLE_TEMPLATES).map((path) => {
-    const rel = path.split('/examples/')[1] || path.split('examples/')[1] || '';
-    const [pattern, filename] = rel.split('/');
-    const name = (filename || '').replace(/\.json$/i, '');
-    return {
-      key: `${pattern}/${name}`,
-      pattern: pattern || '',
-      name
-    };
-  }).filter(card => card.pattern && card.name);
-}
-
 function resolveTemplateUrl(templateName: string): string {
   const matchKey = Object.keys(EXAMPLE_TEMPLATES).find((key) =>
     key.endsWith(`/examples/${templateName}.json`) || key.endsWith(`examples/${templateName}.json`)
@@ -2050,93 +2570,69 @@ function resolveTemplateUrl(templateName: string): string {
   return `${import.meta.env.BASE_URL}examples/${templateName}.json`;
 }
 
-function getPatternLabel(pattern: string): string {
-  switch (pattern) {
-    case 'fully-converged':
-      return '🔄 Fully Converged';
-    case 'switched':
-      return '💾 Switched';
-    case 'switchless':
-      return '🔌 Switchless';
-    default:
-      return pattern;
-  }
-}
-
-function getTemplateTitle(name: string): string {
-  if (name.includes('tor1')) return '🔵 TOR1 (Primary)';
-  if (name.includes('tor2')) return '🟢 TOR2 (Secondary)';
-  return name;
-}
-
-function getTemplateDescription(pattern: string, name: string): string {
-  if (pattern === 'switchless') return 'Management + Compute only (no storage)';
-  if (pattern === 'switched' && name.includes('tor1')) return 'Storage on dedicated ports (S1 only)';
-  if (pattern === 'switched' && name.includes('tor2')) return 'Storage on dedicated ports (S2 only)';
-  if (pattern === 'fully-converged' && name.includes('tor1')) return 'All VLANs (M, C, S1, S2) on shared ports';
-  if (pattern === 'fully-converged' && name.includes('tor2')) return 'Paired with TOR1 for high availability';
+function getPatternDescription(pattern: string): string {
+  if (pattern === 'switchless') return 'Storage direct host-to-host. Management + Compute VLANs only.';
+  if (pattern === 'switched') return 'Storage on dedicated ports. S1 → TOR1, S2 → TOR2.';
+  if (pattern === 'fully-converged') return 'All VLANs on shared ports. Full redundancy.';
   return 'Pre-configured example template';
 }
 
 function getTemplateTags(pattern: string): string[] {
   const tags = [] as string[];
-  if (pattern === 'fully-converged') tags.push('Fully Converged');
-  if (pattern === 'switched') tags.push('Switched');
-  if (pattern === 'switchless') tags.push('Switchless');
-  tags.push('BGP');
+  tags.push('Dell S5248F');
+  tags.push('TOR Pair');
+  if (pattern !== 'switchless') tags.push('BGP');
   if (pattern !== 'switchless') tags.push('MLAG');
   return tags;
 }
 
+/**
+ * Render template list showing pattern-level options.
+ * Each pattern loads BOTH TOR1 and TOR2 templates as a pair.
+ */
 function renderTemplateList(): void {
   const container = getElement('#template-list');
   if (!container) return;
 
-  const cards = getTemplateCards();
-  const patterns = ['fully-converged', 'switched', 'switchless'];
+  const patterns = [
+    { key: 'fully-converged', label: 'Fully Converged', icon: '🔄' },
+    { key: 'switched', label: 'Storage Switched', icon: '🔀' },
+    { key: 'switchless', label: 'Switchless', icon: '🔌' }
+  ];
 
   container.innerHTML = '';
 
-  patterns.forEach(pattern => {
-    const patternCards = cards.filter(card => card.pattern === pattern);
-    if (patternCards.length === 0) return;
+  const grid = document.createElement('div');
+  grid.className = 'template-grid';
 
-    const title = document.createElement('h3');
-    title.className = 'template-category';
-    title.textContent = getPatternLabel(pattern);
-    container.appendChild(title);
+  patterns.forEach(({ key, label, icon }) => {
+    const cardEl = document.createElement('div');
+    cardEl.className = 'template-card';
+    // Load BOTH templates as a pair
+    cardEl.addEventListener('click', () => loadTemplatePair(key));
 
-    const grid = document.createElement('div');
-    grid.className = 'template-grid';
+    const h4 = document.createElement('h4');
+    h4.textContent = `${icon} ${label}`;
 
-    patternCards.forEach(card => {
-      const cardEl = document.createElement('div');
-      cardEl.className = 'template-card';
-      cardEl.addEventListener('click', () => loadTemplate(card.key));
+    const desc = document.createElement('p');
+    desc.textContent = getPatternDescription(key);
 
-      const h4 = document.createElement('h4');
-      h4.textContent = getTemplateTitle(card.name);
-
-      const desc = document.createElement('p');
-      desc.textContent = getTemplateDescription(pattern, card.name);
-
-      const tagsWrap = document.createElement('div');
-      tagsWrap.className = 'template-tags';
-      getTemplateTags(pattern).forEach(tag => {
-        const span = document.createElement('span');
-        span.className = 'tag';
-        span.textContent = tag;
-        tagsWrap.appendChild(span);
-      });
-
-      cardEl.appendChild(h4);
-      cardEl.appendChild(desc);
-      cardEl.appendChild(tagsWrap);
-      grid.appendChild(cardEl);
+    const tagsWrap = document.createElement('div');
+    tagsWrap.className = 'template-tags';
+    getTemplateTags(key).forEach(tag => {
+      const span = document.createElement('span');
+      span.className = 'tag';
+      span.textContent = tag;
+      tagsWrap.appendChild(span);
     });
 
-    container.appendChild(grid);
+    cardEl.appendChild(h4);
+    cardEl.appendChild(desc);
+    cardEl.appendChild(tagsWrap);
+    grid.appendChild(cardEl);
   });
+
+  container.appendChild(grid);
 }
 
 function addStaticRoute(): void {
@@ -2493,8 +2989,9 @@ function buildExportConfig(): Partial<StandardConfig> {
 /**
  * Generates switch configuration client-side using Nunjucks and downloads it.
  * No backend server required.
+ * @deprecated Use generateAndDownloadTorPair() for TOR pair generation (Phase 13)
  */
-async function generateAndDownloadConfig(): Promise<void> {
+export async function generateAndDownloadConfig(): Promise<void> {
   const statusEl = getElement('#generate-status');
   const loadingEl = getElement('#generate-loading');
   const errorEl = getElement('#generate-error');
@@ -2664,13 +3161,25 @@ function loadConfig(config: Partial<StandardConfig>): void {
       }, 200);
     }
     
-    // Load hostname
+    // Load hostname - also set base-hostname for TOR pair mode
     if (config.switch.hostname) {
       console.log('Loading hostname:', config.switch.hostname);
       const hostnameValue = config.switch.hostname;
       setTimeout(() => {
         setInputValue('#hostname', hostnameValue);
         state.config.switch.hostname = hostnameValue;
+        
+        // Also set base-hostname for TOR pair mode
+        // Strip -tor1 or -tor2 suffix if present to get base name
+        let baseName = hostnameValue;
+        if (hostnameValue.endsWith('-tor1') || hostnameValue.endsWith('-tor2')) {
+          baseName = hostnameValue.slice(0, -5);
+        }
+        const baseHostnameInput = getElement<HTMLInputElement>('#base-hostname');
+        if (baseHostnameInput) {
+          baseHostnameInput.value = baseName;
+          updateBaseHostname(); // This will auto-generate TOR1/TOR2 hostnames
+        }
       }, 300);
     }
   }

@@ -1,0 +1,1750 @@
+{
+    "Version": "1.0.0",
+    "Description": "Template for ASZ Rack",
+    "InputData": {
+        "MainEnvData": [
+            {
+                "Id": "Env01",
+                "Site": "b88",
+                "RackName": "ra04",
+                "NodeCount": 16,
+                "ConnectType": "connected",
+                "CiEnabled": false,
+                "ClusterUnits": [
+                    {
+                        "Name": "Cl01",
+                        "NodeCount": 4,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "ra0401",
+                        "PhysicalNamingPrefix": "ra0401",
+                        "Topology": "Switched",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "ra0401.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-ra0401.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl02",
+                        "NodeCount": 4,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "ra0402",
+                        "PhysicalNamingPrefix": "ra0402",
+                        "Topology": "Switched",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "ra0402.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-ra0402.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl03",
+                        "NodeCount": 4,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "ra0403",
+                        "PhysicalNamingPrefix": "ra0403",
+                        "Topology": "Switched",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "ra0403.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-ra0403.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    },
+                    {
+                        "Name": "Cl04",
+                        "NodeCount": 4,
+                        "RackId": "Rack01",
+                        "NamingPrefix": "ra0404",
+                        "PhysicalNamingPrefix": "ra0404",
+                        "Topology": "Switched",
+                        "CompanyName": "Microsoft",
+                        "RegionName": "Redmond",
+                        "DomainFQDN": "ra0404.masd.stbtest.microsoft.com",
+                        "ExternalDomainFQDN": "ext-ra0404.masd.stbtest.microsoft.com",
+                        "InfraAzureEnvironment": "AzureCloud",
+                        "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+                    }
+                ]
+            }
+        ],
+        "Switches": [
+            {
+                "Make": "Cisco",
+                "Model": "C9336C-FX2",
+                "Hostname": "b88-1501-j09-9336ssp-1a",
+                "Type": "Border1",
+                "ASN": 64804
+            },
+            {
+                "Make": "Cisco",
+                "Model": "C9336C-FX2",
+                "Hostname": "b88-1501-j09-9336ssp-1b",
+                "Type": "Border2",
+                "ASN": 64804
+            },
+            {
+                "Make": "Cisco",
+                "Model": "93180YC-FX",
+                "Type": "TOR1",
+                "Hostname": "b88-a04-93180hl-2-1a",
+                "ASN": 65338,
+                "Firmware": "9.3(11)"
+            },
+            {
+                "Make": "Cisco",
+                "Model": "93180YC-FX",
+                "Type": "TOR2",
+                "Hostname": "b88-a04-93180hl-2-1b",
+                "ASN": 65338,
+                "Firmware": "9.3(11)"
+            },
+            {
+                "Make": "Cisco",
+                "Model": "9348GC-FXP",
+                "Type": "BMC",
+                "Hostname": "b88-a04-9348bmc-2-1",
+                "ASN": null,
+                "Firmware": "9.3(11)"
+            },
+            {
+                "Make": "Microsoft",
+                "Model": null,
+                "Type": "MUX",
+                "Hostname": "b88-a04-MUX-1",
+                "ASN": 65030,
+                "Firmware": null
+            }
+        ],
+        "DeploymentPattern": "Switched",
+        "SwitchUplink": "BGP",
+        "HostConnectivity": "BGP",
+        "Supernets": [
+            {
+                "GroupName": "P2P_Border",
+                "Name": "P2P_Border1_Tor1",
+                "VlanId": 0,
+                "Description": "Uplink to Border1,   P2P_{$Type}_{$Type}",
+                "IPv4": {
+                    "Name": "P2P_Border1_Tor1",
+                    "VlanId": 0,
+                    "Cidr": 30,
+                    "TORGroup": "",
+                    "NetworkType": "P2P Link",
+                    "Subnet": "100.100.45.128/30",
+                    "Network": "100.100.45.128",
+                    "Netmask": "255.255.255.252",
+                    "Gateway": "",
+                    "BroadcastAddress": "100.100.45.131",
+                    "FirstAddress": "100.100.45.129",
+                    "LastAddress": "100.100.45.130",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.100.45.128"
+                        },
+                        {
+                            "Name": "Border1",
+                            "IP": "100.100.45.129"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.100.45.130"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "P2P_Border",
+                "Name": "P2P_Border1_Tor2",
+                "VlanId": 0,
+                "Description": "Uplink to Border2,   P2P_{$Type}_{$Type}",
+                "IPv4": {
+                    "Name": "P2P_Border1_Tor2",
+                    "VlanId": 0,
+                    "Cidr": 30,
+                    "TORGroup": "",
+                    "NetworkType": "P2P Link",
+                    "Subnet": "100.100.45.132/30",
+                    "Network": "100.100.45.132",
+                    "Netmask": "255.255.255.252",
+                    "Gateway": "",
+                    "BroadcastAddress": "100.100.45.135",
+                    "FirstAddress": "100.100.45.133",
+                    "LastAddress": "100.100.45.134",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.100.45.132"
+                        },
+                        {
+                            "Name": "Border1",
+                            "IP": "100.100.45.133"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.100.45.134"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "P2P_Border",
+                "Name": "P2P_Border2_Tor1",
+                "VlanId": 0,
+                "Description": "Uplink to Border2, naming convention P2P_{$Type}_{$Type}",
+                "IPv4": {
+                    "Name": "P2P_Border2_Tor1",
+                    "VlanId": 0,
+                    "Cidr": 30,
+                    "TORGroup": "",
+                    "NetworkType": "P2P Link",
+                    "Subnet": "100.100.45.136/30",
+                    "Network": "100.100.45.136",
+                    "Netmask": "255.255.255.252",
+                    "Gateway": "",
+                    "BroadcastAddress": "100.100.45.139",
+                    "FirstAddress": "100.100.45.137",
+                    "LastAddress": "100.100.45.138",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.100.45.136"
+                        },
+                        {
+                            "Name": "Border2",
+                            "IP": "100.100.45.137"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.100.45.138"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "P2P_Border",
+                "Name": "P2P_Border2_Tor2",
+                "VlanId": 0,
+                "Description": "Uplink to Border2, naming convention P2P_{$Type}_{$Type}",
+                "IPv4": {
+                    "Name": "P2P_Border2_Tor2",
+                    "VlanId": 0,
+                    "Cidr": 30,
+                    "TORGroup": "",
+                    "NetworkType": "P2P Link",
+                    "Subnet": "100.100.45.140/30",
+                    "Network": "100.100.45.140",
+                    "Netmask": "255.255.255.252",
+                    "Gateway": "",
+                    "BroadcastAddress": "100.100.45.143",
+                    "FirstAddress": "100.100.45.141",
+                    "LastAddress": "100.100.45.142",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.100.45.140"
+                        },
+                        {
+                            "Name": "Border2",
+                            "IP": "100.100.45.141"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.100.45.142"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "P2P_IBGP",
+                "Name": "P2P_iBGP",
+                "VlanId": 0,
+                "Description": "IBGP Peer Link",
+                "IPv4": {
+                    "Name": "P2P_iBGP",
+                    "VlanId": 0,
+                    "Cidr": 30,
+                    "TORGroup": "",
+                    "NetworkType": "P2P Link",
+                    "Subnet": "100.100.45.144/30",
+                    "Network": "100.100.45.144",
+                    "Netmask": "255.255.255.252",
+                    "Gateway": "",
+                    "BroadcastAddress": "100.100.45.147",
+                    "FirstAddress": "100.100.45.145",
+                    "LastAddress": "100.100.45.146",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.100.45.144"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.100.45.145"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.100.45.146"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "Loopback0",
+                "Name": "Loopback0_Tor1",
+                "VlanId": 0,
+                "Description": "Switch Loopback assignment",
+                "IPv4": {
+                    "Name": "Loopback0_Tor1",
+                    "VlanId": 0,
+                    "Cidr": 32,
+                    "TORGroup": "",
+                    "NetworkType": "Loopback",
+                    "Subnet": "100.100.45.149/32",
+                    "Network": "100.100.45.149",
+                    "Netmask": "255.255.255.255",
+                    "Gateway": "",
+                    "BroadcastAddress": "",
+                    "FirstAddress": "",
+                    "LastAddress": "",
+                    "Assignment": [
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.100.45.149"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "Loopback0",
+                "Name": "Loopback0_Tor2",
+                "VlanId": 0,
+                "Description": "Switch Loopback assignment",
+                "IPv4": {
+                    "Name": "Loopback0_Tor2",
+                    "VlanId": 0,
+                    "Cidr": 32,
+                    "TORGroup": "",
+                    "NetworkType": "Loopback",
+                    "Subnet": "100.100.45.150/32",
+                    "Network": "100.100.45.150",
+                    "Netmask": "255.255.255.255",
+                    "Gateway": "",
+                    "BroadcastAddress": "",
+                    "FirstAddress": "",
+                    "LastAddress": "",
+                    "Assignment": [
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.100.45.150"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "BMC",
+                "Name": "BMC_Mgmt_125",
+                "VLANID": 125,
+                "Description": "BMC Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "BMC_Mgmt_125",
+                    "VLANID": 125,
+                    "Cidr": 26,
+                    "TORGroup": "",
+                    "NetworkType": "Infrastructure",
+                    "Subnet": "100.100.45.192/26",
+                    "Network": "100.100.45.192",
+                    "Netmask": "255.255.255.192",
+                    "Gateway": "100.100.45.193",
+                    "BroadcastAddress": "100.100.45.255",
+                    "FirstAddress": "100.100.45.193",
+                    "LastAddress": "100.100.45.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.100.45.192",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.100.45.193",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "HLH-BMC",
+                            "IP": "100.100.45.194",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "CL01-N01",
+                            "IP": "100.100.45.195",
+                            "ClusterID": "CL01"
+                        },
+                        {
+                            "Name": "CL01-N02",
+                            "IP": "100.100.45.196",
+                            "ClusterID": "CL01"
+                        },
+                        {
+                            "Name": "CL01-N03",
+                            "IP": "100.100.45.197",
+                            "ClusterID": "CL01"
+                        },
+                        {
+                            "Name": "CL01-N04",
+                            "IP": "100.100.45.198",
+                            "ClusterID": "CL01"
+                        },
+                        {
+                            "Name": "CL02-N01",
+                            "IP": "100.100.45.199",
+                            "ClusterID": "CL02"
+                        },
+                        {
+                            "Name": "CL02-N02",
+                            "IP": "100.100.45.200",
+                            "ClusterID": "CL02"
+                        },
+                        {
+                            "Name": "CL02-N03",
+                            "IP": "100.100.45.201",
+                            "ClusterID": "CL02"
+                        },
+                        {
+                            "Name": "CL02-N04",
+                            "IP": "100.100.45.202",
+                            "ClusterID": "CL02"
+                        },
+                        {
+                            "Name": "CL03-N01",
+                            "IP": "100.100.45.203",
+                            "ClusterID": "CL03"
+                        },
+                        {
+                            "Name": "CL03-N02",
+                            "IP": "100.100.45.204",
+                            "ClusterID": "CL03"
+                        },
+                        {
+                            "Name": "CL03-N03",
+                            "IP": "100.100.45.205",
+                            "ClusterID": "CL03"
+                        },
+                        {
+                            "Name": "CL03-N04",
+                            "IP": "100.100.45.206",
+                            "ClusterID": "CL03"
+                        },
+                        {
+                            "Name": "CL04-N01",
+                            "IP": "100.100.45.207",
+                            "ClusterID": "CL04"
+                        },
+                        {
+                            "Name": "CL04-N02",
+                            "IP": "100.100.45.208",
+                            "ClusterID": "CL04"
+                        },
+                        {
+                            "Name": "CL04-N03",
+                            "IP": "100.100.45.209",
+                            "ClusterID": "CL04"
+                        },
+                        {
+                            "Name": "CL04-N04",
+                            "IP": "100.100.45.210",
+                            "ClusterID": "CL04"
+                        },
+                        {
+                            "Name": "CL01-HLH-DVM01",
+                            "IP": "100.100.45.235",
+                            "ClusterID": "CL01"
+                        },
+                        {
+                            "Name": "CL02-HLH-DVM02",
+                            "IP": "100.100.45.236",
+                            "ClusterID": "CL02"
+                        },
+                        {
+                            "Name": "CL03-HLH-DVM03",
+                            "IP": "100.100.45.237",
+                            "ClusterID": "CL03"
+                        },
+                        {
+                            "Name": "CL04-HLH-DVM04",
+                            "IP": "100.100.45.238",
+                            "ClusterID": "CL04"
+                        },
+                        {
+                            "Name": "Tor1-Mgmt",
+                            "IP": "100.100.45.251",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "Tor2-Mgmt",
+                            "IP": "100.100.45.252",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "BMC-Mgmt",
+                            "IP": "100.100.45.253",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "HLH-OS",
+                            "IP": "100.100.45.254",
+                            "ClusterID": null
+                        },
+                        {
+                            "Name": "Broadcast",
+                            "IP": "100.100.45.255",
+                            "ClusterID": null
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "HNVPA",
+                "Name": "HNVPA_6",
+                "VLANID": 6,
+                "Description": "HNVPA Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "HNVPA_6",
+                    "VLANID": 6,
+                    "Cidr": 25,
+                    "TORGroup": "",
+                    "NetworkType": "PA",
+                    "Subnet": "100.100.160.128/25",
+                    "Network": "100.100.160.128",
+                    "Netmask": "255.255.255.128",
+                    "Gateway": "100.100.160.129",
+                    "BroadcastAddress": "100.100.160.255",
+                    "FirstAddress": "100.100.160.129",
+                    "LastAddress": "100.100.160.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.100.160.128"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.100.160.129"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.100.160.130"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.100.160.131"
+                        }
+                    ],
+                    "IPPools": [
+                        {
+                            "Name": "CL01",
+                            "StartingAddress": "100.100.160.132",
+                            "EndingAddress": "100.100.160.159"
+                        },
+                        {
+                            "Name": "CL02",
+                            "StartingAddress": "100.100.160.160",
+                            "EndingAddress": "100.100.160.191"
+                        },
+                        {
+                            "Name": "CL03",
+                            "StartingAddress": "100.100.160.192",
+                            "EndingAddress": "100.100.160.223"
+                        },
+                        {
+                            "Name": "CL04",
+                            "StartingAddress": "100.100.160.224",
+                            "EndingAddress": "100.100.160.254"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "Infrastructure",
+                "Name": "Infra_7",
+                "VLANID": 7,
+                "Description": "Infrastructure Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "Infra_7",
+                    "VLANID": 7,
+                    "Cidr": 24,
+                    "TORGroup": "",
+                    "NetworkType": "Infrastructure",
+                    "Subnet": "100.101.208.0/24",
+                    "Network": "100.101.208.0",
+                    "Netmask": "255.255.255.0",
+                    "Gateway": "100.101.208.1",
+                    "BroadcastAddress": "100.101.208.255",
+                    "FirstAddress": "100.101.208.1",
+                    "LastAddress": "100.101.208.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.208.0"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.208.1"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.208.2"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.208.3"
+                        },
+                        {
+                            "Name": "CL01-N01",
+                            "IP": "100.101.208.4"
+                        },
+                        {
+                            "Name": "CL01-N02",
+                            "IP": "100.101.208.5"
+                        },
+                        {
+                            "Name": "CL01-N03",
+                            "IP": "100.101.208.6"
+                        },
+                        {
+                            "Name": "CL01-N04",
+                            "IP": "100.101.208.7"
+                        },
+                        {
+                            "Name": "CL02-N01",
+                            "IP": "100.101.208.64"
+                        },
+                        {
+                            "Name": "CL02-N02",
+                            "IP": "100.101.208.65"
+                        },
+                        {
+                            "Name": "CL02-N03",
+                            "IP": "100.101.208.66"
+                        },
+                        {
+                            "Name": "CL02-N04",
+                            "IP": "100.101.208.67"
+                        },
+                        {
+                            "Name": "CL03-N01",
+                            "IP": "100.101.208.128"
+                        },
+                        {
+                            "Name": "CL03-N02",
+                            "IP": "100.101.208.129"
+                        },
+                        {
+                            "Name": "CL03-N03",
+                            "IP": "100.101.208.130"
+                        },
+                        {
+                            "Name": "CL03-N04",
+                            "IP": "100.101.208.131"
+                        },
+                        {
+                            "Name": "CL04-N01",
+                            "IP": "100.101.208.192"
+                        },
+                        {
+                            "Name": "CL04-N02",
+                            "IP": "100.101.208.193"
+                        },
+                        {
+                            "Name": "CL04-N03",
+                            "IP": "100.101.208.194"
+                        },
+                        {
+                            "Name": "CL04-N04",
+                            "IP": "100.101.208.195"
+                        }
+                    ],
+                    "IPPools": [
+                        {
+                            "Name": "CL01",
+                            "StartingAddress": "100.101.208.8",
+                            "EndingAddress": "100.101.208.63"
+                        },
+                        {
+                            "Name": "CL02",
+                            "StartingAddress": "100.101.208.68",
+                            "EndingAddress": "100.101.208.127"
+                        },
+                        {
+                            "Name": "CL03",
+                            "StartingAddress": "100.101.208.132",
+                            "EndingAddress": "100.101.208.191"
+                        },
+                        {
+                            "Name": "CL04",
+                            "StartingAddress": "100.101.208.196",
+                            "EndingAddress": "100.101.208.254"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "TENANT",
+                "Name": "Tenant_201",
+                "VLANID": 201,
+                "Description": "TENANT Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "Tenant_201",
+                    "VLANID": 201,
+                    "Cidr": 24,
+                    "TORGroup": "",
+                    "NetworkType": "Tenant",
+                    "Subnet": "100.101.209.0/24",
+                    "Network": "100.101.209.0",
+                    "Netmask": "255.255.255.0",
+                    "Gateway": "100.101.209.1",
+                    "BroadcastAddress": "100.101.209.255",
+                    "FirstAddress": "100.101.209.1",
+                    "LastAddress": "100.101.209.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.209.0"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.209.1"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.209.2"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.209.3"
+                        }
+                    ],
+                    "IPPools": [
+                        {
+                            "Name": "CL01",
+                            "StartingAddress": "100.101.209.4",
+                            "EndingAddress": "100.101.209.63"
+                        },
+                        {
+                            "Name": "CL02",
+                            "StartingAddress": "100.101.209.64",
+                            "EndingAddress": "100.101.209.127"
+                        },
+                        {
+                            "Name": "CL03",
+                            "StartingAddress": "100.101.209.128",
+                            "EndingAddress": "100.101.209.191"
+                        },
+                        {
+                            "Name": "CL04",
+                            "StartingAddress": "100.101.209.192",
+                            "EndingAddress": "100.101.209.254"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "TENANT",
+                "Name": "LogicalTenant_301",
+                "VLANID": 301,
+                "Description": "TENANT Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "LogicalTenant_301",
+                    "VLANID": 301,
+                    "Cidr": 25,
+                    "TORGroup": "",
+                    "NetworkType": "Tenant",
+                    "Subnet": "100.101.210.0/25",
+                    "Network": "100.101.210.0",
+                    "Netmask": "255.255.255.128",
+                    "Gateway": "100.101.210.1",
+                    "BroadcastAddress": "100.101.210.127",
+                    "FirstAddress": "100.101.210.1",
+                    "LastAddress": "100.101.210.126",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.210.0"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.210.1"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.210.2"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.210.3"
+                        }
+                    ],
+                    "IPPools": [
+                        {
+                            "Name": "CL01",
+                            "StartingAddress": "100.101.210.4",
+                            "EndingAddress": "100.101.210.31"
+                        },
+                        {
+                            "Name": "CL02",
+                            "StartingAddress": "100.101.210.32",
+                            "EndingAddress": "100.101.210.63"
+                        },
+                        {
+                            "Name": "CL03",
+                            "StartingAddress": "100.101.210.64",
+                            "EndingAddress": "100.101.210.95"
+                        },
+                        {
+                            "Name": "CL04",
+                            "StartingAddress": "100.101.210.96",
+                            "EndingAddress": "100.101.210.126"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "TENANT",
+                "Name": "DhcpTenant_401",
+                "VLANID": 401,
+                "Description": "TENANT Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "DhcpTenant_401",
+                    "VLANID": 401,
+                    "Cidr": 25,
+                    "TORGroup": "",
+                    "NetworkType": "Tenant",
+                    "Subnet": "100.101.210.128/25",
+                    "Network": "100.101.210.128",
+                    "Netmask": "255.255.255.128",
+                    "Gateway": "100.101.210.129",
+                    "BroadcastAddress": "100.101.210.255",
+                    "FirstAddress": "100.101.210.129",
+                    "LastAddress": "100.101.210.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.210.128"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.210.129"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.210.130"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.210.131"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_501",
+                "VLANID": 501,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_501",
+                    "VLANID": 501,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.0/28",
+                    "Network": "100.101.211.0",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.1",
+                    "BroadcastAddress": "100.101.211.15",
+                    "FirstAddress": "100.101.211.1",
+                    "LastAddress": "100.101.211.14",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.0"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.1"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.2"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.3"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_502",
+                "VLANID": 502,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_502",
+                    "VLANID": 502,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.16/28",
+                    "Network": "100.101.211.16",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.17",
+                    "BroadcastAddress": "100.101.211.31",
+                    "FirstAddress": "100.101.211.17",
+                    "LastAddress": "100.101.211.30",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.16"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.17"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.18"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.19"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_503",
+                "VLANID": 503,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_503",
+                    "VLANID": 503,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.32/28",
+                    "Network": "100.101.211.32",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.33",
+                    "BroadcastAddress": "100.101.211.47",
+                    "FirstAddress": "100.101.211.33",
+                    "LastAddress": "100.101.211.46",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.32"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.33"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.34"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.35"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_504",
+                "VLANID": 504,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_504",
+                    "VLANID": 504,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.48/28",
+                    "Network": "100.101.211.48",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.49",
+                    "BroadcastAddress": "100.101.211.63",
+                    "FirstAddress": "100.101.211.49",
+                    "LastAddress": "100.101.211.62",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.48"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.49"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.50"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.51"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_505",
+                "VLANID": 505,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_505",
+                    "VLANID": 505,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.64/28",
+                    "Network": "100.101.211.64",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.65",
+                    "BroadcastAddress": "100.101.211.79",
+                    "FirstAddress": "100.101.211.65",
+                    "LastAddress": "100.101.211.78",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.64"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.65"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.66"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.67"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_506",
+                "VLANID": 506,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_506",
+                    "VLANID": 506,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.80/28",
+                    "Network": "100.101.211.80",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.81",
+                    "BroadcastAddress": "100.101.211.95",
+                    "FirstAddress": "100.101.211.81",
+                    "LastAddress": "100.101.211.94",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.80"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.81"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.82"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.83"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_507",
+                "VLANID": 507,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_507",
+                    "VLANID": 507,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.96/28",
+                    "Network": "100.101.211.96",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.97",
+                    "BroadcastAddress": "100.101.211.111",
+                    "FirstAddress": "100.101.211.97",
+                    "LastAddress": "100.101.211.110",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.96"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.97"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.98"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.99"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_508",
+                "VLANID": 508,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_508",
+                    "VLANID": 508,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.112/28",
+                    "Network": "100.101.211.112",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.113",
+                    "BroadcastAddress": "100.101.211.127",
+                    "FirstAddress": "100.101.211.113",
+                    "LastAddress": "100.101.211.126",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.112"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.113"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.114"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.115"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_509",
+                "VLANID": 509,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_509",
+                    "VLANID": 509,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.128/28",
+                    "Network": "100.101.211.128",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.129",
+                    "BroadcastAddress": "100.101.211.143",
+                    "FirstAddress": "100.101.211.129",
+                    "LastAddress": "100.101.211.142",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.128"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.129"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.130"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.131"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_510",
+                "VLANID": 510,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_510",
+                    "VLANID": 510,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.144/28",
+                    "Network": "100.101.211.144",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.145",
+                    "BroadcastAddress": "100.101.211.159",
+                    "FirstAddress": "100.101.211.145",
+                    "LastAddress": "100.101.211.158",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.144"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.145"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.146"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.147"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_511",
+                "VLANID": 511,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_511",
+                    "VLANID": 511,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.160/28",
+                    "Network": "100.101.211.160",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.161",
+                    "BroadcastAddress": "100.101.211.175",
+                    "FirstAddress": "100.101.211.161",
+                    "LastAddress": "100.101.211.174",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.160"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.161"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.162"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.163"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_512",
+                "VLANID": 512,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_512",
+                    "VLANID": 512,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.176/28",
+                    "Network": "100.101.211.176",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.177",
+                    "BroadcastAddress": "100.101.211.191",
+                    "FirstAddress": "100.101.211.177",
+                    "LastAddress": "100.101.211.190",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.176"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.177"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.178"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.179"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_513",
+                "VLANID": 513,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_513",
+                    "VLANID": 513,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.192/28",
+                    "Network": "100.101.211.192",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.193",
+                    "BroadcastAddress": "100.101.211.207",
+                    "FirstAddress": "100.101.211.193",
+                    "LastAddress": "100.101.211.206",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.192"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.193"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.194"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.195"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_514",
+                "VLANID": 514,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_514",
+                    "VLANID": 514,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.208/28",
+                    "Network": "100.101.211.208",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.209",
+                    "BroadcastAddress": "100.101.211.223",
+                    "FirstAddress": "100.101.211.209",
+                    "LastAddress": "100.101.211.222",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.208"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.209"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.210"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.211"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_515",
+                "VLANID": 515,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_515",
+                    "VLANID": 515,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.224/28",
+                    "Network": "100.101.211.224",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.225",
+                    "BroadcastAddress": "100.101.211.239",
+                    "FirstAddress": "100.101.211.225",
+                    "LastAddress": "100.101.211.238",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.224"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.225"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.226"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.227"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "L3FORWARD",
+                "Name": "L3forward_516",
+                "VLANID": 516,
+                "Description": "L3forward Network. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": true,
+                    "Name": "L3forward_516",
+                    "VLANID": 516,
+                    "Cidr": 28,
+                    "TORGroup": "",
+                    "NetworkType": "L3forward",
+                    "Subnet": "100.101.211.240/28",
+                    "Network": "100.101.211.240",
+                    "Netmask": "255.255.255.240",
+                    "Gateway": "100.101.211.241",
+                    "BroadcastAddress": "100.101.211.255",
+                    "FirstAddress": "100.101.211.241",
+                    "LastAddress": "100.101.211.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.101.211.240"
+                        },
+                        {
+                            "Name": "Gateway",
+                            "IP": "100.101.211.241"
+                        },
+                        {
+                            "Name": "TOR1",
+                            "IP": "100.101.211.242"
+                        },
+                        {
+                            "Name": "TOR2",
+                            "IP": "100.101.211.243"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "ExternalIP",
+                "Name": "PublicVIP",
+                "VLANID": 0,
+                "Description": "ExternalIP Network, no config on switch. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": false,
+                    "Name": "PublicVIP",
+                    "VLANID": 0,
+                    "Cidr": 22,
+                    "TORGroup": "",
+                    "NetworkType": "ExternalIP",
+                    "Subnet": "100.97.92.0/22",
+                    "Network": "100.97.92.0",
+                    "Netmask": "255.255.252.0",
+                    "Gateway": null,
+                    "BroadcastAddress": "100.97.95.255",
+                    "FirstAddress": "100.97.92.1",
+                    "LastAddress": "100.97.95.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.97.92.0"
+                        }
+                    ],
+                    "IPPools": [
+                        {
+                            "Name": "CL01",
+                            "Subnet": "100.97.92.0/24"
+                        },
+                        {
+                            "Name": "CL02",
+                            "Subnet": "100.97.93.0/24"
+                        },
+                        {
+                            "Name": "CL03",
+                            "Subnet": "100.97.94.0/24"
+                        },
+                        {
+                            "Name": "CL04",
+                            "Subnet": "100.97.95.0/24"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "ExternalIP",
+                "Name": "GRE",
+                "VLANID": 0,
+                "Description": "ExternalIP Network, no config on switch. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": false,
+                    "Name": "GRE",
+                    "VLANID": 0,
+                    "Cidr": 26,
+                    "TORGroup": "",
+                    "NetworkType": "ExternalIP",
+                    "Subnet": "100.102.16.64/26",
+                    "Network": "100.102.16.64",
+                    "Netmask": "255.255.255.192",
+                    "Gateway": null,
+                    "BroadcastAddress": "100.102.16.127",
+                    "FirstAddress": "100.102.16.65",
+                    "LastAddress": "100.102.16.126",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "100.102.16.64"
+                        }
+                    ],
+                    "IPPools": [
+                        {
+                            "Name": "CL01",
+                            "Subnet": "100.102.16.64/28"
+                        },
+                        {
+                            "Name": "CL02",
+                            "Subnet": "100.102.16.80/28"
+                        },
+                        {
+                            "Name": "CL03",
+                            "Subnet": "100.102.16.96/28"
+                        },
+                        {
+                            "Name": "CL04",
+                            "Subnet": "100.102.16.112/28"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "Storage",
+                "Name": "Storage_711",
+                "VLANID": 711,
+                "Description": "Storage Network, no config on switch. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": false,
+                    "Name": "Storage_711",
+                    "VLANID": 711,
+                    "Cidr": 24,
+                    "TORGroup": "",
+                    "NetworkType": "Storage",
+                    "Subnet": "10.71.1.0/24",
+                    "Network": "10.71.1.0",
+                    "Netmask": "255.255.255.0",
+                    "Gateway": "10.71.1.1",
+                    "BroadcastAddress": "10.71.1.255",
+                    "FirstAddress": "10.71.1.1",
+                    "LastAddress": "10.71.1.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "10.71.1.0"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "Storage",
+                "Name": "Storage_712",
+                "VLANID": 712,
+                "Description": "Storage Network, no config on switch. GroupName is unique key.",
+                "IPv4": {
+                    "SwitchSVI": false,
+                    "Name": "Storage_712",
+                    "VLANID": 712,
+                    "Cidr": 24,
+                    "TORGroup": "",
+                    "NetworkType": "Storage",
+                    "Subnet": "10.71.2.0/24",
+                    "Network": "10.71.2.0",
+                    "Netmask": "255.255.255.0",
+                    "Gateway": "10.71.2.1",
+                    "BroadcastAddress": "10.71.2.255",
+                    "FirstAddress": "10.71.2.1",
+                    "LastAddress": "10.71.2.254",
+                    "Assignment": [
+                        {
+                            "Name": "Network",
+                            "IP": "10.71.2.0"
+                        }
+                    ]
+                },
+                "IPv6": {}
+            },
+            {
+                "GroupName": "UNUSED_VLAN",
+                "Name": "UNUSED_VLAN",
+                "VLANID": 2,
+                "Description": "UNUSED_VLAN",
+                "IPv4": {
+                    "SwitchSVI": false,
+                    "Name": "UNUSED_VLAN",
+                    "VLANID": 2,
+                    "NetworkType": "UNUSED_VLAN"
+                }
+            },
+            {
+                "GroupName": "NativeVlan",
+                "Name": "NativeVlan",
+                "VLANID": 99,
+                "Description": "NativeVlan",
+                "IPv4": {
+                    "SwitchSVI": false,
+                    "Name": "NativeVlan",
+                    "VLANID": 99,
+                    "NetworkType": "NativeVlan"
+                }
+            }
+        ],
+        "Setting": {
+            "TimeZone": "Pacific Standard Time",
+            "TimeServer": [
+                "10.10.240.20"
+            ],
+            "SyslogServer": [
+                "10.10.43.111"
+            ],
+            "DNSForwarder": [
+                "10.10.240.23",
+                "10.10.240.24"
+            ]
+        },
+        "WANSIM": {
+            "Hostname": "b88ra04-wansim",
+            "Enabled": true,
+            "Loopback": {
+                "IP": "100.100.52.23",
+                "IPNetwork": "100.100.52.23/32",
+                "Subnet": "100.100.52.0/25"
+            },
+            "GRE1": {
+                "Name": "TOR1",
+                "LocalIP": "2.1.1.0",
+                "RemoteIP": "2.1.1.1",
+                "IPNetwork": "2.1.1.0/31"
+            },
+            "GRE2": {
+                "Name": "TOR2",
+                "LocalIP": "2.1.1.2",
+                "RemoteIP": "2.1.1.3",
+                "IPNetwork": "2.1.1.2/31"
+            },
+            "BGP": {
+                "LocalASN": 64899,
+                "IPv4Nbr": [
+                    {
+                        "NeighborAsn": 64818,
+                        "NeighborIPAddress": "100.100.51.2",
+                        "Description": "To_Uplink1",
+                        "EbgpMultiHop": 8,
+                        "UpdateSource": "eth0"
+                    },
+                    {
+                        "NeighborAsn": 64818,
+                        "NeighborIPAddress": "100.100.51.3",
+                        "Description": "To_Uplink2",
+                        "EbgpMultiHop": 8,
+                        "UpdateSource": "eth0"
+                    }
+                ]
+            },
+            "RerouteNetworks": [
+                "Infrastructure",
+                "TENANT",
+                "L3FORWARD"
+            ],
+            "NetworkProfile": {
+                "UploadBW": "1Gbit",
+                "UploadDelay": "0ms",
+                "UploadLoss": "0%",
+                "DownloadBW": "1Gbit",
+                "DownloadDelay": "0ms",
+                "DownloadLoss": "0%"
+            }
+        }
+    }
+}

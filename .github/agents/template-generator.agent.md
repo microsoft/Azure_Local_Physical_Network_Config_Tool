@@ -24,6 +24,8 @@ Transform real-world switch configurations into reusable templates that:
 2. Follow (or improve) the project's template structure
 3. Have all sensitive data sanitized
 
+> **Current policy note:** This repo prioritizes reliability and schema stability. New vendor submissions are typically accepted as **sanitized fixtures** first; adding new templates is a maintainer decision.
+
 ## How Users Invoke You
 
 1. **GitHub Issue** — Community submits "Golden Config Submission" issue
@@ -47,7 +49,7 @@ flowchart TB
     C --> D{Validate Azure Local}
     D -->|Fail| E[Report issues]
     D -->|Pass| F[Generate templates]
-    F --> G[Create PR-ready output]
+    F --> G[Create review-ready output]
 ```
 
 ## Processing Steps
@@ -79,9 +81,18 @@ backend/templates/{vendor}/{firmware}/
 frontend/examples/{pattern}/
 └── sample-{vendor}.json
 
-tests/fixtures/{vendor}-{model}/
-├── std_{switch-name}.json
+backend/tests/fixtures/{vendor}-{firmware}/
+├── std_{case}.json
 └── generated_full_config.cfg
+
+backend/tests/fixtures/submissions/
+└── <vendor>-<model>-<role>-<pattern>-issue<number>/
+    ├── metadata.yaml
+    ├── config.txt
+    ├── analysis.json
+    └── README.md
+
+> Produce files that are **review-ready** (for a maintainer PR), but do not claim an automated PR is created unless explicitly requested.
 ```
 
 ## Error Handling

@@ -20,7 +20,7 @@ Storage flows directly between hosts without touching the switch.
 |----------|---------|---------|
 | ToR1 | ✅ Yes | ❌ No |
 | ToR2 | ❌ No | ✅ Yes |
-| Peer-link | ❌ No | ❌ No |
+| Peer-link | Vendor-specific | Vendor-specific |
 
 Each storage VLAN is isolated to its dedicated ToR.
 
@@ -30,7 +30,7 @@ Each storage VLAN is isolated to its dedicated ToR.
 |----------|---------|---------|
 | ToR1 | ✅ Yes | ✅ Yes |
 | ToR2 | ✅ Yes | ✅ Yes |
-| Peer-link | ❌ No | ❌ No |
+| Peer-link | Vendor-specific | Vendor-specific |
 
 Both storage VLANs on both ToRs (required for SET).
 
@@ -44,13 +44,14 @@ Both storage VLANs on both ToRs (required for SET).
 | Switched (S2 port) | S2 only (e.g., `712`) |
 | Fully-Converged | M, C, S1, S2 (e.g., `7,201,711,712`) |
 
-## Peer-Link VLAN Assignment (All Patterns)
+## Peer-Link VLAN Membership
 
-```
-tagged_vlans: M, C only
-# Example: "7,201"
-# NEVER include storage VLANs (711, 712)
-```
+Peer-link VLAN allowlists are vendor-specific implementation details.
+
+AzureLocal-Supportability provides a concrete peer-link reference in the HSRP peer-link section:
+https://github.com/Azure/AzureLocal-Supportability/blob/main/TSG/Networking/Top-Of-Rack-Switch/Reference-TOR-Disaggregated-Switched-Storage.md#hsrp-peer-link
+
+- **Guidance:** Storage VLANs should **NOT** be allowed on the peer-link between ToRs.
 
 ## L2 vs L3 Storage VLANs
 
@@ -70,4 +71,4 @@ L2 is recommended because:
 |---------|-------------|-----|
 | S1+S2 on ToR1 only (Switched) | S2 traffic fails | Put S2 on ToR2 |
 | Only S1 per ToR (Fully-Converged) | SET routing failures | Put S1+S2 on both |
-| Storage VLANs on peer-link | Performance issues | Remove from peer-link |
+| Incorrect peer-link VLAN allowlist | Vendor-dependent issues | Validate peer-link VLANs per vendor docs and design intent |

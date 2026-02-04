@@ -953,3 +953,112 @@ test.describe('20. Generate Config Button', () => {
     await expect(statusArea).toBeVisible({ timeout: 5000 });
   });
 });
+
+// ============================================================================
+// 10. TOR PAIR WORKFLOW (Phase 13)
+// ============================================================================
+
+test.describe('10. TOR Pair Workflow (Phase 13)', () => {
+  
+  test('shows TOR pair badge after vendor/model selection', async ({ page }) => {
+    await page.goto('/');
+    
+    // Select pattern
+    await page.locator('.pattern-card[data-pattern="fully_converged"] h4').click();
+    await page.waitForTimeout(100);
+    
+    // Select vendor and model
+    await page.selectOption('#vendor-select', 'dellemc');
+    await page.selectOption('#model-select', 's5248f-on');
+    
+    // Check TOR pair badge is visible
+    const torPairBadge = page.locator('.tor-pair-badge');
+    await expect(torPairBadge).toBeVisible({ timeout: 5000 });
+    await expect(torPairBadge).toContainText('2 ToR switches');
+  });
+
+  test('base hostname auto-generates TOR1/TOR2 hostnames', async ({ page }) => {
+    await page.goto('/');
+    
+    // Select pattern and hardware
+    await page.locator('.pattern-card[data-pattern="fully_converged"] h4').click();
+    await page.selectOption('#vendor-select', 'dellemc');
+    await page.selectOption('#model-select', 's5248f-on');
+    await page.waitForTimeout(100);
+    
+    // Enter base hostname
+    await page.fill('#base-hostname', 'azl-rack01');
+    await page.waitForTimeout(200);
+    
+    // Check per-switch section appears
+    const perSwitchSection = page.locator('#per-switch-section');
+    await expect(perSwitchSection).toBeVisible({ timeout: 5000 });
+    
+    // Check TOR1 hostname is auto-populated
+    const tor1Hostname = page.locator('#hostname-tor1');
+    await expect(tor1Hostname).toHaveValue('azl-rack01-tor1');
+    
+    // Check TOR2 hostname is auto-populated
+    const tor2Hostname = page.locator('#hostname-tor2');
+    await expect(tor2Hostname).toHaveValue('azl-rack01-tor2');
+  });
+
+  test('Switch A/B tabs toggle content', async ({ page }) => {
+    await page.goto('/');
+    
+    // Setup
+    await page.locator('.pattern-card[data-pattern="fully_converged"] h4').click();
+    await page.selectOption('#vendor-select', 'dellemc');
+    await page.selectOption('#model-select', 's5248f-on');
+    await page.fill('#base-hostname', 'test-rack');
+    await page.waitForTimeout(200);
+    
+    // Switch A (TOR1) content should be visible by default
+    const switchAContent = page.locator('#switch-a-content');
+    const switchBContent = page.locator('#switch-b-content');
+    
+    await expect(switchAContent).toBeVisible();
+    await expect(switchBContent).not.toBeVisible();
+    
+    // Click Switch B tab
+    await page.locator('.switch-tab[data-switch="B"]').click();
+    await page.waitForTimeout(100);
+    
+    // Now Switch B content should be visible
+    await expect(switchAContent).not.toBeVisible();
+    await expect(switchBContent).toBeVisible();
+    
+    // Click Switch A tab to go back
+    await page.locator('.switch-tab[data-switch="A"]').click();
+    await page.waitForTimeout(100);
+    
+    await expect(switchAContent).toBeVisible();
+    await expect(switchBContent).not.toBeVisible();
+  });
+
+  test('summary shows TOR pair hostnames', async ({ page }) => {
+    await page.goto('/');
+    
+    // Setup
+    await page.locator('.pattern-card[data-pattern="switched"] h4').click();
+    await page.selectOption('#vendor-select', 'cisco');
+    await page.selectOption('#model-select', '93180yc-fx3');
+    await page.fill('#base-hostname', 'prod-rack42');
+    await page.waitForTimeout(200);
+    
+    // Check summary shows TOR1 and TOR2 hostnames
+    const sumTor1 = page.locator('#sum-hostname-tor1');
+    const sumTor2 = page.locator('#sum-hostname-tor2');
+    
+    await expect(sumTor1).toContainText('prod-rack42-tor1');
+    await expect(sumTor2).toContainText('prod-rack42-tor2');
+  });
+
+  test('Download button shows ZIP text', async ({ page }) => {
+    await page.goto('/');
+    
+    const downloadBtn = page.locator('#btn-generate-config');
+    await expect(downloadBtn).toContainText('Download TOR Pair');
+    await expect(downloadBtn).toContainText('.zip');
+  });
+});

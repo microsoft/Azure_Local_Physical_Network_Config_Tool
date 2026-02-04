@@ -137,7 +137,11 @@ vlan {{ vlan.vlan_id }}
 Every new template needs a fixture:
 
 ```
-tests/fixtures/{vendor}-{model}/
-├── std_{switch-name}.json      # Input
-└── generated_full_config.cfg   # Expected output
+backend/tests/fixtures/
+└── {vendor}-{firmware}/
+  ├── std_{case}.json              # Input
+  └── generated_full_config.cfg    # Expected output
 ```
+
+> [!NOTE]
+> Fixtures are regression test inputs/outputs. Keep them sanitized, deterministic, and small.

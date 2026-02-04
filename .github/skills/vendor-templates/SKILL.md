@@ -7,6 +7,8 @@ description: 'Reference for switch template structure. Used by template-generato
 
 This skill provides the **reference structure** for switch configuration templates. It's primarily used by the `template-generator` agent to create new vendor templates automatically.
 
+> **Governance note:** The project prioritizes stability. New vendors are typically added as **sanitized fixtures** first; template expansion is optional and maintainer-driven.
+
 ## Your Role as Architect
 
 The template structure is **a starting point, not a fixed requirement**:
@@ -19,7 +21,7 @@ The template structure is **a starting point, not a fixed requirement**:
 
 ## How to Add a New Vendor
 
-**Use the automated workflow** — same process for developers and community:
+**Default path (fixtures-first):**
 
 1. **Submit a golden config** via GitHub Issue (use the "Golden Config Submission" template)
 2. **Or invoke the agent directly:** `@template-generator` in Copilot Chat with your config
@@ -27,8 +29,9 @@ The template structure is **a starting point, not a fixed requirement**:
 The agent will:
 - Normalize vendor/model names
 - Sanitize sensitive data
-- Generate Jinja2 templates following this structure
-- Create PR-ready files
+- Create review-ready, sanitized fixture outputs suitable for regression testing
+
+**Optional (maintainer-approved):** Generate or update Jinja2 templates when the project is ready to expand generation support.
 
 ## Reference Templates (for AI Context)
 

@@ -60,8 +60,8 @@ The issue will contain:
 
 Create:
 - `backend/templates/{vendor}/{firmware}/*.j2` files
-- `tests/fixtures/{vendor}-{model}/std_*.json` sample input
-- `tests/fixtures/{vendor}-{model}/generated_*.cfg` expected outputs
+- `backend/tests/fixtures/{vendor}-{firmware}/std_*.json` sample input
+- `backend/tests/fixtures/{vendor}-{firmware}/generated_*.cfg` expected outputs
 
 Report:
 - Summary of normalization applied

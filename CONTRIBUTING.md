@@ -23,7 +23,7 @@ Thank you for helping expand vendor support! This guide explains how to submit y
 ### What We Do NOT Need
 
 - ❌ Passwords or secrets (we'll reject configs with real credentials)
-- ❌ Customer-specific data (hostnames, IPs are fine — they're examples)
+- ❌ Customer-specific data (please sanitize/replace hostnames, IPs, and internal endpoints)
 - ❌ Partial configs (we need the full running config)
 
 ---
@@ -57,6 +57,9 @@ Before submitting, replace any real credentials:
 ```
 
 > **Tip:** Search for `password`, `secret`, `key`, and `community` in your config.
+
+> [!TIP]
+> Also consider replacing real hostnames/IPs with placeholders (e.g., `$HOSTNAME$`, `$MGMT_IP$`) or RFC5737 test-net ranges.
 
 ---
 
@@ -146,9 +149,13 @@ Click **"Submit new issue"** — you're done!
 ├─────────────────────────────────────────────────────────────┤
 │  4. MERGE (Maintainer)                                      │
 │     • Templates added to the repo                           │
-│     • Your config becomes a test case                       │
+│     • Your sanitized config becomes a test fixture           │
 │     • Vendor support is now available in the wizard!        │
 └─────────────────────────────────────────────────────────────┘
+
+> [!NOTE]
+> For repo reliability, sanitized configs are stored as versioned fixtures under `backend/tests/fixtures/submissions/`.
+> This keeps the processing pipeline exercised by pytest in CI whenever the code changes.
 ```
 
 ### Timeline

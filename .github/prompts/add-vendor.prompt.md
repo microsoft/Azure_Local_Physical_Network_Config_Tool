@@ -40,7 +40,7 @@ This project generates physical network configurations for Azure Local deploymen
    - Run `python -m pytest backend/tests/` to validate
 
 5. **Create Test Fixture**
-   - Add sample JSON input in `tests/fixtures/{vendor}-sample/`
+   - Add sample JSON input in `backend/tests/fixtures/{vendor}-{firmware}/`
    - Include expected output configs
 
 ## Azure Local Requirements (MUST follow)
@@ -49,7 +49,7 @@ Reference: `.github/skills/azure-local-requirements/`
 
 - Storage VLANs must follow isolation rules per deployment pattern
 - DCB/QoS must be implemented for RDMA traffic
-- MLAG/VPC peer links must NOT carry storage traffic
+- Validate MLAG/VPC peer-link configuration per vendor best practices
 
 ## Output
 

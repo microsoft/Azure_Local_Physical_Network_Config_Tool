@@ -46,7 +46,7 @@ Host ──NIC1 (M+C)──► ToR1 (M, C, S1 VLANs)
 |----------|---------|---------|-------------|
 | ToR1 | ✅ Yes | ❌ No | M, C |
 | ToR2 | ❌ No | ✅ Yes | M, C |
-| Peer-link | ❌ No | ❌ No | M, C |
+| Peer-link | Vendor-specific | Vendor-specific | Vendor-specific |
 
 - Dedicated storage NICs connect to specific ToRs
 - S1 VLAN on ToR1 **only**, S2 VLAN on ToR2 **only**
@@ -65,7 +65,7 @@ Host ──NIC1──► ToR1 (M, C, S1, S2 VLANs)
 |----------|---------|---------|-------------|
 | ToR1 | ✅ Yes | ✅ Yes | M, C |
 | ToR2 | ✅ Yes | ✅ Yes | M, C |
-| Peer-link | ❌ No | ❌ No | M, C |
+| Peer-link | Vendor-specific | Vendor-specific | Vendor-specific |
 
 - All traffic shares 2 NICs via VLAN segmentation
 - **Both** S1 and S2 must be on **both** ToRs for redundancy
@@ -73,15 +73,14 @@ Host ──NIC1──► ToR1 (M, C, S1, S2 VLANs)
 
 ---
 
-## Peer-Link Rule (All Patterns)
+## Peer-Link VLAN Membership
 
-> ⚠️ **Storage VLANs are NEVER on the peer-link** — in any pattern.
+Peer-link (vPC/MLAG/VLT) VLAN allowlists are vendor-specific implementation details.
 
-```
-peer_link_vlans: M, C only
-# Example: "7,201"
-# NEVER include storage VLANs (711, 712)
-```
+AzureLocal-Supportability provides a concrete peer-link reference in the HSRP peer-link section:
+https://github.com/Azure/AzureLocal-Supportability/blob/main/TSG/Networking/Top-Of-Rack-Switch/Reference-TOR-Disaggregated-Switched-Storage.md#hsrp-peer-link
+
+- **Guidance:** Storage VLANs should **NOT** be allowed on the peer-link between ToRs.
 
 ---
 
@@ -103,7 +102,7 @@ peer_link_vlans: M, C only
 |---------|-------------|-----|
 | S1+S2 on ToR1 only (Switched) | S2 traffic fails | Put S2 on ToR2 |
 | Only S1 per ToR (Fully-Converged) | Failover breaks | Put S1+S2 on both |
-| Storage VLANs on peer-link | Performance/loop issues | Remove from peer-link |
+| Incorrect peer-link VLAN allowlist | Vendor-dependent failures | Validate peer-link VLANs per vendor docs and design intent |
 
 ---
 

@@ -25,11 +25,13 @@ Azure Local has strict requirements for physical network configurations based on
 
    **Switched (Non-Converged):**
    - Storage VLANs MUST be on TOR switches
-   - Storage VLANs must NOT be on peer-link/MCT
+   - Storage VLANs are isolated per-TOR per pattern rules
+   - Storage VLANs should **NOT** be allowed on the peer-link between ToRs (reference: AzureLocal-Supportability HSRP peer-link section)
 
    **Fully-Converged:**
-   - Storage VLANs ARE ALLOWED on peer-link
-   - All traffic shares the same physical ports
+   - Storage VLANs are present on both TORs for failover
+   - All traffic shares the same physical ports (via VLAN segmentation)
+   - Storage VLANs should **NOT** be allowed on the peer-link between ToRs (reference: AzureLocal-Supportability HSRP peer-link section)
 
 3. **Validate DCB/QoS (if RDMA)**
    Reference: `.github/skills/azure-local-requirements/references/dcb-requirements.md`
@@ -39,8 +41,8 @@ Azure Local has strict requirements for physical network configurations based on
    - Check for lossless queue configuration
 
 4. **Validate MLAG/VPC Configuration (if present)**
-   - Peer-link must have appropriate VLAN membership based on pattern
-   - Keepalive link must be properly isolated
+   - Validate basic MLAG/vPC correctness (peer-link + keepalive isolation, vendor syntax)
+   - Treat peer-link VLAN allowlists as vendor-specific **except** for storage VLAN exclusion; fail if storage VLANs are allowed on the peer-link
 
 ## Output
 

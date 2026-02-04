@@ -240,10 +240,123 @@ export interface ValidationResult {
 }
 
 // ============================================================================
+// TOR PAIR CONFIGURATION (Phase 13)
+// ============================================================================
+
+/**
+ * Per-switch overrides for TOR pair generation.
+ * These are the only fields that differ between TOR1 and TOR2.
+ */
+export interface PerSwitchOverrides {
+  /** Switch hostname (e.g., "azl-rack01-tor1") */
+  hostname: string;
+  /** Loopback IP address (e.g., "10.255.0.1/32") */
+  loopback_ip?: string;
+  /** SVI IPs for each VLAN - keyed by VLAN ID */
+  svi_ips?: Record<number, string>;
+  /** Uplink 1 IP (e.g., "10.100.0.1/30") - NO auto-derivation */
+  uplink1_ip?: string;
+  /** Uplink 2 IP (optional, e.g., "10.100.0.9/30") - NO auto-derivation */
+  uplink2_ip?: string;
+  /** iBGP port-channel IP (peer-link point-to-point) */
+  ibgp_pc_ip?: string;
+  /** MLAG keepalive source IP */
+  keepalive_source_ip?: string;
+  /** MLAG keepalive destination IP */
+  keepalive_dest_ip?: string;
+  /** BGP router ID (typically same as loopback) */
+  bgp_router_id?: string;
+  /** iBGP peer IP (the other ToR's loopback) */
+  ibgp_peer_ip?: string;
+}
+
+/**
+ * Shared configuration entered once for both ToR switches.
+ * Pattern, vendor, VLANs, ports, MLAG domain, BGP ASN are shared.
+ */
+export interface SharedConfig {
+  /** Base hostname for auto-naming (e.g., "azl-rack01" → "azl-rack01-tor1", "azl-rack01-tor2") */
+  base_hostname?: string;
+  /** Deployment pattern determines VLAN layout */
+  deployment_pattern: DeploymentPattern;
+  /** Switch vendor */
+  vendor: Vendor;
+  /** Switch model */
+  model: string;
+  /** Firmware version (derived from vendor) */
+  firmware: Firmware;
+  /** VLAN definitions (shared across both ToRs) */
+  vlans: VLAN[];
+  /** Interface definitions (shared, but storage VLANs may be split per role) */
+  interfaces: Interface[];
+  /** Port channel definitions */
+  port_channels: PortChannel[];
+  /** MLAG domain ID (shared) */
+  mlag_domain_id?: number;
+  /** MLAG peer-link port-channel ID */
+  mlag_peer_link_id?: number;
+  /** BGP ASN (shared) */
+  bgp_asn?: number;
+  /** BGP neighbors (shared) */
+  bgp_neighbors?: BGPNeighbor[];
+  /** Static routes (optional, shared) */
+  static_routes?: StaticRoute[];
+  /** Prefix lists (shared) */
+  prefix_lists?: PrefixLists;
+  /** Routing type selection */
+  routing_type?: 'bgp' | 'static';
+}
+
+/**
+ * Complete TOR pair configuration for the wizard.
+ * Contains shared settings plus per-switch overrides.
+ */
+export interface TorPairConfig {
+  shared: SharedConfig;
+  tor1: PerSwitchOverrides;
+  tor2: PerSwitchOverrides;
+}
+
+/**
+ * Role-based default values for auto-derivation.
+ * Reference: main branch test_cases (REDUNDANCY_PRIORITY_*, vlt.j2)
+ */
+export interface RoleDefaults {
+  /** HSRP/VRRP priority for gateway redundancy */
+  redundancy_priority: number;
+  /** VLT/vPC priority for MLAG role */
+  mlag_priority: number;
+  /** MST priority for spanning tree */
+  mst_priority: number;
+}
+
+/**
+ * Storage VLAN assignment by role for switched pattern.
+ * TOR1 gets S1 (711), TOR2 gets S2 (712).
+ */
+export type StorageVlanSymbol = 'S1' | 'S2' | 'S';
+
+// ============================================================================
 // WIZARD STATE
 // ============================================================================
 
 export interface WizardState {
   currentStep: number;
   config: Partial<StandardConfig>;
+}
+
+/**
+ * TOR Pair wizard state (Phase 13)
+ */
+export interface TorPairWizardState {
+  currentStep: number;
+  /** Active switch tab: 'A' (TOR1) or 'B' (TOR2) */
+  activeSwitch: 'A' | 'B';
+  /** TOR pair configuration */
+  torPairConfig: TorPairConfig;
+  /** Validation results per switch */
+  validationResults: {
+    tor1: ValidationResult;
+    tor2: ValidationResult;
+  };
 }

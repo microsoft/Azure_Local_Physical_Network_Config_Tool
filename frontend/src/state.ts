@@ -1,6 +1,8 @@
 /**
  * Wizard state management
  * Manages the multi-step wizard state and provides typed getters/setters
+ * 
+ * Phase 13: Added TOR pair state management for dual-switch workflow
  */
 
 import type { 
@@ -12,11 +14,21 @@ import type {
   BGP,
   PrefixLists,
   StandardConfig,
-  DeploymentPattern
+  DeploymentPattern,
+  SharedConfig,
+  PerSwitchOverrides,
+  TorPairConfig,
+  ValidationResult,
+  Vendor,
+  Firmware
 } from './types';
 
 export type WizardPhase = 1 | 2 | 3 | 'review';
 export type Phase2Substep = '2.1' | '2.2' | '2.3' | '2.4';
+
+// ============================================================================
+// LEGACY WIZARD STATE (single switch - for backward compatibility)
+// ============================================================================
 
 export interface WizardState {
   currentPhase: WizardPhase;
@@ -29,6 +41,28 @@ export interface WizardState {
   mlag: Partial<MLAG>;
   bgp: Partial<BGP>;
   prefix_lists: PrefixLists;
+}
+
+// ============================================================================
+// TOR PAIR WIZARD STATE (Phase 13)
+// ============================================================================
+
+export interface TorPairWizardState {
+  currentPhase: WizardPhase;
+  currentSubstep: Phase2Substep | null;
+  /** Active switch tab for per-switch IP entry: 'A' (TOR1) or 'B' (TOR2) */
+  activeSwitch: 'A' | 'B';
+  /** Shared configuration (pattern, vendor, VLANs, ports, MLAG domain, BGP ASN) */
+  shared: SharedConfig;
+  /** TOR1 overrides (hostname, IPs) */
+  tor1: PerSwitchOverrides;
+  /** TOR2 overrides (hostname, IPs) */
+  tor2: PerSwitchOverrides;
+  /** Validation results per switch */
+  validationResults: {
+    tor1: ValidationResult;
+    tor2: ValidationResult;
+  };
 }
 
 // Initialize default state
@@ -235,4 +269,181 @@ export function importFromStandardConfig(config: StandardConfig): void {
   state.mlag = config.mlag || {};
   state.bgp = config.bgp || {};
   state.prefix_lists = config.prefix_lists || {};
+}
+
+// ============================================================================
+// TOR PAIR STATE MANAGEMENT (Phase 13)
+// ============================================================================
+
+// Initial TOR pair state
+const initialTorPairState: TorPairWizardState = {
+  currentPhase: 1,
+  currentSubstep: null,
+  activeSwitch: 'A',
+  shared: {
+    deployment_pattern: '' as DeploymentPattern,
+    vendor: '' as Vendor,
+    model: '',
+    firmware: '' as Firmware,
+    vlans: [],
+    interfaces: [],
+    port_channels: []
+  },
+  tor1: {
+    hostname: ''
+  },
+  tor2: {
+    hostname: ''
+  },
+  validationResults: {
+    tor1: { valid: true, errors: [] },
+    tor2: { valid: true, errors: [] }
+  }
+};
+
+// Global TOR pair state instance
+let torPairState: TorPairWizardState = { ...initialTorPairState };
+
+/**
+ * Get current TOR pair wizard state
+ */
+export function getTorPairState(): TorPairWizardState {
+  return torPairState;
+}
+
+/**
+ * Set entire TOR pair wizard state
+ */
+export function setTorPairState(newState: TorPairWizardState): void {
+  torPairState = newState;
+}
+
+/**
+ * Reset TOR pair state to initial values
+ */
+export function resetTorPairState(): void {
+  torPairState = { 
+    ...initialTorPairState,
+    shared: { ...initialTorPairState.shared },
+    tor1: { ...initialTorPairState.tor1 },
+    tor2: { ...initialTorPairState.tor2 },
+    validationResults: {
+      tor1: { valid: true, errors: [] },
+      tor2: { valid: true, errors: [] }
+    }
+  };
+}
+
+/**
+ * Get active switch tab ('A' for TOR1, 'B' for TOR2)
+ */
+export function getActiveSwitch(): 'A' | 'B' {
+  return torPairState.activeSwitch;
+}
+
+/**
+ * Set active switch tab
+ */
+export function setActiveSwitch(tab: 'A' | 'B'): void {
+  torPairState.activeSwitch = tab;
+}
+
+/**
+ * Get shared config
+ */
+export function getSharedConfig(): SharedConfig {
+  return torPairState.shared;
+}
+
+/**
+ * Update shared config (merge)
+ */
+export function updateSharedConfig(config: Partial<SharedConfig>): void {
+  torPairState.shared = { ...torPairState.shared, ...config };
+}
+
+/**
+ * Get TOR1 overrides
+ */
+export function getTor1Overrides(): PerSwitchOverrides {
+  return torPairState.tor1;
+}
+
+/**
+ * Update TOR1 overrides (merge)
+ */
+export function updateTor1Overrides(overrides: Partial<PerSwitchOverrides>): void {
+  torPairState.tor1 = { ...torPairState.tor1, ...overrides };
+}
+
+/**
+ * Get TOR2 overrides
+ */
+export function getTor2Overrides(): PerSwitchOverrides {
+  return torPairState.tor2;
+}
+
+/**
+ * Update TOR2 overrides (merge)
+ */
+export function updateTor2Overrides(overrides: Partial<PerSwitchOverrides>): void {
+  torPairState.tor2 = { ...torPairState.tor2, ...overrides };
+}
+
+/**
+ * Get overrides for active switch
+ */
+export function getActiveSwitchOverrides(): PerSwitchOverrides {
+  return torPairState.activeSwitch === 'A' ? torPairState.tor1 : torPairState.tor2;
+}
+
+/**
+ * Update overrides for active switch (merge)
+ */
+export function updateActiveSwitchOverrides(overrides: Partial<PerSwitchOverrides>): void {
+  if (torPairState.activeSwitch === 'A') {
+    updateTor1Overrides(overrides);
+  } else {
+    updateTor2Overrides(overrides);
+  }
+}
+
+/**
+ * Set validation results for both switches
+ */
+export function setTorValidationResults(
+  tor1Result: ValidationResult,
+  tor2Result: ValidationResult
+): void {
+  torPairState.validationResults = {
+    tor1: tor1Result,
+    tor2: tor2Result
+  };
+}
+
+/**
+ * Get validation results
+ */
+export function getTorValidationResults(): { tor1: ValidationResult; tor2: ValidationResult } {
+  return torPairState.validationResults;
+}
+
+/**
+ * Export TOR pair state as TorPairConfig
+ */
+export function exportToTorPairConfig(): TorPairConfig {
+  return {
+    shared: torPairState.shared,
+    tor1: torPairState.tor1,
+    tor2: torPairState.tor2
+  };
+}
+
+/**
+ * Import TorPairConfig into state
+ */
+export function importFromTorPairConfig(config: TorPairConfig): void {
+  torPairState.shared = config.shared;
+  torPairState.tor1 = config.tor1;
+  torPairState.tor2 = config.tor2;
 }
