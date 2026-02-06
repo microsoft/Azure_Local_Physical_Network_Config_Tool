@@ -1,18 +1,40 @@
+"""
+Lab-format → Standard JSON converter for TOR switches.
+
+Reads an Azure Stack lab definition JSON, extracts per-switch data for each
+TOR (TOR1, TOR2), resolves VLANs/IPs from Supernets, loads model-specific
+interface templates, and writes one standard JSON per switch.  Also triggers
+the BMC converter if available.
+"""
+
 import json
+import logging
 from copy import deepcopy
 from pathlib import Path
 from collections import defaultdict
 
 # IMPORTANT: Unconditional import for PyInstaller detection
 # PyInstaller's static analysis needs to see this import at module level without any conditionals
-from . import convertors_bmc_switch_json
+from . import convertors_bmc_switch_json  # noqa: F401
 
-try:
-    from ..loader import get_real_path  # package style
-except ImportError:
-    from loader import get_real_path  # fallback script style
+from ..loader import get_real_path
+from ..constants import (
+    TOR1, TOR2, BMC,
+    CISCO, DELL, NXOS, OS10,
+    DEFAULT_OUTPUT_DIR, OUTPUT_FILE_EXTENSION,
+    JUMBO_MTU,
+    HSRP, VRRP,
+    REDUNDANCY_PRIORITY_ACTIVE, REDUNDANCY_PRIORITY_STANDBY,
+    TOR_SWITCH_TYPES,
+    PATTERN_HYPERCONVERGED, PATTERN_FULLY_CONVERGED,
+    PATTERN_FULLY_CONVERGED1, PATTERN_FULLY_CONVERGED2,
+    SWITCH_TEMPLATE, SVI_TEMPLATE, VLAN_TEMPLATE,
+    IP_PREFIX_P2P_BORDER1, IP_PREFIX_P2P_BORDER2,
+    IP_PREFIX_LOOPBACK0, IP_PREFIX_P2P_IBGP,
+)
+from ..utils import infer_firmware, classify_vlan_group
 
-# Import BMC converter function with fallback handling
+# Import BMC converter function
 try:
     from .convertors_bmc_switch_json import convert_bmc_switches
     _bmc_available = True
@@ -20,55 +42,7 @@ except ImportError:
     convert_bmc_switches = None
     _bmc_available = False
 
-# ── Static config ─────────────────────────────────────────────────────────
-SWITCH_TYPES          = ["TOR1", "TOR2"]
-TOR1, TOR2                   = "TOR1", "TOR2"
-BMC                          = "BMC"
-
-CISCO, NXOS                  = "cisco", "nxos"
-DELL,  OS10                  = "dellemc",  "os10"
-
-OUTPUT_FILE_EXTENSION        = ".json"
-DEFAULT_OUTPUT_DIR           = "output"
-
-JUMBO_MTU                    = 9216
-REDUNDANCY_PRIORITY_ACTIVE   = 150
-REDUNDANCY_PRIORITY_STANDBY  = 140
-HSRP                         = "hsrp"
-VRRP                         = "vrrp"
-
-UNUSED_VLAN       = "UNUSED_VLAN"  
-NATIVE_VLAN      = "NATIVE_VLAN"
-
-
-# ── In-code templates (never mutate these!) ───────────────────────────────
-SWITCH_TEMPLATE = {
-    "make"    : "",
-    "model"   : "",
-    "type"    : "",
-    "hostname": "",
-    "version" : "",
-    "firmware": "",
-    "site"    : ""
-}
-
-SVI_TEMPLATE = {
-    "ip"        : "",
-    "cidr"      : 0,
-    "mtu"       : JUMBO_MTU,
-    "redundancy": {          # this whole block is removed for BMC
-        "type"      : "",
-        "group"     : 0,
-        "priority"  : 0,
-        "virtual_ip": ""
-    }
-}
-
-VLAN_TEMPLATE = {
-    "vlan_id" : 0,
-    "name"    : "",
-    # "interface" key is added later only if needed
-}
+logger = logging.getLogger(__name__)
 
 # ── Builder class ─────────────────────────────────────────────────────────
 class StandardJSONBuilder:
@@ -85,8 +59,8 @@ class StandardJSONBuilder:
         self.original_pattern = self.deployment_pattern
         
         # Initial translation for template compatibility
-        if self.deployment_pattern == "hyperconverged":
-            self.deployment_pattern = "fully_converged"
+        if self.deployment_pattern == PATTERN_HYPERCONVERGED:
+            self.deployment_pattern = PATTERN_FULLY_CONVERGED
 
     # ------------------------------------------------------------------ #
     # Build switch section
@@ -111,11 +85,7 @@ class StandardJSONBuilder:
                 continue
 
             sw_make = sw.get("Make", "").lower()
-            firmware = (
-                NXOS if sw_make == CISCO else
-                OS10 if sw_make == DELL  else
-                sw.get("Firmware", "").lower()
-            )
+            firmware = infer_firmware(sw_make)
 
             sw_entry = deepcopy(SWITCH_TEMPLATE)
             sw_entry.update(
@@ -131,7 +101,7 @@ class StandardJSONBuilder:
             self.sections["switch"][sw_type] = sw_entry
 
         if not self.sections["switch"]:
-            print("[!] No valid switches found in input.")
+            logger.warning("No valid switches found in input.")
 
     # ------------------------------------------------------------------ #
     # Build VLAN section
@@ -149,21 +119,10 @@ class StandardJSONBuilder:
             if vlan_id == 0:
                 continue                                # skip invalid IDs
 
-            # Construct M,C,S Mapping, GroupName hardcode defined
-            if group_name.startswith("HNVPA"):
-                self.vlan_map["C"].append(vlan_id)
-            elif group_name.startswith("INFRA"):
-                self.vlan_map["M"].append(vlan_id)
-            elif group_name.startswith("TENANT"):
-                self.vlan_map["C"].append(vlan_id)
-            elif group_name.startswith("L3FORWARD"):
-                self.vlan_map["C"].append(vlan_id)
-            elif group_name.startswith("STORAGE"):
-                self.vlan_map["S"].append(vlan_id)
-            elif group_name.startswith("UNUSED"):
-                self.vlan_map["UNUSED"].append(vlan_id)
-            elif group_name.startswith("NATIVE"):
-                self.vlan_map["NATIVE"].append(vlan_id)
+            # Classify VLAN into symbolic sets using shared utility
+            symbol = classify_vlan_group(group_name)
+            if symbol:
+                self.vlan_map[symbol].append(vlan_id)
             # collect TOR1 and TOR2 specific storage VLANs
             if vlan_name.endswith(TOR1):
                 self.vlan_map["S1"].append(vlan_id)
@@ -218,7 +177,7 @@ class StandardJSONBuilder:
 
         self.sections["vlans"] = sorted(vlans_out, key=lambda v: v["vlan_id"])
         if not self.sections["vlans"]:
-            print(f"[!] No VLANs produced for {switch_type}")
+            logger.warning("No VLANs produced for %s", switch_type)
 
     # ------------------------------------------------------------------ #
     # Build interface and port-channels section
@@ -229,7 +188,7 @@ class StandardJSONBuilder:
         """
         switch = self.sections["switch"].get(switch_type)
         if not switch:
-            print(f"[!] No switch of type {switch_type} found for interface build.")
+            logger.warning("No switch of type %s found for interface build.", switch_type)
             return
 
         make = switch.get("make", "").lower()
@@ -255,7 +214,7 @@ class StandardJSONBuilder:
         
         # Smart template selection for HyperConverged deployments
         effective_pattern = self.deployment_pattern
-        if self.original_pattern == "hyperconverged" and self.deployment_pattern == "fully_converged":
+        if self.original_pattern == PATTERN_HYPERCONVERGED and self.deployment_pattern == PATTERN_FULLY_CONVERGED:
             # Check which VLAN sets are available
             has_m = bool(self.vlan_map.get("M", []))
             has_c = bool(self.vlan_map.get("C", []))
@@ -263,11 +222,11 @@ class StandardJSONBuilder:
             
             # If only M exists (no C or S), use fully_converged2 (Access mode)
             if has_m and not has_c and not has_s:
-                effective_pattern = "fully_converged2"
-                print(f"[INFO] Using fully_converged2 template (Access mode) - only Infrastructure VLANs detected")
+                effective_pattern = PATTERN_FULLY_CONVERGED2
+                logger.info("Using fully_converged2 template (Access mode) - only Infrastructure VLANs detected")
             # Otherwise use fully_converged (Trunk mode with M,C,S)
             else:
-                effective_pattern = "fully_converged1"
+                effective_pattern = PATTERN_FULLY_CONVERGED1
         
         pattern_templates = templates.get(effective_pattern, [])
 
@@ -306,35 +265,33 @@ class StandardJSONBuilder:
             first_ip = ipv4.get("FirstAddress", "")
             last_ip = ipv4.get("LastAddress", "")
 
-            if group_name.startswith("HNVPA"):
+            # Classify using shared utility for standard groups
+            symbol = classify_vlan_group(group_name)
+            if symbol == "C" and group_name.startswith("HNVPA"):
                 self.ip_map["HNVPA"].append(ip_subnet)
-            elif group_name.startswith("INFRA"):
+            elif symbol == "M":
                 self.ip_map["M"].append(ip_subnet)
-            elif group_name.startswith("TENANT"):
+            elif symbol == "C":
                 self.ip_map["C"].append(ip_subnet)
-            elif group_name.startswith("L3FORWARD"):
-                self.ip_map["C"].append(ip_subnet)
-            elif vlan_name.endswith(TOR1) and vlan_name.startswith("P2P_BORDER1"):
-                self.ip_map["P2P_BORDER1_TOR1"].append(f"{last_ip}/{cidr}")
-                self.ip_map["P2P_TOR1_BORDER1"].append(f"{first_ip}")
-            elif vlan_name.endswith(TOR1) and vlan_name.startswith("P2P_BORDER2"):
-                self.ip_map["P2P_BORDER2_TOR1"].append(f"{last_ip}/{cidr}")
-                self.ip_map["P2P_TOR1_BORDER2"].append(f"{first_ip}")
-            elif vlan_name.endswith(TOR2) and vlan_name.startswith("P2P_BORDER1"):
-                self.ip_map["P2P_BORDER1_TOR2"].append(f"{last_ip}/{cidr}")
-                self.ip_map["P2P_TOR2_BORDER1"].append(f"{first_ip}")
-            elif vlan_name.endswith(TOR2) and vlan_name.startswith("P2P_BORDER2"):
-                self.ip_map["P2P_BORDER2_TOR2"].append(f"{last_ip}/{cidr}")
-                self.ip_map["P2P_TOR2_BORDER2"].append(f"{first_ip}")
+            elif vlan_name.endswith(TOR1) and vlan_name.startswith(IP_PREFIX_P2P_BORDER1):
+                self.ip_map[f"{IP_PREFIX_P2P_BORDER1}_{TOR1}"].append(f"{last_ip}/{cidr}")
+                self.ip_map[f"P2P_{TOR1}_BORDER1"].append(f"{first_ip}")
+            elif vlan_name.endswith(TOR1) and vlan_name.startswith(IP_PREFIX_P2P_BORDER2):
+                self.ip_map[f"{IP_PREFIX_P2P_BORDER2}_{TOR1}"].append(f"{last_ip}/{cidr}")
+                self.ip_map[f"P2P_{TOR1}_BORDER2"].append(f"{first_ip}")
+            elif vlan_name.endswith(TOR2) and vlan_name.startswith(IP_PREFIX_P2P_BORDER1):
+                self.ip_map[f"{IP_PREFIX_P2P_BORDER1}_{TOR2}"].append(f"{last_ip}/{cidr}")
+                self.ip_map[f"P2P_{TOR2}_BORDER1"].append(f"{first_ip}")
+            elif vlan_name.endswith(TOR2) and vlan_name.startswith(IP_PREFIX_P2P_BORDER2):
+                self.ip_map[f"{IP_PREFIX_P2P_BORDER2}_{TOR2}"].append(f"{last_ip}/{cidr}")
+                self.ip_map[f"P2P_{TOR2}_BORDER2"].append(f"{first_ip}")
             elif vlan_name.endswith(TOR1) and vlan_name.startswith("LOOPBACK"):
-                self.ip_map["LOOPBACK0_TOR1"].append(ip_subnet)
+                self.ip_map[f"{IP_PREFIX_LOOPBACK0}_{TOR1}"].append(ip_subnet)
             elif vlan_name.endswith(TOR2) and vlan_name.startswith("LOOPBACK"):
-                self.ip_map["LOOPBACK0_TOR2"].append(ip_subnet)
-            elif vlan_name.endswith(TOR2) and vlan_name.startswith("LOOPBACK"):
-                self.ip_map["LOOPBACK0_TOR2"].append(ip_subnet)
-            elif vlan_name.startswith("P2P_IBGP"):
-                self.ip_map["P2P_IBGP_TOR1"].append(first_ip)
-                self.ip_map["P2P_IBGP_TOR2"].append(last_ip)
+                self.ip_map[f"{IP_PREFIX_LOOPBACK0}_{TOR2}"].append(ip_subnet)
+            elif vlan_name.startswith(IP_PREFIX_P2P_IBGP):
+                self.ip_map[f"{IP_PREFIX_P2P_IBGP}_{TOR1}"].append(first_ip)
+                self.ip_map[f"{IP_PREFIX_P2P_IBGP}_{TOR2}"].append(last_ip)
 
     def _process_interface_template(self , switch_type: str, template: dict) -> dict:
         """
@@ -460,7 +417,7 @@ class StandardJSONBuilder:
         import ipaddress
         switch = self.sections["switch"].get(switch_type)
         if not switch:
-            print(f"[!] No switch info for BGP")
+            logger.warning("No switch info for BGP")
             return
 
         # Build networks list using subnet prefixes
@@ -600,24 +557,14 @@ class StandardJSONBuilder:
         self.sections["qos"] = True
 
 
-    # ------------------------------------------------------------------ #
-    # Generate all sections for a specific switch type
-    def generate_for_switch(self, switch_type):
-        self.build_switch(switch_type)
-        self.build_vlans(switch_type)
-        self.build_interfaces(switch_type)
-        return self.sections
-
-
-
 # ── Helper to create per-switch JSON files ────────────────────────────────
-def convert_switch_input_json(input_data: dict, output_dir: str = DEFAULT_OUTPUT_DIR):
+def convert_switch_input_json(input_data: dict, output_dir: str = DEFAULT_OUTPUT_DIR, *, debug: bool = False):
     out_path = Path(output_dir)
     out_path.mkdir(exist_ok=True, parents=True)
 
     builder = StandardJSONBuilder(input_data)
 
-    for sw_type in SWITCH_TYPES:
+    for sw_type in TOR_SWITCH_TYPES:
         builder.sections = {}               # reset between runs
         builder.build_switch(sw_type)
         builder.build_vlans(sw_type)
@@ -628,7 +575,7 @@ def convert_switch_input_json(input_data: dict, output_dir: str = DEFAULT_OUTPUT
         s_vlans = builder.vlan_map.get("S", [])
         s1_vlans = builder.vlan_map.get("S1", [])
         s2_vlans = builder.vlan_map.get("S2", [])
-        print(f"[DEBUG] VLAN sets for {sw_type}: M={m_vlans} C={c_vlans} S={s_vlans} S1={s1_vlans} S2={s2_vlans}")
+        logger.debug("VLAN sets for %s: M=%s C=%s S=%s S1=%s S2=%s", sw_type, m_vlans, c_vlans, s_vlans, s1_vlans, s2_vlans)
 
         # Validation: Check VLAN requirements based on deployment pattern
         missing_critical = []
@@ -636,14 +583,14 @@ def convert_switch_input_json(input_data: dict, output_dir: str = DEFAULT_OUTPUT
             missing_critical.append("M")
         
         # For HyperConverged: allow M-only (uses fully_converged2/Access mode) or M+C+S (uses fully_converged1/Trunk mode)
-        is_hyperconverged = builder.original_pattern == "hyperconverged"
+        is_hyperconverged = builder.original_pattern == PATTERN_HYPERCONVERGED
         has_c = bool(c_vlans)
         has_s = bool(s_vlans) or bool(s1_vlans) or bool(s2_vlans)
         
         if is_hyperconverged:
             # HyperConverged: M-only is valid (Access mode), or require full M+C for Trunk mode
             if m_vlans and not has_c and not has_s:
-                print(f"[INFO] HyperConverged deployment with M-only: using Access mode (fully_converged2)")
+                logger.info("HyperConverged deployment with M-only: using Access mode (fully_converged2)")
             elif not has_c:
                 missing_critical.append("C")
         else:
@@ -661,7 +608,7 @@ def convert_switch_input_json(input_data: dict, output_dir: str = DEFAULT_OUTPUT
             )
 
         if not s_vlans and not s1_vlans and not s2_vlans:
-            print(f"[WARN] Storage VLAN set S is empty for {sw_type}; proceeding without storage tagging.")
+            logger.warning("Storage VLAN set S is empty for %s; proceeding without storage tagging.", sw_type)
 
         builder.build_interfaces(sw_type)
         # Per-interface VLAN security belt: ensure required VLAN values resolved
@@ -686,7 +633,7 @@ def convert_switch_input_json(input_data: dict, output_dir: str = DEFAULT_OUTPUT
                     raise ValueError(f"Port-channel '{desc}' missing native_vlan. Define native VLAN or remove trunk type.")
                 # tagged_vlans may be intentionally empty (e.g., only native) so only warn
                 if not str(pc.get("tagged_vlans", "")).strip():
-                    print(f"[WARN] Port-channel '{desc}' has no tagged_vlans; only native VLAN will be carried.")
+                    logger.warning("Port-channel '%s' has no tagged_vlans; only native VLAN will be carried.", desc)
         builder.build_bgp(sw_type)
         builder.build_prefix_lists()
         builder.build_qos()
@@ -704,7 +651,11 @@ def convert_switch_input_json(input_data: dict, output_dir: str = DEFAULT_OUTPUT
             "bgp": builder.sections["bgp"],
             "prefix_lists": builder.sections["prefix_lists"],
             "qos": builder.sections["qos"],
-            "debug": {
+        }
+
+        # Only include debug data when explicitly requested (DC3)
+        if debug:
+            final_json["debug"] = {
                 "vlan_map": dict(builder.vlan_map),
                 "ip_map": dict(builder.ip_map),
                 "resolved_trunks": [
@@ -717,35 +668,16 @@ def convert_switch_input_json(input_data: dict, output_dir: str = DEFAULT_OUTPUT
                     if iface.get("type") == "Trunk"
                 ]
             }
-        }
 
         out_file = out_path / f"{hostname}{OUTPUT_FILE_EXTENSION}"
         with out_file.open("w", encoding="utf-8") as f:
             json.dump(final_json, f, indent=2)
 
-        print(f"[✓] Wrote {out_file}")
+        logger.info("Wrote %s", out_file)
 
     # Convert BMC switches using the module-level import
     if _bmc_available and convert_bmc_switches:
         try:
             convert_bmc_switches(input_data, output_dir)
         except Exception as e:
-            print(f"[!] Error converting BMC switches: {e}")
-            import traceback
-            traceback.print_exc()
-    else:
-        print(f"[!] BMC converter not available - module not imported")
-
-
-def convert_all_switches_json(input_data: dict, output_dir: str = DEFAULT_OUTPUT_DIR):
-    """
-    Convert all switches (ToRs and BMC) to standard JSON format.
-    This function calls both ToR and BMC conversion functions.
-    """
-    print("[*] Converting ToR switches...")
-    convert_switch_input_json(input_data, output_dir)
-    
-    # BMC converter already called within convert_switch_input_json
-    # No need to call again here to avoid duplicate conversion
-    print("[✓] All switch conversions completed.")
-
+            logger.error("Error converting BMC switches: %s", e)

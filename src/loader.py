@@ -1,56 +1,64 @@
+"""
+File loading utilities for the AzureStack Network Switch Config Generator.
+
+Provides path resolution (PyInstaller-aware), JSON loading, and Jinja2
+template loading.
+"""
+
+from __future__ import annotations
+
 import json
-import os
-from pathlib import Path
+import logging
 import sys
+from pathlib import Path
+
 from jinja2 import Environment, FileSystemLoader
 
+logger = logging.getLogger(__name__)
+
+
 def get_real_path(relative_path: Path) -> Path:
+    """Resolve *relative_path* whether running as a script or inside a
+    PyInstaller bundle.
+
+    When frozen (``sys.frozen``), paths are relative to ``sys._MEIPASS``.
+    Otherwise they are resolved against the current working directory.
     """
-    Resolve the actual path whether running as script or bundled by PyInstaller.
-    """
-    if getattr(sys, 'frozen', False):
-        return Path(sys._MEIPASS) / relative_path
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS) / relative_path  # type: ignore[attr-defined]
     return relative_path.resolve()
 
-def load_input_json(filepath, verbose=False):
+
+def load_input_json(filepath: str | Path) -> dict:
+    """Load and parse a JSON file.
+
+    Raises
+    ------
+    FileNotFoundError
+        If *filepath* does not exist.
+    ValueError
+        If the file cannot be decoded as JSON.
     """
-    Load and parse a JSON file safely.
-    """
-    if not os.path.exists(filepath):
-        print(f"[ERROR] File not found: {filepath}")
-        return None
+    path = Path(filepath)
+    if not path.exists():
+        raise FileNotFoundError(f"Input file not found: {path}")
 
     try:
-        with open(filepath, "r", encoding="utf-8") as file:
-            data = json.load(file)
-            if verbose:
-                print(f"[✓] Loaded JSON from: {filepath}")
-                if isinstance(data, dict):
-                    print(f"     Top-level keys: {list(data.keys())}")
-            return data
-    except json.JSONDecodeError as e:
-        print(f"[ERROR] Failed to parse JSON ({filepath}): {e}")
-        return None
-    except Exception as e:
-        print(f"[ERROR] Unexpected error while loading {filepath}: {e}")
-        return None
+        with path.open("r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Failed to parse JSON ({path}): {exc}") from exc
 
-def pretty_print_json(data, output_path):
-    """
-    Pretty-print JSON data to a file.
-    """
-    try:
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-        print(f"[✓] Pretty-printed JSON saved to: {output_path}")
-    except Exception as e:
-        print(f"[ERROR] Failed to write pretty JSON: {e}")
+    logger.debug("Loaded JSON from %s (keys: %s)", path, list(data.keys()) if isinstance(data, dict) else "N/A")
+    return data
 
-def load_template(template_dir, template_file):
+
+def load_template(template_dir: str | Path, template_file: str):
+    """Load a single Jinja2 template from *template_dir*.
+
+    The directory is resolved via :func:`get_real_path` so that templates
+    bundled inside a PyInstaller executable are found correctly.
     """
-    Load a Jinja2 template from a folder (safe for PyInstaller).
-    """
-    real_template_dir = get_real_path(Path(template_dir))
-    env = Environment(loader=FileSystemLoader(str(real_template_dir)))
+    real_dir = get_real_path(Path(template_dir))
+    env = Environment(loader=FileSystemLoader(str(real_dir)))
     return env.get_template(template_file)

@@ -14,12 +14,8 @@
       "shutdown": true
     },
     {
-      "vlan_id": 7,
-      "name": "Infra_7"
-    },
-    {
       "vlan_id": 99,
-      "name": "NativeVlan"
+      "name": "NATIVE_VLAN"
     },
     {
       "vlan_id": 125,
