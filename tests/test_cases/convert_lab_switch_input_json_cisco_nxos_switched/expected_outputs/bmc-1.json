@@ -3,10 +3,10 @@
     "make": "cisco",
     "model": "9348gc-fxp",
     "type": "BMC",
-    "hostname": "s46-r21-9348bmc-24-1",
+    "hostname": "bmc-1",
     "version": "9.3(11)",
     "firmware": "nxos",
-    "site": "rr1"
+    "site": "site1"
   },
   "vlans": [
     {
@@ -22,7 +22,7 @@
       "vlan_id": 125,
       "name": "BMC_Mgmt_125",
       "interface": {
-        "ip": "100.71.85.126",
+        "ip": "10.1.1.126",
         "cidr": 26,
         "mtu": 9216
       }
@@ -91,7 +91,7 @@
   "static_routes": [
     {
       "prefix": "0.0.0.0/0",
-      "next_hop": "100.71.85.65",
+      "next_hop": "10.1.1.65",
       "description": "BMC default gateway"
     }
   ]

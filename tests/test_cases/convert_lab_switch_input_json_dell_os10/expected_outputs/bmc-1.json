@@ -3,10 +3,10 @@
     "make": "dellemc",
     "model": "n3248te-on",
     "type": "BMC",
-    "hostname": "s46-r06-3248bmc-6-1",
+    "hostname": "bmc-1",
     "version": "10.5.5.5",
     "firmware": "os10",
-    "site": "rr1"
+    "site": "site1"
   },
   "vlans": [
     {
@@ -22,7 +22,7 @@
       "vlan_id": 125,
       "name": "BMC_Mgmt_125",
       "interface": {
-        "ip": "100.71.12.126",
+        "ip": "10.21.1.126",
         "cidr": 26,
         "mtu": 9216
       }
@@ -79,7 +79,7 @@
   "static_routes": [
     {
       "prefix": "0.0.0.0/0",
-      "next_hop": "100.71.12.65",
+      "next_hop": "10.21.1.65",
       "description": "BMC default gateway"
     }
   ]

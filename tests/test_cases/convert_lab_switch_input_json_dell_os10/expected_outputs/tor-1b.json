@@ -1,12 +1,12 @@
 {
   "switch": {
-    "make": "cisco",
-    "model": "93180yc-fx3",
-    "type": "TOR1",
-    "hostname": "s46-r21-93180hl-24-1a",
-    "version": "10.3(4a)",
-    "firmware": "nxos",
-    "site": "rr1"
+    "make": "dellemc",
+    "model": "s5248f-on",
+    "type": "TOR2",
+    "hostname": "tor-1b",
+    "version": "10.5.5.5",
+    "firmware": "os10",
+    "site": "site1"
   },
   "vlans": [
     {
@@ -18,14 +18,14 @@
       "vlan_id": 6,
       "name": "HNVPA_6",
       "interface": {
-        "ip": "100.71.131.2",
+        "ip": "10.22.1.3",
         "cidr": 25,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 6,
-          "priority": 150,
-          "virtual_ip": "100.71.131.1"
+          "priority": 140,
+          "virtual_ip": "10.22.1.1"
         }
       }
     },
@@ -33,14 +33,14 @@
       "vlan_id": 7,
       "name": "Infra_7",
       "interface": {
-        "ip": "100.69.176.2",
+        "ip": "10.23.1.3",
         "cidr": 24,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 7,
-          "priority": 150,
-          "virtual_ip": "100.69.176.1"
+          "priority": 140,
+          "virtual_ip": "10.23.1.1"
         }
       }
     },
@@ -52,14 +52,14 @@
       "vlan_id": 125,
       "name": "BMC_Mgmt_125",
       "interface": {
-        "ip": "100.71.85.123",
+        "ip": "10.21.1.124",
         "cidr": 26,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 125,
-          "priority": 150,
-          "virtual_ip": "100.71.85.65"
+          "priority": 140,
+          "virtual_ip": "10.21.1.65"
         }
       }
     },
@@ -67,14 +67,14 @@
       "vlan_id": 201,
       "name": "Tenant_201",
       "interface": {
-        "ip": "100.69.177.2",
+        "ip": "10.24.1.3",
         "cidr": 24,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 201,
-          "priority": 150,
-          "virtual_ip": "100.69.177.1"
+          "priority": 140,
+          "virtual_ip": "10.24.1.1"
         }
       }
     },
@@ -82,14 +82,14 @@
       "vlan_id": 301,
       "name": "LogicalTenant_301",
       "interface": {
-        "ip": "100.69.178.2",
+        "ip": "10.24.150.3",
         "cidr": 25,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 301,
-          "priority": 150,
-          "virtual_ip": "100.69.178.1"
+          "priority": 140,
+          "virtual_ip": "10.24.150.1"
         }
       }
     },
@@ -97,14 +97,14 @@
       "vlan_id": 401,
       "name": "DhcpTenant_401",
       "interface": {
-        "ip": "100.69.178.130",
+        "ip": "10.24.150.131",
         "cidr": 25,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 401,
-          "priority": 150,
-          "virtual_ip": "100.69.178.129"
+          "priority": 140,
+          "virtual_ip": "10.24.150.129"
         }
       }
     },
@@ -112,14 +112,14 @@
       "vlan_id": 501,
       "name": "L3forward_501",
       "interface": {
-        "ip": "100.69.179.2",
+        "ip": "10.25.1.3",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 501,
-          "priority": 150,
-          "virtual_ip": "100.69.179.1"
+          "priority": 140,
+          "virtual_ip": "10.25.1.1"
         }
       }
     },
@@ -127,14 +127,14 @@
       "vlan_id": 502,
       "name": "L3forward_502",
       "interface": {
-        "ip": "100.69.179.18",
+        "ip": "10.25.1.19",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 502,
-          "priority": 150,
-          "virtual_ip": "100.69.179.17"
+          "priority": 140,
+          "virtual_ip": "10.25.1.17"
         }
       }
     },
@@ -142,14 +142,14 @@
       "vlan_id": 503,
       "name": "L3forward_503",
       "interface": {
-        "ip": "100.69.179.34",
+        "ip": "10.25.1.35",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 503,
-          "priority": 150,
-          "virtual_ip": "100.69.179.33"
+          "priority": 140,
+          "virtual_ip": "10.25.1.33"
         }
       }
     },
@@ -157,14 +157,14 @@
       "vlan_id": 504,
       "name": "L3forward_504",
       "interface": {
-        "ip": "100.69.179.50",
+        "ip": "10.25.1.51",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 504,
-          "priority": 150,
-          "virtual_ip": "100.69.179.49"
+          "priority": 140,
+          "virtual_ip": "10.25.1.49"
         }
       }
     },
@@ -172,14 +172,14 @@
       "vlan_id": 505,
       "name": "L3forward_505",
       "interface": {
-        "ip": "100.69.179.66",
+        "ip": "10.25.1.67",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 505,
-          "priority": 150,
-          "virtual_ip": "100.69.179.65"
+          "priority": 140,
+          "virtual_ip": "10.25.1.65"
         }
       }
     },
@@ -187,14 +187,14 @@
       "vlan_id": 506,
       "name": "L3forward_506",
       "interface": {
-        "ip": "100.69.179.82",
+        "ip": "10.25.1.83",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 506,
-          "priority": 150,
-          "virtual_ip": "100.69.179.81"
+          "priority": 140,
+          "virtual_ip": "10.25.1.81"
         }
       }
     },
@@ -202,14 +202,14 @@
       "vlan_id": 507,
       "name": "L3forward_507",
       "interface": {
-        "ip": "100.69.179.98",
+        "ip": "10.25.1.99",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 507,
-          "priority": 150,
-          "virtual_ip": "100.69.179.97"
+          "priority": 140,
+          "virtual_ip": "10.25.1.97"
         }
       }
     },
@@ -217,14 +217,14 @@
       "vlan_id": 508,
       "name": "L3forward_508",
       "interface": {
-        "ip": "100.69.179.114",
+        "ip": "10.25.1.115",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 508,
-          "priority": 150,
-          "virtual_ip": "100.69.179.113"
+          "priority": 140,
+          "virtual_ip": "10.25.1.113"
         }
       }
     },
@@ -232,14 +232,14 @@
       "vlan_id": 509,
       "name": "L3forward_509",
       "interface": {
-        "ip": "100.69.179.130",
+        "ip": "10.25.1.131",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 509,
-          "priority": 150,
-          "virtual_ip": "100.69.179.129"
+          "priority": 140,
+          "virtual_ip": "10.25.1.129"
         }
       }
     },
@@ -247,14 +247,14 @@
       "vlan_id": 510,
       "name": "L3forward_510",
       "interface": {
-        "ip": "100.69.179.145",
+        "ip": "10.25.1.146",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 510,
-          "priority": 150,
-          "virtual_ip": ""
+          "priority": 140,
+          "virtual_ip": "10.5.1.145"
         }
       }
     },
@@ -262,14 +262,14 @@
       "vlan_id": 511,
       "name": "L3forward_511",
       "interface": {
-        "ip": "100.69.179.162",
+        "ip": "10.25.1.163",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 511,
-          "priority": 150,
-          "virtual_ip": "100.69.179.161"
+          "priority": 140,
+          "virtual_ip": "10.25.1.161"
         }
       }
     },
@@ -277,14 +277,14 @@
       "vlan_id": 512,
       "name": "L3forward_512",
       "interface": {
-        "ip": "100.69.179.178",
+        "ip": "10.25.1.179",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 512,
-          "priority": 150,
-          "virtual_ip": "100.69.179.177"
+          "priority": 140,
+          "virtual_ip": "10.25.1.177"
         }
       }
     },
@@ -292,14 +292,14 @@
       "vlan_id": 513,
       "name": "L3forward_513",
       "interface": {
-        "ip": "100.69.179.194",
+        "ip": "10.25.1.195",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 513,
-          "priority": 150,
-          "virtual_ip": "100.69.179.193"
+          "priority": 140,
+          "virtual_ip": "10.25.1.193"
         }
       }
     },
@@ -307,14 +307,14 @@
       "vlan_id": 514,
       "name": "L3forward_514",
       "interface": {
-        "ip": "100.69.179.210",
+        "ip": "10.25.1.211",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 514,
-          "priority": 150,
-          "virtual_ip": "100.69.179.209"
+          "priority": 140,
+          "virtual_ip": "10.25.1.209"
         }
       }
     },
@@ -322,14 +322,14 @@
       "vlan_id": 515,
       "name": "L3forward_515",
       "interface": {
-        "ip": "100.69.179.226",
+        "ip": "10.25.1.227",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 515,
-          "priority": 150,
-          "virtual_ip": "100.69.179.225"
+          "priority": 140,
+          "virtual_ip": "10.25.1.225"
         }
       }
     },
@@ -337,14 +337,14 @@
       "vlan_id": 516,
       "name": "L3forward_516",
       "interface": {
-        "ip": "100.69.179.242",
+        "ip": "10.25.1.243",
         "cidr": 28,
         "mtu": 9216,
         "redundancy": {
-          "type": "hsrp",
+          "type": "vrrp",
           "group": 516,
-          "priority": 150,
-          "virtual_ip": "100.69.179.241"
+          "priority": 140,
+          "virtual_ip": "10.25.1.241"
         }
       }
     },
@@ -354,7 +354,7 @@
     },
     {
       "vlan_id": 712,
-      "name": "Storage_712_TOR2"
+      "name": "Storage_711_TOR2"
     }
   ],
   "interfaces": [
@@ -363,8 +363,8 @@
       "type": "Access",
       "description": "initial unused for all interfaces then config as defined",
       "intf_type": "Ethernet",
-      "start_intf": "1/1",
-      "end_intf": "1/54",
+      "start_intf": "1/1/1",
+      "end_intf": "1/1/56",
       "access_vlan": "2",
       "shutdown": true
     },
@@ -373,29 +373,48 @@
       "type": "L3",
       "intf_type": "loopback",
       "intf": "loopback0",
-      "ipv4": "100.71.85.21/32"
+      "ipv4": "10.21.1.22/32"
+    },
+    {
+      "name": "MLAG_Peer_Links",
+      "type": "MLAG",
+      "intf_type": "Ethernet",
+      "start_intf": "1/1/49",
+      "end_intf": "1/1/52"
     },
     {
       "name": "P2P_Border1",
       "type": "L3",
       "intf_type": "Ethernet",
-      "intf": "1/48",
-      "ipv4": "100.71.85.2/30"
+      "intf": "1/1/48:1",
+      "ipv4": "10.21.1.6/30"
     },
     {
       "name": "P2P_Border2",
       "type": "L3",
       "intf_type": "Ethernet",
-      "intf": "1/47",
-      "ipv4": "100.71.85.10/30"
+      "intf": "1/1/47:1",
+      "ipv4": "10.21.1.14/30"
     },
     {
       "name": "Trunk_TO_BMC_SWITCH",
       "type": "Trunk",
       "intf_type": "Ethernet",
-      "intf": "1/49",
+      "intf": "1/1/44",
       "native_vlan": "99",
       "tagged_vlans": "125"
+    },
+    {
+      "name": "HyperConverged_To_Host",
+      "type": "Trunk",
+      "intf_type": "Ethernet",
+      "start_intf": "1/1/1",
+      "end_intf": "1/1/40",
+      "native_vlan": "7",
+      "tagged_vlans": "7,6,201,301,401,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,712",
+      "service_policy": {
+        "qos_input": "AZLOCAL-QOS-MAP"
+      }
     }
   ],
   "port_channels": [
@@ -403,58 +422,57 @@
       "id": 50,
       "description": "P2P_IBGP",
       "type": "L3",
-      "ipv4": "100.71.85.17",
+      "ipv4": "10.21.1.18",
       "members": [
-        "1/41",
-        "1/42"
+        "1/1/45:1",
+        "1/1/46:1"
       ]
     },
     {
-      "id": 101,
+      "id": 102,
       "description": "ToR_Peer_Link",
       "type": "Trunk",
       "native_vlan": "99",
+      "tagged_vlans": "",
       "members": [
-        "1/49",
-        "1/50",
-        "1/51"
+        "1/1/44:1"
       ]
     }
   ],
   "bgp": {
-    "asn": 65242,
-    "router_id": "100.71.85.21",
+    "asn": 64556,
+    "router_id": "10.21.1.22",
     "networks": [
-      "100.71.85.2/30",
-      "100.71.85.10/30",
-      "100.71.85.21/32",
-      "100.71.85.16/30",
-      "100.71.131.0/25",
-      "100.69.176.0/24",
-      "100.71.85.64/26",
-      "100.69.177.0/24",
-      "100.69.178.0/25",
-      "100.69.178.128/25",
-      "100.69.179.0/28",
-      "100.69.179.16/28",
-      "100.69.179.32/28",
-      "100.69.179.48/28",
-      "100.69.179.64/28",
-      "100.69.179.80/28",
-      "100.69.179.96/28",
-      "100.69.179.112/28",
-      "100.69.179.128/28",
-      "100.69.179.144/28",
-      "100.69.179.160/28",
-      "100.69.179.176/28",
-      "100.69.179.192/28",
-      "100.69.179.208/28",
-      "100.69.179.224/28",
-      "100.69.179.240/28"
+      "10.21.1.6/30",
+      "10.21.1.14/30",
+      "10.21.1.22/32",
+      "10.21.1.16/30",
+      "10.22.1.0/25",
+      "10.23.1.0/24",
+      "10.21.1.64/26",
+      "10.24.1.0/24",
+      "10.24.150.0/25",
+      "10.24.150.128/25",
+      "10.25.1.0/28",
+      "10.25.1.16/28",
+      "10.25.1.32/28",
+      "10.25.1.48/28",
+      "10.25.1.64/28",
+      "10.25.1.80/28",
+      "10.25.1.96/28",
+      "10.25.1.112/28",
+      "10.25.1.128/28",
+      "10.25.1.144/28",
+      "10.25.1.160/28",
+      "10.25.1.176/28",
+      "10.25.1.192/28",
+      "10.25.1.208/28",
+      "10.25.1.224/28",
+      "10.25.1.240/28"
     ],
     "neighbors": [
       {
-        "ip": "100.71.85.1",
+        "ip": "10.21.1.5",
         "description": "TO_Border1",
         "remote_as": 64846,
         "af_ipv4_unicast": {
@@ -462,7 +480,7 @@
         }
       },
       {
-        "ip": "100.71.85.9",
+        "ip": "10.21.1.13",
         "description": "TO_Border2",
         "remote_as": 64846,
         "af_ipv4_unicast": {
@@ -470,15 +488,15 @@
         }
       },
       {
-        "ip": "100.71.85.18",
+        "ip": "10.21.1.17",
         "description": "iBGP_PEER",
-        "remote_as": 65242,
+        "remote_as": 64556,
         "af_ipv4_unicast": {}
       },
       {
-        "ip": "100.71.131.0/25",
+        "ip": "10.22.1.0/25",
         "description": "TO_HNVPA",
-        "remote_as": 65112,
+        "remote_as": 65018,
         "update_source": "Loopback0",
         "ebgp_multihop": 3,
         "af_ipv4_unicast": {
@@ -549,67 +567,67 @@
     },
     "ip_map": {
       "P2P_BORDER1_TOR1": [
-        "100.71.85.2/30"
+        "10.21.1.2/30"
       ],
       "P2P_TOR1_BORDER1": [
-        "100.71.85.1"
+        "10.21.1.1"
       ],
       "P2P_BORDER1_TOR2": [
-        "100.71.85.6/30"
+        "10.21.1.6/30"
       ],
       "P2P_TOR2_BORDER1": [
-        "100.71.85.5"
+        "10.21.1.5"
       ],
       "P2P_BORDER2_TOR1": [
-        "100.71.85.10/30"
+        "10.21.1.10/30"
       ],
       "P2P_TOR1_BORDER2": [
-        "100.71.85.9"
+        "10.21.1.9"
       ],
       "P2P_BORDER2_TOR2": [
-        "100.71.85.14/30"
+        "10.21.1.14/30"
       ],
       "P2P_TOR2_BORDER2": [
-        "100.71.85.13"
+        "10.21.1.13"
       ],
       "P2P_IBGP_TOR1": [
-        "100.71.85.17"
+        "10.21.1.17"
       ],
       "P2P_IBGP_TOR2": [
-        "100.71.85.18"
+        "10.21.1.18"
       ],
       "LOOPBACK0_TOR1": [
-        "100.71.85.21/32"
+        "10.21.1.21/32"
       ],
       "LOOPBACK0_TOR2": [
-        "100.71.85.22/32"
+        "10.21.1.22/32"
       ],
       "HNVPA": [
-        "100.71.131.0/25"
+        "10.22.1.0/25"
       ],
       "M": [
-        "100.69.176.0/24"
+        "10.23.1.0/24"
       ],
       "C": [
-        "100.69.177.0/24",
-        "100.69.178.0/25",
-        "100.69.178.128/25",
-        "100.69.179.0/28",
-        "100.69.179.16/28",
-        "100.69.179.32/28",
-        "100.69.179.48/28",
-        "100.69.179.64/28",
-        "100.69.179.80/28",
-        "100.69.179.96/28",
-        "100.69.179.112/28",
-        "100.69.179.128/28",
-        "100.69.179.144/28",
-        "100.69.179.160/28",
-        "100.69.179.176/28",
-        "100.69.179.192/28",
-        "100.69.179.208/28",
-        "100.69.179.224/28",
-        "100.69.179.240/28"
+        "10.24.1.0/24",
+        "10.24.150.0/25",
+        "10.24.150.128/25",
+        "10.25.1.0/28",
+        "10.25.1.16/28",
+        "10.25.1.32/28",
+        "10.25.1.48/28",
+        "10.25.1.64/28",
+        "10.25.1.80/28",
+        "10.25.1.96/28",
+        "10.25.1.112/28",
+        "10.25.1.128/28",
+        "10.25.1.144/28",
+        "10.25.1.160/28",
+        "10.25.1.176/28",
+        "10.25.1.192/28",
+        "10.25.1.208/28",
+        "10.25.1.224/28",
+        "10.25.1.240/28"
       ]
     },
     "resolved_trunks": [
@@ -617,6 +635,11 @@
         "name": "Trunk_TO_BMC_SWITCH",
         "native_vlan": "99",
         "tagged_vlans": "125"
+      },
+      {
+        "name": "HyperConverged_To_Host",
+        "native_vlan": "7",
+        "tagged_vlans": "7,6,201,301,401,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,712"
       }
     ]
   }
