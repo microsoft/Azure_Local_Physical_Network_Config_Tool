@@ -6,6 +6,8 @@ Organized by module under test:
   2. Loader — load_input_json, get_real_path
   3. Constants — sanity checks on shared config values
   4. BMC Converter — switch_info, vlans, interfaces, port_channels, static_routes
+  5. TOR Converter (StandardJSONBuilder) — build_switch, build_vlans,
+     _resolve_interface_vlans, build_bgp, build_prefix_lists, build_qos
 
 All test data uses generic/sanitized values — no lab-specific identifiers.
 """
@@ -30,6 +32,7 @@ from src.constants import (
 from src.utils import infer_firmware, classify_vlan_group
 from src.loader import load_input_json, get_real_path
 from src.convertors.convertors_bmc_switch_json import BMCSwitchConverter
+from src.convertors.convertors_lab_switch_json import StandardJSONBuilder
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -341,3 +344,502 @@ class TestBMCInterfaces:
     def test_raises_when_no_common_interfaces(self):
         with pytest.raises(ValueError, match="No common interfaces"):
             BMCSwitchConverter._build_interfaces({"interface_templates": {"common": []}})
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  5. TOR Converter — StandardJSONBuilder
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+def _make_tor_input(*, site="site1", deployment_pattern="Switched", node_count=16,
+                     tor_make="Cisco", tor_model="93180YC-FX", tor_firmware="10.3(4a)",
+                     tor1_hostname="tor-1a", tor2_hostname="tor-1b",
+                     tor_asn=65242, border_asn=64846, mux_asn=65112,
+                     extra_supernets=None):
+    """Factory for creating minimal TOR converter input data.
+
+    Provides a realistic input structure with Switches, Supernets, and
+    ClusterUnits.  Override keyword arguments to test specific scenarios.
+    """
+    supernets = [
+        {
+            "GroupName": "INFRA_MGMT",
+            "Name": "Infra_7",
+            "IPv4": {
+                "SwitchSVI": True, "Name": "Infra_7", "VLANID": 7,
+                "Cidr": 24, "NetworkType": "Infrastructure",
+                "Subnet": "10.0.7.0/24", "Network": "10.0.7.0",
+                "Netmask": "255.255.255.0", "FirstAddress": "10.0.7.1",
+                "LastAddress": "10.0.7.254",
+                "Gateway": "10.0.7.1",
+                "Assignment": [
+                    {"Name": "Gateway", "IP": "10.0.7.1"},
+                    {"Name": "TOR1", "IP": "10.0.7.2"},
+                    {"Name": "TOR2", "IP": "10.0.7.3"},
+                ],
+            },
+        },
+        {
+            "GroupName": "HNVPA_Pool1",
+            "Name": "HNVPA_6",
+            "IPv4": {
+                "SwitchSVI": False, "Name": "HNVPA_6", "VLANID": 6,
+                "Cidr": 23, "NetworkType": "Compute",
+                "Subnet": "10.0.6.0/23", "Network": "10.0.6.0",
+                "Netmask": "255.255.254.0", "FirstAddress": "10.0.6.1",
+                "LastAddress": "10.0.7.254",
+                "Assignment": [],
+            },
+        },
+        {
+            "GroupName": "TENANT_1",
+            "Name": "Tenant_201",
+            "IPv4": {
+                "SwitchSVI": True, "Name": "Tenant_201", "VLANID": 201,
+                "Cidr": 23, "NetworkType": "Tenant",
+                "Subnet": "10.1.0.0/23", "Network": "10.1.0.0",
+                "Netmask": "255.255.254.0", "FirstAddress": "10.1.0.1",
+                "LastAddress": "10.1.1.254",
+                "Gateway": "10.1.0.1",
+                "Assignment": [
+                    {"Name": "Gateway", "IP": "10.1.0.1"},
+                    {"Name": "TOR1", "IP": "10.1.0.2"},
+                    {"Name": "TOR2", "IP": "10.1.0.3"},
+                ],
+            },
+        },
+        {
+            "GroupName": "STORAGE_A",
+            "Name": "Storage_711_TOR1",
+            "IPv4": {
+                "SwitchSVI": True, "Name": "Storage_711_TOR1", "VLANID": 711,
+                "Cidr": 24, "NetworkType": "Storage",
+                "Subnet": "10.2.0.0/24", "Network": "10.2.0.0",
+                "Netmask": "255.255.255.0",
+                "Gateway": "10.2.0.1",
+                "Assignment": [
+                    {"Name": "Gateway", "IP": "10.2.0.1"},
+                    {"Name": "TOR1", "IP": "10.2.0.2"},
+                ],
+            },
+        },
+        {
+            "GroupName": "STORAGE_B",
+            "Name": "Storage_712_TOR2",
+            "IPv4": {
+                "SwitchSVI": True, "Name": "Storage_712_TOR2", "VLANID": 712,
+                "Cidr": 24, "NetworkType": "Storage",
+                "Subnet": "10.2.1.0/24", "Network": "10.2.1.0",
+                "Netmask": "255.255.255.0",
+                "Gateway": "10.2.1.1",
+                "Assignment": [
+                    {"Name": "Gateway", "IP": "10.2.1.1"},
+                    {"Name": "TOR2", "IP": "10.2.1.2"},
+                ],
+            },
+        },
+        {
+            "GroupName": "P2P_BORDER1",
+            "Name": "P2P_Border1_TOR1",
+            "IPv4": {
+                "SwitchSVI": False, "Name": "P2P_Border1_TOR1", "VLANID": 0,
+                "Cidr": 30, "Subnet": "10.3.0.0/30", "Network": "10.3.0.0",
+                "FirstAddress": "10.3.0.1", "LastAddress": "10.3.0.2",
+                "Assignment": [],
+            },
+        },
+        {
+            "GroupName": "P2P_BORDER2",
+            "Name": "P2P_Border2_TOR1",
+            "IPv4": {
+                "SwitchSVI": False, "Name": "P2P_Border2_TOR1", "VLANID": 0,
+                "Cidr": 30, "Subnet": "10.3.0.4/30", "Network": "10.3.0.4",
+                "FirstAddress": "10.3.0.5", "LastAddress": "10.3.0.6",
+                "Assignment": [],
+            },
+        },
+        {
+            "GroupName": "P2P_BORDER1",
+            "Name": "P2P_Border1_TOR2",
+            "IPv4": {
+                "SwitchSVI": False, "Name": "P2P_Border1_TOR2", "VLANID": 0,
+                "Cidr": 30, "Subnet": "10.3.0.8/30", "Network": "10.3.0.8",
+                "FirstAddress": "10.3.0.9", "LastAddress": "10.3.0.10",
+                "Assignment": [],
+            },
+        },
+        {
+            "GroupName": "P2P_BORDER2",
+            "Name": "P2P_Border2_TOR2",
+            "IPv4": {
+                "SwitchSVI": False, "Name": "P2P_Border2_TOR2", "VLANID": 0,
+                "Cidr": 30, "Subnet": "10.3.0.12/30", "Network": "10.3.0.12",
+                "FirstAddress": "10.3.0.13", "LastAddress": "10.3.0.14",
+                "Assignment": [],
+            },
+        },
+        {
+            "GroupName": "LOOPBACK0",
+            "Name": "Loopback0_TOR1",
+            "IPv4": {
+                "SwitchSVI": False, "Name": "Loopback0_TOR1", "VLANID": 0,
+                "Cidr": 32, "Subnet": "10.4.0.1/32", "Network": "10.4.0.1",
+                "Assignment": [],
+            },
+        },
+        {
+            "GroupName": "LOOPBACK0",
+            "Name": "Loopback0_TOR2",
+            "IPv4": {
+                "SwitchSVI": False, "Name": "Loopback0_TOR2", "VLANID": 0,
+                "Cidr": 32, "Subnet": "10.4.0.2/32", "Network": "10.4.0.2",
+                "Assignment": [],
+            },
+        },
+        {
+            "GroupName": "P2P_IBGP",
+            "Name": "P2P_IBGP",
+            "IPv4": {
+                "SwitchSVI": False, "Name": "P2P_IBGP", "VLANID": 0,
+                "Cidr": 30, "Subnet": "10.5.0.0/30", "Network": "10.5.0.0",
+                "FirstAddress": "10.5.0.1", "LastAddress": "10.5.0.2",
+                "Assignment": [],
+            },
+        },
+        {
+            "GroupName": "UNUSED_VLAN",
+            "Name": "UNUSED_VLAN",
+            "IPv4": {"SwitchSVI": False, "Name": "UNUSED_VLAN", "VLANID": 2},
+        },
+        {
+            "GroupName": "NativeVlan",
+            "Name": "NativeVlan",
+            "IPv4": {"SwitchSVI": False, "Name": "NativeVlan", "VLANID": 99},
+        },
+    ]
+    if extra_supernets:
+        supernets.extend(extra_supernets)
+
+    return {
+        "Version": "1.0.0",
+        "Description": "Unit test input",
+        "InputData": {
+            "MainEnvData": [{
+                "Id": "Env01", "Site": site, "RackName": "rack01",
+                "NodeCount": node_count,
+                "ClusterUnits": [
+                    {"Name": "Cl01", "NodeCount": 4, "Topology": deployment_pattern}
+                ],
+            }],
+            "Switches": [
+                {"Make": "Cisco", "Model": "C9336C-FX2", "Type": "Border1",
+                 "Hostname": "border-1a", "ASN": border_asn},
+                {"Make": "Cisco", "Model": "C9336C-FX2", "Type": "Border2",
+                 "Hostname": "border-1b", "ASN": border_asn},
+                {"Make": tor_make, "Model": tor_model, "Type": "TOR1",
+                 "Hostname": tor1_hostname, "ASN": tor_asn, "Firmware": tor_firmware},
+                {"Make": tor_make, "Model": tor_model, "Type": "TOR2",
+                 "Hostname": tor2_hostname, "ASN": tor_asn, "Firmware": tor_firmware},
+                {"Make": "Contoso", "Model": None, "Type": "MUX",
+                 "Hostname": "mux-1", "ASN": mux_asn},
+            ],
+            "Supernets": supernets,
+            "DeploymentPattern": deployment_pattern,
+        },
+    }
+
+
+@pytest.fixture
+def tor_builder():
+    """A StandardJSONBuilder initialised with default Switched input."""
+    return StandardJSONBuilder(_make_tor_input())
+
+
+class TestTORBuildSwitch:
+    """StandardJSONBuilder.build_switch — switch metadata from Switches array."""
+
+    def test_builds_tor1_metadata(self, tor_builder):
+        tor_builder.build_switch("TOR1")
+        sw = tor_builder.sections["switch"]["TOR1"]
+        assert sw["make"] == "cisco"
+        assert sw["model"] == "93180yc-fx"
+        assert sw["hostname"] == "tor-1a"
+        assert sw["firmware"] == "nxos"
+
+    def test_builds_tor2_metadata(self, tor_builder):
+        tor_builder.build_switch("TOR2")
+        sw = tor_builder.sections["switch"]["TOR2"]
+        assert sw["hostname"] == "tor-1b"
+        assert sw["type"] == "TOR2"
+
+    def test_populates_bgp_map_from_switches(self, tor_builder):
+        tor_builder.build_switch("TOR1")
+        assert tor_builder.bgp_map["ASN_BORDER"] == 64846
+        assert tor_builder.bgp_map["ASN_TOR"] == 65242
+        assert tor_builder.bgp_map["ASN_MUX"] == 65112
+
+    def test_site_from_main_env_data(self, tor_builder):
+        tor_builder.build_switch("TOR1")
+        assert tor_builder.sections["switch"]["TOR1"]["site"] == "site1"
+
+    def test_custom_site(self):
+        builder = StandardJSONBuilder(_make_tor_input(site="datacenter42"))
+        builder.build_switch("TOR1")
+        assert builder.sections["switch"]["TOR1"]["site"] == "datacenter42"
+
+    def test_32bit_mux_asn(self):
+        """Verify 32-bit ASN (4200003000) stored as integer, not truncated."""
+        builder = StandardJSONBuilder(_make_tor_input(mux_asn=4200003000))
+        builder.build_switch("TOR1")
+        assert builder.bgp_map["ASN_MUX"] == 4200003000
+
+
+class TestTORBuildVlans:
+    """StandardJSONBuilder.build_vlans — VLAN list from Supernets."""
+
+    def test_builds_vlans_sorted_by_id(self, tor_builder):
+        tor_builder.build_switch("TOR1")
+        tor_builder.build_vlans("TOR1")
+        ids = [v["vlan_id"] for v in tor_builder.sections["vlans"]]
+        assert ids == sorted(ids)
+
+    def test_classifies_vlan_groups_to_symbols(self, tor_builder):
+        tor_builder.build_switch("TOR1")
+        tor_builder.build_vlans("TOR1")
+        assert 7 in tor_builder.vlan_map["M"]     # INFRA
+        assert 6 in tor_builder.vlan_map["C"]      # HNVPA
+        assert 201 in tor_builder.vlan_map["C"]    # TENANT
+        assert 711 in tor_builder.vlan_map["S1"]   # STORAGE ending TOR1
+        assert 712 in tor_builder.vlan_map["S2"]   # STORAGE ending TOR2
+
+    def test_svi_interface_attached_when_ip_present(self, tor_builder):
+        tor_builder.build_switch("TOR1")
+        tor_builder.build_vlans("TOR1")
+        infra = next(v for v in tor_builder.sections["vlans"] if v["vlan_id"] == 7)
+        assert "interface" in infra
+        assert infra["interface"]["ip"] == "10.0.7.2"
+        assert infra["interface"]["cidr"] == 24
+        assert infra["interface"]["mtu"] == JUMBO_MTU
+
+    def test_svi_hsrp_for_cisco_tor1(self, tor_builder):
+        tor_builder.build_switch("TOR1")
+        tor_builder.build_vlans("TOR1")
+        infra = next(v for v in tor_builder.sections["vlans"] if v["vlan_id"] == 7)
+        red = infra["interface"]["redundancy"]
+        assert red["type"] == "hsrp"
+        assert red["priority"] == 150   # ACTIVE
+        assert red["virtual_ip"] == "10.0.7.1"
+
+    def test_svi_hsrp_for_cisco_tor2_is_standby(self, tor_builder):
+        tor_builder.build_switch("TOR2")
+        tor_builder.build_vlans("TOR2")
+        infra = next(v for v in tor_builder.sections["vlans"] if v["vlan_id"] == 7)
+        assert infra["interface"]["redundancy"]["priority"] == 140  # STANDBY
+
+    def test_unused_vlan_marked_shutdown(self, tor_builder):
+        tor_builder.build_switch("TOR1")
+        tor_builder.build_vlans("TOR1")
+        unused = next(v for v in tor_builder.sections["vlans"] if v["vlan_id"] == 2)
+        assert unused.get("shutdown") is True
+
+    def test_no_svi_when_no_assignment_ip(self, tor_builder):
+        """VLANs without Assignment IP for this switch type have no SVI."""
+        tor_builder.build_switch("TOR1")
+        tor_builder.build_vlans("TOR1")
+        hnvpa = next(v for v in tor_builder.sections["vlans"] if v["vlan_id"] == 6)
+        assert "interface" not in hnvpa
+
+
+class TestResolveInterfaceVlans:
+    """StandardJSONBuilder._resolve_interface_vlans — symbolic VLAN resolution."""
+
+    def _builder_with_vlans(self, switch_type="TOR1"):
+        builder = StandardJSONBuilder(_make_tor_input())
+        builder.build_switch(switch_type)
+        builder.build_vlans(switch_type)
+        return builder
+
+    def test_resolves_M_to_infra_vlans(self):
+        b = self._builder_with_vlans()
+        assert "7" in b._resolve_interface_vlans("TOR1", "M").split(",")
+
+    def test_resolves_C_to_compute_vlans(self):
+        b = self._builder_with_vlans()
+        ids = b._resolve_interface_vlans("TOR1", "C").split(",")
+        assert "6" in ids and "201" in ids
+
+    def test_resolves_S_for_tor1_uses_S1(self):
+        b = self._builder_with_vlans()
+        assert "711" in b._resolve_interface_vlans("TOR1", "S").split(",")
+
+    def test_resolves_S_for_tor2_uses_S2(self):
+        b = self._builder_with_vlans("TOR2")
+        assert "712" in b._resolve_interface_vlans("TOR2", "S").split(",")
+
+    def test_resolves_composite_string(self):
+        b = self._builder_with_vlans()
+        ids = b._resolve_interface_vlans("TOR1", "M,C").split(",")
+        assert "7" in ids and "6" in ids
+
+    def test_literal_vlan_passthrough(self):
+        b = self._builder_with_vlans()
+        assert b._resolve_interface_vlans("TOR1", "99") == "99"
+
+    def test_empty_string_returns_empty(self):
+        b = self._builder_with_vlans()
+        assert b._resolve_interface_vlans("TOR1", "") == ""
+
+    def test_deduplicates_vlans(self):
+        b = self._builder_with_vlans()
+        ids = b._resolve_interface_vlans("TOR1", "M,M").split(",")
+        assert len(ids) == len(set(ids))
+
+    def test_unknown_symbol_skipped(self):
+        b = self._builder_with_vlans()
+        assert b._resolve_interface_vlans("TOR1", "NOSUCHVLAN") == ""
+
+
+class TestTORBuildBGP:
+    """StandardJSONBuilder.build_bgp — BGP neighbor/network construction."""
+
+    def _prepared_builder(self, **kw):
+        builder = StandardJSONBuilder(_make_tor_input(**kw))
+        builder.build_switch("TOR1")
+        builder.build_vlans("TOR1")
+        builder.sections["interfaces"] = []
+        builder._build_ip_mapping()
+        return builder
+
+    def test_bgp_asn_matches_tor(self):
+        b = self._prepared_builder()
+        b.build_bgp("TOR1")
+        assert b.sections["bgp"]["asn"] == 65242
+
+    def test_bgp_router_id_from_loopback(self):
+        b = self._prepared_builder()
+        b.build_bgp("TOR1")
+        assert b.sections["bgp"]["router_id"] == "10.4.0.1"
+
+    def test_bgp_has_border_neighbors(self):
+        b = self._prepared_builder()
+        b.build_bgp("TOR1")
+        descs = [n["description"] for n in b.sections["bgp"]["neighbors"]]
+        assert "TO_Border1" in descs and "TO_Border2" in descs
+
+    def test_bgp_border_asn(self):
+        b = self._prepared_builder()
+        b.build_bgp("TOR1")
+        border1 = next(n for n in b.sections["bgp"]["neighbors"]
+                       if n["description"] == "TO_Border1")
+        assert border1["remote_as"] == 64846
+
+    def test_bgp_ibgp_peer(self):
+        b = self._prepared_builder()
+        b.build_bgp("TOR1")
+        ibgp = next(n for n in b.sections["bgp"]["neighbors"]
+                    if n["description"] == "iBGP_PEER")
+        assert ibgp["remote_as"] == 65242
+        assert ibgp["ip"] == "10.5.0.2"
+
+    def test_bgp_mux_neighbor(self):
+        b = self._prepared_builder()
+        b.build_bgp("TOR1")
+        mux = next(n for n in b.sections["bgp"]["neighbors"]
+                   if n["description"] == "TO_HNVPA")
+        assert mux["remote_as"] == 65112
+        assert mux["ebgp_multihop"] == 3
+
+    def test_32bit_mux_asn_in_bgp(self):
+        b = self._prepared_builder(mux_asn=4200003000)
+        b.build_bgp("TOR1")
+        mux = next(n for n in b.sections["bgp"]["neighbors"]
+                   if n["description"] == "TO_HNVPA")
+        assert mux["remote_as"] == 4200003000
+
+    def test_bgp_networks_include_p2p(self):
+        b = self._prepared_builder()
+        b.build_bgp("TOR1")
+        assert "10.3.0.2/30" in b.sections["bgp"]["networks"]
+
+    def test_bgp_networks_include_loopback(self):
+        b = self._prepared_builder()
+        b.build_bgp("TOR1")
+        assert "10.4.0.1/32" in b.sections["bgp"]["networks"]
+
+    def test_bgp_networks_deduplicated(self):
+        b = self._prepared_builder()
+        b.build_bgp("TOR1")
+        nets = b.sections["bgp"]["networks"]
+        assert len(nets) == len(set(nets))
+
+    def test_no_mux_when_asn_zero(self):
+        b = self._prepared_builder(mux_asn=0)
+        b.build_bgp("TOR1")
+        descs = [n["description"] for n in b.sections["bgp"]["neighbors"]]
+        assert "TO_HNVPA" not in descs
+
+
+class TestTORBuildPrefixLists:
+    """StandardJSONBuilder.build_prefix_lists — DefaultRoute entries."""
+
+    def test_has_default_route(self, tor_builder):
+        tor_builder.build_prefix_lists()
+        assert "DefaultRoute" in tor_builder.sections["prefix_lists"]
+        assert len(tor_builder.sections["prefix_lists"]["DefaultRoute"]) == 2
+
+    def test_permit_and_deny(self, tor_builder):
+        tor_builder.build_prefix_lists()
+        actions = [e["action"] for e in tor_builder.sections["prefix_lists"]["DefaultRoute"]]
+        assert "permit" in actions and "deny" in actions
+
+
+class TestTORBuildQoS:
+    """StandardJSONBuilder.build_qos — simple boolean flag."""
+
+    def test_qos_is_true(self, tor_builder):
+        tor_builder.build_qos()
+        assert tor_builder.sections["qos"] is True
+
+
+class TestTORDeploymentPattern:
+    """StandardJSONBuilder pattern translation for template compatibility."""
+
+    def test_hyperconverged_maps_to_fully_converged(self):
+        b = StandardJSONBuilder(_make_tor_input(deployment_pattern="HyperConverged"))
+        assert b.deployment_pattern == "fully_converged"
+        assert b.original_pattern == "hyperconverged"
+
+    def test_switched_stays_switched(self):
+        b = StandardJSONBuilder(_make_tor_input(deployment_pattern="Switched"))
+        assert b.deployment_pattern == "switched"
+
+    def test_switchless_stays_switchless(self):
+        b = StandardJSONBuilder(_make_tor_input(deployment_pattern="Switchless"))
+        assert b.deployment_pattern == "switchless"
+
+
+class TestTORBuildIPMapping:
+    """StandardJSONBuilder._build_ip_mapping — IP extraction from Supernets."""
+
+    def test_p2p_border_ips(self):
+        b = StandardJSONBuilder(_make_tor_input())
+        b._build_ip_mapping()
+        assert b.ip_map["P2P_BORDER1_TOR1"] == ["10.3.0.2/30"]
+        assert b.ip_map["P2P_TOR1_BORDER1"] == ["10.3.0.1"]
+
+    def test_loopback_ips(self):
+        b = StandardJSONBuilder(_make_tor_input())
+        b._build_ip_mapping()
+        assert b.ip_map["LOOPBACK0_TOR1"] == ["10.4.0.1/32"]
+        assert b.ip_map["LOOPBACK0_TOR2"] == ["10.4.0.2/32"]
+
+    def test_ibgp_ips(self):
+        b = StandardJSONBuilder(_make_tor_input())
+        b._build_ip_mapping()
+        assert b.ip_map["P2P_IBGP_TOR1"] == ["10.5.0.1"]
+        assert b.ip_map["P2P_IBGP_TOR2"] == ["10.5.0.2"]
+
+    def test_hnvpa_subnet(self):
+        b = StandardJSONBuilder(_make_tor_input())
+        b._build_ip_mapping()
+        assert "10.0.6.0/23" in b.ip_map["HNVPA"]
