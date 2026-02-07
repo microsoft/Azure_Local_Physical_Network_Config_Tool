@@ -57,14 +57,26 @@ VLAN_GROUP_MAP: dict[str, str] = {
     "NATIVE":     "NATIVE",
 }
 
-# ── BMC VLAN definitions (hardcoded for POC — DC4) ───────────────────────
-# These are the VLANs that every BMC switch gets, regardless of vendor.
-# Consistent for all vendors since BMC is lab-internal.
+# ── BMC VLAN definitions (hardcoded — DC4, Design Principle 8) ────────
+# BMC switches are internal-only; these VLANs are hardcoded for simplicity.
+#
+# VLAN 2  – "UNUSED_VLAN": assigned to all ports by default then overridden;
+#           keeps unused ports on a dead-end VLAN (security best practice).
+# VLAN 99 – "NATIVE_VLAN": native/untagged VLAN on trunk links (To_TORs
+#           port-channel). Must match the native_vlan in the BMC interface
+#           templates (e.g. 9348GC-FXP.json port_channels[].native_vlan).
+#
+# To change: update both this list AND the corresponding template JSONs.
 BMC_HARDCODED_VLANS: list[dict] = [
     {"vlan_id": 2, "name": "UNUSED_VLAN", "shutdown": True},
     {"vlan_id": 99, "name": "NATIVE_VLAN"},
 ]
-# BMC-relevant supernet group prefixes (additional VLANs pulled from input)
+
+# Supernet GroupName prefixes that produce VLANs on the BMC switch.
+# "BMC" — the actual BMC management network (VLAN 125 in typical deployments)
+# "UNUSED"/"NATIVE" — reserved VLANs already covered by the hardcoded list
+#                      above, but included so the converter doesn't silently
+#                      drop them if their IDs change in the input.
 BMC_RELEVANT_GROUPS: list[str] = ["BMC", "UNUSED", "NATIVE"]
 
 # ── IP map key prefixes (used by _build_ip_mapping) ──────────────────────

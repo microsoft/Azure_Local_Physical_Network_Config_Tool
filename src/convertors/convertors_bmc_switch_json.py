@@ -4,8 +4,12 @@ BMC Switch JSON Converter
 Converts BMC switch definitions from lab input JSON to standardised JSON format.
 Called from the main TOR converter but kept separate for modularity.
 
-Since BMC switches are for internal lab use only, some configurations are hardcoded
-for simplicity (see DC4 decision) and can be refined later.
+Design Principle 8 (TOR=production, BMC=internal):
+  BMC switches are internal-only tooling — complex settings (VLANs, port-channels,
+  static routes, QoS) are hardcoded for simplicity rather than fully parameterised.
+  Every hardcoded value has a comment explaining what it is and why, so future
+  engineers can update values without reverse-engineering the logic.
+  See DC4 decision in ROADMAP.md for the VLAN hardcoding rationale.
 """
 
 from __future__ import annotations
@@ -197,8 +201,11 @@ class BMCSwitchConverter:
     def _build_port_channels(template_data: Dict) -> List[Dict]:
         """Extract port-channels from the loaded template.
 
-        BMC port-channels (e.g. TOR_BMC trunk) are defined in the template
-        and used as-is — no IP enrichment needed (unlike TOR P2P_IBGP).
+        BMC port-channels are hardcoded in the per-model template JSON
+        (e.g. port-channel 102 = TOR_BMC trunk on Eth1/51-1/52).
+        Used as-is — no IP enrichment needed (unlike TOR P2P_IBGP channels).
+        To change port-channel IDs or members, edit the template JSON in
+        input/switch_interface_templates/<vendor>/<model>.json.
         """
         port_channels = template_data.get("port_channels", [])
         return [deepcopy(pc) for pc in port_channels]
@@ -208,8 +215,11 @@ class BMCSwitchConverter:
     def _build_static_routes(self) -> List[Dict]:
         """Build static routes for the BMC switch.
 
-        The BMC switch typically has a default route pointing to the BMC
-        management VLAN gateway (derived from the BMC supernet).
+        Hardcoded: a single 0.0.0.0/0 default route pointing to the BMC
+        management VLAN gateway (derived from the first BMC supernet).
+        This is sufficient because BMC switches only need reachability to
+        the management network — they don't participate in BGP/OSPF.
+        To add more routes, append to the returned list.
         """
         supernets = self.input_data.get("InputData", {}).get("Supernets", [])
 
