@@ -2,7 +2,7 @@ name: Build Switch Config Generator Tool
 
 on:
   push:
-    branches: [ main, dev/nl/newDesignv1 ]
+    branches: [ main ]
     tags: [ 'v*' ]
     paths:
       - 'src/**'
@@ -20,16 +20,50 @@ on:
       - '.github/workflows/build-switchgentool.yml'
   workflow_dispatch:
 
+# ── Test job needs read; release job needs write (scoped per-job) ─────────
 permissions:
   contents: read
   actions: read
 
+# Cancel in-flight runs for the same branch/PR (tags always run to completion)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
 jobs:
+  # ════════════════════════════════════════════════════════════════════════
+  # Job 1: Test — run full pytest suite
+  # ════════════════════════════════════════════════════════════════════════
+  test:
+    name: Test (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest tests/ -v --tb=short
+
+  # ════════════════════════════════════════════════════════════════════════
+  # Job 2: Build — PyInstaller cross-platform executables
+  # ════════════════════════════════════════════════════════════════════════
   build:
     name: Build on ${{ matrix.os }}
+    needs: test
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - os: windows-latest
@@ -46,7 +80,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Install build tools (Linux only)
@@ -55,21 +89,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y upx
 
-      - name: Ensure requirements
+      - name: Install dependencies
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          if [ ! -f requirements.txt ]; then
-            echo "jinja2>=3.0.0" > requirements.txt
-          fi
           pip install -r requirements.txt
           pip install "pyinstaller==6.11.*"
-
-      - name: Quick source test (run as script)
-        shell: bash
-        run: |
-          python -c "import sys; print(sys.version)"
-          python src/main.py --help
 
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
@@ -107,19 +132,15 @@ jobs:
         run: |
           chmod +x "dist/${{ matrix.exe_name }}" || true
           "dist/${{ matrix.exe_name }}" --help || (echo "Executable failed to run" && exit 1)
-      
-      - name: Test BMC converter module inclusion
+
+      - name: Verify BMC converter module inclusion
         shell: bash
         run: |
           python -c "
           import sys
           sys.path.insert(0, 'src')
-          try:
-              from convertors.convertors_bmc_switch_json import convert_bmc_switches
-              print('[OK] BMC converter module can be imported')
-          except ImportError as e:
-              print('[ERROR] BMC converter module import failed:', e)
-              sys.exit(1)
+          from convertors.convertors_bmc_switch_json import convert_bmc_switches
+          print('[OK] BMC converter module can be imported')
           "
 
       - name: Stage artifact
@@ -135,47 +156,57 @@ jobs:
           name: ${{ matrix.asset_name }}
           path: artifact_staging/
 
-  # release:
-  #   name: Create Release
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   if: startsWith(github.ref, 'refs/tags/v')
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+  # ════════════════════════════════════════════════════════════════════════
+  # Job 3: Release — create GitHub Release (tag pushes only)
+  # ════════════════════════════════════════════════════════════════════════
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
 
-  #     - name: Download artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         path: ./artifacts
+    # Require approval via GitHub Environment before publishing
+    environment: production
 
-  #     - name: Show downloaded files
-  #       run: ls -Rla ./artifacts
+    permissions:
+      contents: write
 
-  #     - name: Create GitHub Release
-  #       uses: softprops/action-gh-release@v2
-  #       with:
-  #         files: |
-  #           ./artifacts/network-config-generator-windows-amd64/network_config_generator.exe
-  #           ./artifacts/network-config-generator-linux-amd64/network_config_generator
-  #         body: |
-  #           ## Network Switch Config Generator ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #           ### Download
-  #           1) Grab the file for your OS
-  #           2) (Linux) Make it executable: `chmod +x network_config_generator`
-  #           3) Run: `./network_config_generator --help`
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
 
-  #           ### Usage
-  #           ```bash
-  #           ./network_config_generator --input_json lab_input.json --output_folder output/
-  #           ./network_config_generator --input_json standard_input.json --output_folder output/
-  #           ./network_config_generator --input_json lab_input.json --convertor my.custom.convertor
-  #           ```
+      - name: Show downloaded files
+        run: ls -Rla ./artifacts
 
-  #           ### Features
-  #           - Auto-detects input format (lab vs standard)
-  #           - Converts lab format to standard automatically
-  #           - Generates network switch configurations
-  #           - Custom convertors & multi-switch support
-  #           - Cross-platform executables
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./artifacts/network-config-generator-windows-amd64/network_config_generator.exe
+            ./artifacts/network-config-generator-linux-amd64/network_config_generator
+          body: |
+            ## Network Switch Config Generator ${{ github.ref_name }}
+
+            ### Download
+            1) Grab the file for your OS
+            2) (Linux) Make it executable: `chmod +x network_config_generator`
+            3) Run: `./network_config_generator --help`
+
+            ### Usage
+            ```bash
+            ./network_config_generator --input_json lab_input.json --output_folder output/
+            ./network_config_generator --input_json standard_input.json --output_folder output/
+            ./network_config_generator --input_json lab_input.json --convertor my.custom.convertor
+            ```
+
+            ### Features
+            - Auto-detects input format (lab vs standard)
+            - Converts lab format to standard automatically
+            - Generates network switch configurations
+            - Custom convertors & multi-switch support
+            - Cross-platform executables
