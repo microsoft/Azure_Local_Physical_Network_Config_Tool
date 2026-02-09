@@ -27,6 +27,9 @@ Download from [Releases](../../releases), then:
 
 # Generate from lab-format JSON (auto-converts)
 ./network_config_generator --input_json my_lab_input.json --output_folder configs/ --convertor lab
+
+# Include debug data (vlan_map, ip_map) in converted JSON
+./network_config_generator --input_json my_lab_input.json --output_folder configs/ --debug
 ```
 
 ### Option B: Python Source
@@ -36,10 +39,13 @@ Download from [Releases](../../releases), then:
 pip install -r requirements.txt
 
 # Generate from standard-format JSON
-python src/main.py --input_json input/standard_input.json --output_folder output/
+python -m src.main --input_json input/standard_input.json --output_folder output/
 
 # Generate from lab-format JSON with auto-conversion
-python src/main.py --input_json my_lab_input.json --output_folder configs/ --convertor lab
+python -m src.main --input_json my_lab_input.json --output_folder configs/ --convertor lab
+
+# Include debug data in converted JSON output
+python -m src.main --input_json my_lab_input.json --output_folder configs/ --debug
 
 # Run tests
 python -m pytest tests/ -v
@@ -119,10 +125,10 @@ flowchart LR
 │       └── convertors_bmc_switch_json.py  # Lab → Standard JSON (BMC switches)
 ├── tests/
 │   ├── conftest.py                     # Shared fixtures and helpers
-│   ├── test_unit.py                    # Unit tests (StandardJSONBuilder, utils, etc.)
-│   ├── test_convertors.py             # Golden-file tests for converters
-│   ├── test_generator.py              # Golden-file tests for Jinja2 generation
-│   └── test_cases/                     # Test data (6 converter + 3 generator cases)
+│   ├── test_unit.py                    # Unit tests (85 tests)
+│   ├── test_convertors.py             # Golden-file converter tests (12 tests)
+│   ├── test_generator.py              # Golden-file generator tests (6 tests)
+│   └── test_cases/                     # Test data (4 converter + 3 generator cases)
 ├── tools/                              # Utility scripts (IP mgmt, port mapping)
 └── requirements.txt                    # Python dependencies
 ```

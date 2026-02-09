@@ -1,19 +1,11 @@
-# Binaries for programs and plugins
+# Binaries
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
-# Test binary, built with `go test -c`
-*.test
-_*
-!**/__init__.py
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-1
-# Dependency directories (remove the comment below to include it)
+# Generated configs and outputs
 **/generated_*.cfg
 generated_outputs/
 

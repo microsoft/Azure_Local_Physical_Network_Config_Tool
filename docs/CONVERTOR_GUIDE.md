@@ -31,16 +31,21 @@ Create `src/convertors/my_converter.py`
 Your converter must export a function named `convert_switch_input_json`:
 
 ```python
-import json
-import os
+from __future__ import annotations
 
-def convert_switch_input_json(input_data, output_directory):
+import json
+from pathlib import Path
+
+def convert_switch_input_json(input_data: dict, output_directory: str) -> None:
     """Convert custom format to standard format.
 
     Args:
         input_data: Your JSON data (as Python dict)
         output_directory: Where to save converted JSON files
     """
+    out_dir = Path(output_directory)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     for device in input_data["devices"]:
         standard = {
             "switch": {
@@ -63,9 +68,8 @@ def convert_switch_input_json(input_data, output_directory):
                 })
 
         # Write one file per switch
-        filepath = os.path.join(output_directory, f"{device['name']}.json")
-        with open(filepath, "w") as f:
-            json.dump(standard, f, indent=2)
+        filepath = out_dir / f"{device['name']}.json"
+        filepath.write_text(json.dumps(standard, indent=2))
 ```
 
 ### Step 3: Run It
@@ -121,7 +125,7 @@ Your converter must produce JSON with this structure. Only `switch` is required;
 |---------|----------|
 | `Module not found` | File must be in `src/convertors/`. Use dot notation: `--convertor my_converter` |
 | `Function not found` | Must be named exactly `convert_switch_input_json` |
-| No output files | Check file permissions; add `print()` statements for debugging |
+| No output files | Check file permissions; add `logging.debug()` statements for debugging |
 
 ---
 

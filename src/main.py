@@ -111,7 +111,7 @@ def convert_to_standard_format(
 
     _safe_print(f"Generated {len(generated_files)} standard format file(s):")
     for f in generated_files:
-        print(f"   - {f}")
+        _safe_print(f"   - {f}")
     return generated_files
 
 

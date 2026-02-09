@@ -125,7 +125,7 @@ input/switch_interface_templates/
 │   ├── 9348GC-FXP.json        # BMC (16-node)
 │   └── 9348GC-FX3.json        # BMC (20-node)
 └── dellemc/
-    ├── s5248f-on.json          # TOR
+    ├── S5248F-ON.json          # TOR
     └── N3248TE-ON.json         # BMC
 ```
 

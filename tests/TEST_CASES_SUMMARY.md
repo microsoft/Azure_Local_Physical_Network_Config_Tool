@@ -1,47 +1,88 @@
 # Test Cases Summary
 
 ## Quick Reference
-**Status**: ✅ All tests passing (38 passed, 8 skipped)  
+**Status**: All tests passing (103 passed)
 **Run Tests**: `python -m pytest tests/ -v`
-
-### Understanding Test Results
-- ✅ **Passed**: Test executed and validation succeeded (38 tests)
-- ⏭️  **Skipped**: Expected baseline files don't exist (8 tests - missing full_config.cfg files)
-- ❌ **Failed**: Would indicate actual test failure (none currently)
 
 ---
 
-## Test Scenarios
+## Test Architecture
 
-### Configuration Generator Tests (`test_generator.py`)
-**Total: 34 tests** | 29 passed ✅ | 5 skipped
+| Layer | File | Strategy | Count |
+|-------|------|----------|-------|
+| Unit | `test_unit.py` | Synthetic inputs, one method at a time | 85 |
+| Converter integration | `test_convertors.py` | Golden-file comparison (lab JSON → standard JSON) | 12 |
+| Generator integration | `test_generator.py` | Golden-file comparison (standard JSON → .cfg) | 6 |
+| **Total** | | | **103** |
 
-| Test Scenario | Count | Description |
-|--------------|-------|-------------|
-| `test_generated_config_output` | 28 | Compares generated config files against expected outputs |
-| `test_config_syntax_validation` | 3 | Validates syntax of generated configuration files |
-| `test_output_file_generation` | 3 | Verifies output files are created successfully |
+---
 
-**Test Cases Coverage:**
-- ✅ `std_cisco_nxos_fc` - Cisco NX-OS Fully Connected (9 config files validated)
-- ✅ `std_cisco_nxos_switched` - Cisco NX-OS Switched (8 passed, 1 skipped: full_config.cfg)
-- ✅ `std_dell_os10_fc` - Dell OS10 Fully Connected (9 passed, 1 skipped: full_config.cfg)
+## Unit Tests (`test_unit.py` — 85 tests)
 
-> **Note**: Only `full_config.cfg` files are skipped (typically not used in production deployments)
+Tests individual methods of `StandardJSONBuilder` and utility functions with small synthetic inputs. Each test targets one behaviour.
 
-### Lab Input Convertor Tests (`test_convertors.py`)
-**Total: 12 tests** | 9 passed ✅ | 3 skipped
+| Test Class | Tests | Coverage |
+|------------|-------|----------|
+| `TestInferFirmware` | 4 | Cisco→nxos, Dell→os10, unknown vendor, case insensitivity |
+| `TestClassifyVlanGroup` | 3 | Infrastructure (M), Compute/Tenant (C), Storage (S) |
+| `TestTORDeploymentPattern` | 3 | hyperconverged→fully_converged, switched, switchless |
+| `TestTORBuildVlans` | 8 | VLAN construction from supernets, ID resolution, naming |
+| `TestTORBuildSVIs` | 10 | SVI interface construction, HSRP/VRRP, IP assignment |
+| `TestTORBuildInterfaces` | 12 | Interface template processing, access/trunk, shutdown |
+| `TestTORBuildPortChannels` | 6 | Port-channel creation, member bundling, LACP |
+| `TestTORBuildBGP` | 8 | BGP neighbors, ASN, router-id, networks, MUX peers |
+| `TestTORBuildPrefixLists` | 3 | Prefix-list generation, permit/deny |
+| `TestTORBuildQoS` | 2 | QoS policy flag |
+| `TestTORBuildIPMapping` | 4 | P2P border IPs, loopback, iBGP, HNV-PA subnet |
+| `TestTORBuildStaticRoutes` | 5 | Static route generation |
+| `TestTORBuildSystem` | 5 | Hostname, MTU, firmware, model |
+| `TestTORBuildLogin` | 3 | Login/AAA settings |
+| *Other helper tests* | 9 | Edge cases and utilities |
 
-| Test Scenario | Count | Description |
-|--------------|-------|-------------|
-| `test_convert_switch_input_json` | 4 | Converts lab format to standard format and validates |
-| `test_input_format_validation` | 4 | Validates lab input format structure |
-| `test_output_format_validation` | 4 | Validates standard output format structure |
+## Converter Integration Tests (`test_convertors.py` — 12 tests)
 
-**Test Cases Coverage:**
-- ✅ `convert_lab_switch_input_json_cisco_nxos_fc` - Cisco NX-OS Fully Connected (validated)
-- ⏭️  `convert_lab_switch_input_json_cisco_nxos_switched` - Cisco NX-OS Switched (skipped: missing BMC outputs)
-- ✅ `convert_lab_switch_input_json_cisco_nxos_switchless` - Cisco NX-OS Switchless (validated)
-- ✅ `convert_lab_switch_input_json_dell_os10` - Dell OS10 (validated)
+End-to-end pipeline: lab JSON → converter → compare full standard JSON output against golden files.
 
-> **Note**: Some expected output files may differ from generated ones (e.g., BMC switch definitions) - these tests are skipped until baselines are updated.
+| Test | Cases | Description |
+|------|-------|-------------|
+| `test_convert_produces_expected_json` | 4 | Per-switch JSON matches expected output |
+| `test_convert_produces_correct_file_count` | 4 | Correct number of output files generated |
+| `test_convert_produces_expected_bmc_json` | 4 | BMC switch output matches expected (where applicable) |
+
+**Test cases:**
+- `convert_lab_switch_input_json_cisco_nxos_fc` — Cisco NX-OS Fully Converged
+- `convert_lab_switch_input_json_cisco_nxos_switched` — Cisco NX-OS Switched
+- `convert_lab_switch_input_json_cisco_nxos_switchless` — Cisco NX-OS Switchless
+- `convert_lab_switch_input_json_dell_os10` — Dell OS10 Fully Converged
+
+## Generator Integration Tests (`test_generator.py` — 6 tests)
+
+End-to-end pipeline: standard JSON → generator + Jinja2 templates → compare `.cfg` output against golden files.
+
+| Test | Cases | Description |
+|------|-------|-------------|
+| `test_generated_config_matches_expected` | 3 | Generated .cfg files match golden files |
+| `test_generates_expected_file_count` | 3 | Correct number of .cfg files created |
+
+**Test cases:**
+- `std_cisco_nxos_fc` — Cisco NX-OS Fully Converged
+- `std_cisco_nxos_switched` — Cisco NX-OS Switched
+- `std_dell_os10_fc` — Dell OS10 Fully Converged
+
+---
+
+## Running Tests
+
+```bash
+# All tests
+python -m pytest tests/ -v
+
+# Unit tests only
+python -m pytest tests/test_unit.py -v
+
+# Integration tests only
+python -m pytest tests/test_convertors.py tests/test_generator.py -v
+
+# Single test class
+python -m pytest tests/test_unit.py::TestTORBuildVlans -v
+```

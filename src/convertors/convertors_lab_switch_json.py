@@ -6,7 +6,7 @@ TOR (TOR1, TOR2), resolves VLANs/IPs from Supernets, loads model-specific
 interface templates, and writes one standard JSON per switch.  Also triggers
 the BMC converter if available.
 """
-
+from __future__ import annotations
 import json
 import logging
 from copy import deepcopy
@@ -293,7 +293,7 @@ class StandardJSONBuilder:
                 self.ip_map[f"{IP_PREFIX_P2P_IBGP}_{TOR1}"].append(first_ip)
                 self.ip_map[f"{IP_PREFIX_P2P_IBGP}_{TOR2}"].append(last_ip)
 
-    def _process_interface_template(self , switch_type: str, template: dict) -> dict:
+    def _process_interface_template(self, switch_type: str, template: dict) -> dict:
         """
         Process a single interface template and return the configured interface.
         """

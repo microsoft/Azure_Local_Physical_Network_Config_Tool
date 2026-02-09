@@ -19,7 +19,6 @@ import json
 import logging
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, List
 
 from ..loader import get_real_path
 from ..constants import (
@@ -35,7 +34,7 @@ logger = logging.getLogger(__name__)
 class BMCSwitchConverter:
     """Dedicated converter for BMC switches."""
 
-    def __init__(self, input_data: Dict, output_dir: str = DEFAULT_OUTPUT_DIR):
+    def __init__(self, input_data: dict, output_dir: str = DEFAULT_OUTPUT_DIR):
         self.input_data = input_data
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True, parents=True)
@@ -128,7 +127,7 @@ class BMCSwitchConverter:
 
     # -- VLANs -------------------------------------------------------------
 
-    def _build_vlans(self) -> List[Dict]:
+    def _build_vlans(self) -> list[dict]:
         """Build VLAN list.
 
         Starts with the hardcoded BMC VLANs (DC4), then appends any extra
@@ -188,7 +187,7 @@ class BMCSwitchConverter:
     # -- interfaces --------------------------------------------------------
 
     @staticmethod
-    def _build_interfaces(template_data: Dict) -> List[Dict]:
+    def _build_interfaces(template_data: dict) -> list[dict]:
         """Extract common interfaces from the loaded template."""
         common_templates = template_data.get("interface_templates", {}).get("common", [])
         if not common_templates:
@@ -198,7 +197,7 @@ class BMCSwitchConverter:
     # -- port channels -----------------------------------------------------
 
     @staticmethod
-    def _build_port_channels(template_data: Dict) -> List[Dict]:
+    def _build_port_channels(template_data: dict) -> list[dict]:
         """Extract port-channels from the loaded template.
 
         BMC port-channels are hardcoded in the per-model template JSON
@@ -212,7 +211,7 @@ class BMCSwitchConverter:
 
     # -- static routes -----------------------------------------------------
 
-    def _build_static_routes(self) -> List[Dict]:
+    def _build_static_routes(self) -> list[dict]:
         """Build static routes for the BMC switch.
 
         Hardcoded: a single 0.0.0.0/0 default route pointing to the BMC

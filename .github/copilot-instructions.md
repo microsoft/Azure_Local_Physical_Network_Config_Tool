@@ -170,7 +170,7 @@ input/
 │   └── dellemc/os10/                   #   11 templates: same + vlt.j2
 └── switch_interface_templates/         # Hardware port-layout definitions (per vendor/model)
     ├── cisco/                          #   93180YC-FX.json, 93180YC-FX3.json, etc.
-    └── dellemc/                        #   s5248f-on.json, N3248TE-ON.json, etc.
+    └── dellemc/                        #   S5248F-ON.json, N3248TE-ON.json, etc.
 
 tests/
 ├── conftest.py              # Shared fixtures, helpers, pytest hooks
