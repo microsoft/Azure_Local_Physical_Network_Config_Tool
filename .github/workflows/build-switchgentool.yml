@@ -184,6 +184,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          generate_release_notes: true
           files: |
             ./artifacts/network-config-generator-windows-amd64/network_config_generator.exe
             ./artifacts/network-config-generator-linux-amd64/network_config_generator
