@@ -1,8 +1,8 @@
 # Cisco NX-OS BMC Switch Support — Implementation Roadmap
 
-> **Status:** Phase 0 + Phase 1 complete — CI/CD & `.github` overhaul next  
+> **Status:** Phase 0 + Phase 1 complete — CI/CD done, multi-vendor review next  
 > **Branch:** `dev/nl/cisconxos`  
-> **Updated:** 2025-02-07  
+> **Updated:** 2025-02-09  
 > **Goal:** Add Cisco BMC switch configuration generation, with option to use with or without BMC
 
 ---
@@ -17,11 +17,12 @@
 6. [Gap Analysis](#gap-analysis)
 7. [Implementation Phases](#implementation-phases)
 8. [CI/CD & GitHub Overhaul](#cicd--github-overhaul)
-9. [Unit Test Plan](#unit-test-plan)
-10. [Port Layout Reference](#port-layout-reference)
-11. [File Mapping](#file-mapping)
-12. [Key Decisions](#key-decisions)
-13. [Decision Checkpoints](#decision-checkpoints)
+9. [Multi-Vendor Extensibility](#multi-vendor-extensibility)
+10. [Unit Test Plan](#unit-test-plan)
+11. [Port Layout Reference](#port-layout-reference)
+12. [File Mapping](#file-mapping)
+13. [Key Decisions](#key-decisions)
+14. [Decision Checkpoints](#decision-checkpoints)
 
 ---
 
@@ -460,6 +461,7 @@ VLAN IDs in the template (2, 99, 125) are structural constants for all Cisco BMC
 | 5.3 | G14 | Dedicated storage switch type (`Type: "Storage"`) |
 | 5.4 | — | Embedded BMC on TOR pattern (b88_b20 — BMC ports on TOR itself) |
 | 5.5 | — | WANSIM exclusion (ensure it's not generated) |
+| 5.6 | — | Multi-vendor prep: implement `VENDOR_REDUNDANCY_MAP`, expand `VENDOR_FIRMWARE_MAP` (see [Multi-Vendor Extensibility](#multi-vendor-extensibility)) |
 
 ---
 
@@ -574,6 +576,118 @@ New file providing project-level development guidance to Copilot:
 ### Submission Instructions — Skipped
 
 `process-submission.instructions.md` references backend Python modules that don't exist (`metadata_validator`, `vendor_detector`, `config_sectioner`). Steps 2–4 are non-functional. This is a WIP feature on another branch — **skip rewrite for now**, will be addressed when that feature lands.
+
+---
+
+## Multi-Vendor Extensibility
+
+> **Status:** Architecture review complete — framework is 95% vendor-agnostic  
+> **Goal:** Document how well the current framework supports new vendors (Arista, SONiC, etc.) and what small changes would make it 100% ready
+
+### Current Vendor-Agnostic Scorecard
+
+| Component | Vendor-Agnostic? | Details |
+|-----------|:---:|---|
+| Generator (`generator.py`) | **Yes** | Discovers `<make>/<firmware>/*.j2` dynamically via glob — zero vendor references |
+| Loader (`loader.py`) | **Yes** | Pure file I/O, no vendor logic |
+| Switch interface templates | **Yes** | Loaded via `<make>/<MODEL>.json` — same schema for Cisco and Dell |
+| BMC converter | **Yes** | Zero vendor-specific branches |
+| Jinja2 template discovery | **Yes** | Any `*.j2` files in the vendor dir are rendered automatically |
+| TOR converter | **Almost** | One hardcoded branch: `HSRP if CISCO else VRRP` (line ~158) |
+| Constants (`constants.py`) | **Almost** | `VENDOR_FIRMWARE_MAP` only has 2 entries — unknown vendors fall back gracefully |
+
+### Two Pain Points
+
+**1. Redundancy protocol selection** (`convertors_lab_switch_json.py` line ~158):
+
+```python
+# Current: binary branch — Cisco = HSRP, everyone else = VRRP
+redundancy_type = HSRP if sw_make == CISCO else VRRP
+```
+
+This is the **only** vendor-specific `if/else` in the entire converter pipeline. Adding a vendor with a different redundancy protocol (or none) requires modifying converter logic.
+
+**Fix:** Replace with a lookup table in `constants.py`:
+
+```python
+# Vendor → SVI redundancy protocol
+VENDOR_REDUNDANCY_MAP: dict[str, str] = {
+    CISCO: HSRP,
+    DELL:  VRRP,
+    # "arista": VRRP,
+    # "sonic":  VRRP,
+}
+DEFAULT_REDUNDANCY = VRRP  # fallback for unknown vendors
+```
+
+Converter line becomes: `redundancy_type = VENDOR_REDUNDANCY_MAP.get(sw_make, DEFAULT_REDUNDANCY)`
+
+**2. Vendor-firmware mapping** (`constants.py`):
+
+```python
+# Current: only 2 entries
+VENDOR_FIRMWARE_MAP = {CISCO: NXOS, DELL: OS10}
+```
+
+Unknown vendors fall back to vendor name as firmware (e.g., `"arista"` → firmware `"arista"`, templates at `arista/arista/`). Works but is unintuitive. Fix: just add entries as vendors arrive.
+
+### Adding a New Vendor — Effort Matrix
+
+| Task | Type | Effort |
+|------|------|--------|
+| Add vendor + firmware constants to `constants.py` | 2–3 lines | Trivial |
+| Add entry to `VENDOR_FIRMWARE_MAP` | 1 line | Trivial |
+| Add entry to `VENDOR_REDUNDANCY_MAP` (after fix) | 1 line | Trivial |
+| Create `input/jinja2_templates/<vendor>/<firmware>/*.j2` | Template files | **The real work** |
+| Create `input/switch_interface_templates/<vendor>/<MODEL>.json` | Template JSON | Moderate |
+| Add golden-file test cases | Test data | Moderate |
+
+**Zero changes** needed in: generator, loader, main.py, BMC converter, or converter pipeline.
+
+### OS Version Strategy — One Folder Per OS Family
+
+```
+input/jinja2_templates/
+├── cisco/nxos/          ← covers NX-OS 9.x, 10.x
+├── dellemc/os10/        ← covers OS10 10.5.x, 10.6.x
+├── arista/eos/          ← (future) covers EOS 4.x
+└── sonic/sonic/         ← (future) covers SONiC 202x.xx
+```
+
+| Scenario | How It's Handled |
+|----------|------------------|
+| Same OS, minor syntax diffs | Jinja2 conditionals: `{% if version >= "10.5" %}` — `version` is already in standard JSON |
+| Same OS, same syntax | Just works — one template set covers all versions |
+| Completely different OS | Separate folder: e.g., `dellemc/os9/` vs `dellemc/os10/` |
+| Same vendor, different product line | Separate firmware folder: e.g., `cisco/nxos/` vs `cisco/iosxr/` |
+
+**No per-version folders** (e.g., not `nxos-10.2/` vs `nxos-10.3/`). Only create a new folder when the CLI syntax is fundamentally different — that means it's a different OS, not a different version.
+
+### Vendor Redundancy Protocol Reference
+
+| Vendor | Firmware | Redundancy | Notes |
+|--------|----------|:----------:|-------|
+| Cisco | NX-OS | HSRP | Standard for Nexus platform |
+| Dell EMC | OS10 | VRRP | Standard for OS10 platform |
+| Arista | EOS | VRRP | Native VRRP support |
+| SONiC | SONiC | VRRP | Supported since ~2020 |
+| Cisco | IOS-XR | VRRP or HSRP | Depends on platform/config |
+| Juniper | JunOS | VRRP | Standard for Juniper |
+
+All current and foreseeable vendors use either HSRP or VRRP. The lookup table approach covers all cases.
+
+### Deployment Pattern Names — Consistency
+
+Switch interface template JSONs use deployment pattern names as keys:
+
+| Pattern | Cisco | Dell | Standard |
+|---------|-------|------|----------|
+| Fully converged | `fully_converged` | `fully_converged1` (trunk), `fully_converged2` (access) | Vendor-specific naming OK |
+| Switched | `switched` | `switched` | Consistent |
+| Switchless | `switchless` | `switchless` | Consistent |
+| Common (all patterns) | `common` | `common` | Consistent |
+
+New vendors must follow the same key naming convention. The converter selects the pattern key from the template JSON — if a new vendor introduces a variant, it must use one of the existing keys or extend the converter's pattern selection logic.
 
 ---
 
@@ -977,6 +1091,8 @@ _cisco_configs/
 | 18 | **Single workflow over separate CI/test** | Simpler — test job gates build job within one workflow. No need for a separate `ci-test.yml`. |
 | 19 | **`main`-only push trigger** | PRs automatically test dev branches. Push triggers only for `main` and tags. Removes stale `dev/nl/newDesignv1`. |
 | 20 | **BMC is optional per deployment pattern** | BMC configs generated only when `Type: "BMC"` entry exists in input JSON. No BMC entry → only TOR configs. Converter skips gracefully. Validated by `nobmc` test case. |
+| 21 | **One folder per OS family, not per version** | Template directories are `<vendor>/<firmware>/` (e.g., `cisco/nxos/`), not per-version. Minor syntax diffs handled via Jinja2 conditionals on `version`. New folder only when CLI is fundamentally different. |
+| 22 | **Redundancy protocol should be table-driven** | Replace `HSRP if CISCO else VRRP` with `VENDOR_REDUNDANCY_MAP` lookup in `constants.py`. Eliminates the only vendor-specific `if/else` in the converter. Phase 5.6. |
 
 ---
 
@@ -995,3 +1111,4 @@ _cisco_configs/
 | DC7 | **Release automation strategy** | CI/CD | **DECIDED:** Tag-based with environment approval gate. Pipeline: test→build→release. GitHub Environment `production` requires reviewer click before release publishes. Fully automated but human-gated. Can remove approval later once comfortable. |
 | DC8 | **CI branch triggers** | CI/CD | **DECIDED:** Push to `main` only (with path filters). PRs to `main` catch all dev branches automatically. Tags `v*` trigger full pipeline including release. `workflow_dispatch` for manual runs. |
 | DC9 | **Submission instructions rewrite** | CI/CD | **DECIDED:** Skip for now — WIP feature on another branch. Steps 2–4 reference non-existent backend modules. Will address when that feature is ready. |
+| DC10 | **Redundancy protocol table vs if/else** | 5 | **DECIDED:** Use `VENDOR_REDUNDANCY_MAP` lookup table in `constants.py` with `DEFAULT_REDUNDANCY = VRRP` fallback. Eliminates the only vendor-specific code branch. Implement in Phase 5.6 or earlier if a new vendor is added. |

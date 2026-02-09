@@ -1,5 +1,5 @@
 """
-File loading utilities for the AzureStack Network Switch Config Generator.
+File loading utilities for the Azure Local Network Switch Config Generator.
 
 Provides path resolution (PyInstaller-aware), JSON loading, and Jinja2
 template loading.

@@ -1,5 +1,5 @@
 """
-Centralized constants for the AzureStack Network Switch Config Generator.
+Centralized constants for the Azure Local Network Switch Config Generator.
 
 All magic strings, default values, and lookup tables live here so that
 every module imports from one source of truth.

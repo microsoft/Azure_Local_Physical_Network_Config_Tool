@@ -1,5 +1,5 @@
 """
-Shared utility functions for the AzureStack Network Switch Config Generator.
+Shared utility functions for the Azure Local Network Switch Config Generator.
 
 Houses logic that is used by multiple modules so it isn't duplicated across
 converters, loaders, or the CLI entry point.

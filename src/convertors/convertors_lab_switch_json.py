@@ -1,7 +1,7 @@
 """
 Lab-format → Standard JSON converter for TOR switches.
 
-Reads an Azure Stack lab definition JSON, extracts per-switch data for each
+Reads an Azure Local lab definition JSON, extracts per-switch data for each
 TOR (TOR1, TOR2), resolves VLANs/IPs from Supernets, loads model-specific
 interface templates, and writes one standard JSON per switch.  Also triggers
 the BMC converter if available.

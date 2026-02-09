@@ -54,7 +54,7 @@
 .NOTES
     Version: 1.0
     Author: Network Engineering Team
-    Purpose: Part of AzureStack Network Switch Config Generator project
+    Purpose: Part of Azure Local Network Switch Config Generator project
 <#
  Added CSV input support (DeviceCsvFile/ConnectionCsvFile) with new parameter sets:
     - JsonProcess / JsonValidate = legacy JSON input path

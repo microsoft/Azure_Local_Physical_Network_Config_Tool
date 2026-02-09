@@ -1,4 +1,4 @@
-"""CLI entry point for the AzureStack Network Switch Config Generator."""
+"""CLI entry point for the Azure Local Network Switch Config Generator."""
 
 from __future__ import annotations
 

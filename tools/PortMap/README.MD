@@ -704,7 +704,7 @@ The tool generates intelligent output filenames:
 - CSV: `test-breakout-config-switch01-Cisco-93180YC-FX3-portmap.csv`
 - JSON: `test-breakout-config-Cisco-93180YC-FX3-1dev-portmap.json`
 
-## 🔄 Integration with AzureStack Network Switch Config Generator
+## 🔄 Integration with Azure Local Network Switch Config Generator
 
 The PortMap tool integrates seamlessly with the main project:
 
@@ -928,7 +928,7 @@ The tool includes multiple sample configurations:
 
 ## 🤝 Contributing
 
-This tool is part of the **AzureStack Network Switch Config Generator** project. Please follow the project's contribution guidelines and coding standards.
+This tool is part of the **Azure Local Network Switch Config Generator** project. Please follow the project's contribution guidelines and coding standards.
 
 > 👋 **New Contributors Welcome!** We appreciate contributions of all sizes. Check out our [contributing guide](../../CONTRIBUTING.md) and [code of conduct](../../CODE_OF_CONDUCT.md).
 
@@ -979,7 +979,7 @@ For issues and questions:
 
 - 💬 Join project [discussions](../../discussions)
 - 📖 Review the [project wiki](../../wiki)
-- 🔗 Check related tools in the [AzureStack ecosystem](#-related-projects)
+- 🔗 Check related tools in the [Azure Local ecosystem](#-related-projects)
 
 ## � Related Projects
 
@@ -987,7 +987,7 @@ This tool is part of a comprehensive network configuration ecosystem:
 
 | Project                                        | Description                                       | Status                                                                                                |
 | ---------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **AzureStack Network Switch Config Generator** | Main project for generating switch configurations | [![Status](https://img.shields.io/badge/Status-Active-green)](../../README.md)                        |
+| **Azure Local Network Switch Config Generator** | Main project for generating switch configurations | [![Status](https://img.shields.io/badge/Status-Active-green)](../../README.md)                        |
 | **IP Assignment Tool**                         | Automated IP address management                   | [![Tool](https://img.shields.io/badge/Tool-Available-blue)](../IPAssignment/README.md)                |
 | **Environment Detail Assignment**              | Environment configuration management              | [![Tool](https://img.shields.io/badge/Tool-Available-blue)](../EnvironmentDetailAssignment/README.md) |
 
@@ -1053,4 +1053,4 @@ graph TD
 
 ---
 
-**Note**: This tool is designed to work alongside the main AzureStack Network Switch Config Generator and follows the same architectural patterns and coding standards. The breakout cable support enables proper documentation of QSFP breakout configurations commonly used in modern high-density network deployments.
+**Note**: This tool is designed to work alongside the main Azure Local Network Switch Config Generator and follows the same architectural patterns and coding standards. The breakout cable support enables proper documentation of QSFP breakout configurations commonly used in modern high-density network deployments.
