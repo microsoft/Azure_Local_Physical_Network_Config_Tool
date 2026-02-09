@@ -7,6 +7,9 @@ on:
   issues:
     types: [opened, edited]
 
+permissions:
+  issues: write
+
 jobs:
   validate-and-assign:
     # Only run for config submissions
@@ -71,15 +74,22 @@ jobs:
             const spamPatterns = [
               /<script/i,
               /javascript:/i,
-              /\$\{.*\}/,  // Template injection
-              /\{\{.*\}\}/,  // Template injection
               /onclick=/i,
               /onerror=/i,
+            ];
+            // Template-like patterns (${} and {{}}) are legitimate in Dell OS10 / Jinja2 configs
+            const templatePatterns = [
+              /\$\{.*\}/,
+              /\{\{.*\}\}/,
             ];
             
             const hasSpam = spamPatterns.some(p => p.test(body));
             if (hasSpam) {
               errors.push('❌ Submission contains suspicious patterns. Please remove any scripts or code injection attempts.');
+            }
+            const hasTemplatePatterns = templatePatterns.some(p => p.test(body));
+            if (hasTemplatePatterns) {
+              warnings.push('⚠️ Config contains template-like patterns (${ } or {{ }}). This is fine for Dell OS10 / Jinja2 configs.');
             }
             
             // ========================================
@@ -90,8 +100,8 @@ jobs:
             
             console.log(`Checkboxes: ${checkedBoxes}/${totalBoxes} checked`);
             
-            if (checkedBoxes < 3) {
-              errors.push('❌ Please check all required checkboxes (sanitization, responsibility acknowledgment, contributing guide).');
+            if (checkedBoxes < 2) {
+              errors.push('❌ Please check the required checkboxes (password sanitization and CONTRIBUTING.md review).');
             }
             
             // ========================================
@@ -128,9 +138,11 @@ jobs:
       - name: Handle valid submission - Assign to Copilot
         if: fromJson(steps.validate.outputs.result).valid
         uses: actions/github-script@v7
+        env:
+          VALIDATION_RESULT: ${{ steps.validate.outputs.result }}
         with:
           script: |
-            const result = JSON.parse('${{ steps.validate.outputs.result }}');
+            const result = JSON.parse(process.env.VALIDATION_RESULT);
             const warnings = result.warnings || [];
             
             console.log('✅ Submission validated, assigning to Copilot');
@@ -185,9 +197,11 @@ jobs:
       - name: Handle invalid submission - Request fixes
         if: "!fromJson(steps.validate.outputs.result).valid"
         uses: actions/github-script@v7
+        env:
+          VALIDATION_RESULT: ${{ steps.validate.outputs.result }}
         with:
           script: |
-            const result = JSON.parse('${{ steps.validate.outputs.result }}');
+            const result = JSON.parse(process.env.VALIDATION_RESULT);
             const errors = result.errors || [];
             const warnings = result.warnings || [];
             

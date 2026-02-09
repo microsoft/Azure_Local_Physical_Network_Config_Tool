@@ -1,66 +1,81 @@
+"""
+Config generator — renders Jinja2 templates against a standard-format JSON.
+"""
+
+from __future__ import annotations
+
+import logging
 from pathlib import Path
 
-# Support both execution as part of the 'src' package (python -m src.main) and
-# direct script execution (python src/main.py) by attempting relative import first.
-try:  # package style
-    from .loader import load_input_json, load_template  # type: ignore
-except ImportError:  # fallback to script style
-    from loader import load_input_json, load_template  # type: ignore
-import os
-import warnings
+from .loader import load_input_json, load_template
 
-def generate_config(input_std_json, template_folder, output_folder):
-    input_std_json_path = Path(input_std_json).resolve()
-    template_folder_path = Path(template_folder)  # already resolved by main.py
-    output_folder_path = Path(output_folder).resolve()
+logger = logging.getLogger(__name__)
 
-    # ✅ Step 1: Validate input JSON
-    if not input_std_json_path.exists():
-        raise FileNotFoundError(f"[ERROR] Input JSON not found: {input_std_json_path}")
 
-    data = load_input_json(str(input_std_json_path))
-    if data is None:
-        raise ValueError(f"[ERROR] Input JSON was empty or failed to parse: {input_std_json_path}")
+def generate_config(
+    input_std_json: str | Path,
+    template_folder: str | Path,
+    output_folder: str | Path,
+) -> None:
+    """Render every ``.j2`` template in the vendor/firmware subfolder.
 
-    # ✅ Step 2: Extract metadata
+    Parameters
+    ----------
+    input_std_json:
+        Path to a standard-format JSON file (one switch).
+    template_folder:
+        Root folder containing ``<make>/<firmware>/*.j2`` templates.
+    output_folder:
+        Directory where ``generated_<stem>.cfg`` files are written.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the input JSON, template folder, or vendor subfolder is missing.
+    ValueError
+        If required switch metadata is absent or JSON cannot be parsed.
+    RuntimeError
+        If a template fails to render.
+    """
+    input_path = Path(input_std_json).resolve()
+    template_root = Path(template_folder)
+    output_path = Path(output_folder).resolve()
+
+    if not input_path.exists():
+        raise FileNotFoundError(f"Input JSON not found: {input_path}")
+
+    data = load_input_json(input_path)
+
+    # Extract vendor routing info
     try:
         make = data["switch"]["make"].lower()
         firmware = data["switch"]["firmware"].lower()
-        version = data["switch"].get("version", "").lower()  # Optional, not currently used
-    except KeyError as e:
-        raise ValueError(f"[ERROR] Missing expected switch metadata: {e}")
+    except KeyError as exc:
+        raise ValueError(f"Missing expected switch metadata key: {exc}") from exc
 
-    # ✅ Step 3: Resolve template subfolder
-    template_dir = template_folder_path / make / firmware
-    print(f"[INFO] Looking for templates in: {template_dir}")
+    template_dir = template_root / make / firmware
+    logger.info("Looking for templates in: %s", template_dir)
     if not template_dir.exists():
-        raise FileNotFoundError(f"[ERROR] Template path not found: {template_dir}")
+        raise FileNotFoundError(f"Template path not found: {template_dir}")
 
     template_files = sorted(template_dir.glob("*.j2"))
     if not template_files:
-        raise FileNotFoundError(f"[WARN] No templates found in: {template_dir}")
+        raise FileNotFoundError(f"No .j2 templates found in: {template_dir}")
 
-    print(f"[INFO] Rendering {len(template_files)} templates (compact mode)")
+    logger.info("Rendering %d template(s)", len(template_files))
 
-    # ✅ Step 4: Render each template (compact single-line logging)
-    os.makedirs(output_folder_path, exist_ok=True)
+    output_path.mkdir(parents=True, exist_ok=True)
 
-    for template_path in template_files:
-        template_name = template_path.name
-        stem = template_path.stem
-        try:
-            template = load_template(str(template_dir), template_name)
-            rendered = template.render(data)
+    for tpl_path in template_files:
+        template = load_template(str(template_dir), tpl_path.name)
+        rendered = template.render(data)
 
-            if not rendered.strip():
-                print(f"[–] {template_name}: skipped (empty)")
-                continue
+        if not rendered.strip():
+            logger.debug("Template %s produced empty output — skipped", tpl_path.name)
+            continue
 
-            output_file = output_folder_path / f"generated_{stem}.cfg"
-            with open(output_file, "w", encoding="utf-8") as f:
-                f.write(rendered)
-            print(f"[✓] {template_name} -> {output_file.name}")
-        except Exception as e:
-            warnings.warn(f"[!] {template_name} failed: {e}", UserWarning)
+        out_file = output_path / f"generated_{tpl_path.stem}.cfg"
+        out_file.write_text(rendered, encoding="utf-8")
+        logger.info("[OK] %s -> %s", tpl_path.name, out_file.name)
 
-    print(f"\n===  Done generating for: {input_std_json_path.name} ===\n")
+    logger.info("Done generating for: %s", input_path.name)

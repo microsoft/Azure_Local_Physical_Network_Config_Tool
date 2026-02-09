@@ -1,0 +1,64 @@
+{
+    "Make": "Cisco",
+    "Model": "9348GC-FX3",
+    "Type": "BMC",
+    "interface_templates": {
+        "common": [
+            {
+                "name": "Unused",
+                "type": "Access",
+                "description": "initial unused for all interfaces then config as defined",
+                "intf_type": "Ethernet",
+                "start_intf": "1/1",
+                "end_intf": "1/54",
+                "access_vlan": "2",
+                "shutdown": true
+            },
+            {
+                "name": "Host_BMC",
+                "type": "Access",
+                "description": "Host BMC Connection",
+                "intf_type": "Ethernet",
+                "start_intf": "1/1",
+                "end_intf": "1/20",
+                "access_vlan": "125"
+            },
+            {
+                "name": "HLH_BMC",
+                "type": "Access",
+                "description": "HLH BMC Connection",
+                "intf_type": "Ethernet",
+                "intf": "1/46",
+                "access_vlan": "125"
+            },
+            {
+                "name": "HLH_OS",
+                "type": "Access",
+                "description": "HLH OS Connection",
+                "intf_type": "Ethernet",
+                "start_intf": "1/49",
+                "end_intf": "1/50",
+                "access_vlan": "125"
+            },
+            {
+                "name": "To_TORs",
+                "type": "Trunk",
+                "intf_type": "Ethernet",
+                "start_intf": "1/51",
+                "end_intf": "1/52",
+                "native_vlan": "99",
+                "tagged_vlans": "125"
+            }
+        ]
+    },
+    "port_channels": [
+        {
+            "id": 102,
+            "description": "TOR_BMC",
+            "type": "Trunk",
+            "native_vlan": "99",
+            "tagged_vlans": "125",
+            "members": ["1/51", "1/52"]
+        }
+    ]
+}

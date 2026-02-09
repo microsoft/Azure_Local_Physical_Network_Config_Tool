@@ -1,11 +1,12 @@
 {
   "switch": {
-    "make": "dellemc",
-    "model": "n3248te-on",
+    "make": "cisco",
+    "model": "9348gc-fx3",
     "type": "BMC",
-    "hostname": "s46-r06-3248bmc-6-1",
-    "version": "10.5.5.5",
-    "firmware": "os10"
+    "hostname": "bmc-3",
+    "version": "10.3(4a)",
+    "firmware": "nxos",
+    "site": "site3"
   },
   "vlans": [
     {
@@ -14,18 +15,14 @@
       "shutdown": true
     },
     {
-      "vlan_id": 7,
-      "name": "Infra_7"
-    },
-    {
       "vlan_id": 99,
-      "name": "NativeVlan"
+      "name": "NATIVE_VLAN"
     },
     {
       "vlan_id": 125,
       "name": "BMC_Mgmt_125",
       "interface": {
-        "ip": "100.71.12.126",
+        "ip": "10.71.32.254",
         "cidr": 26,
         "mtu": 9216
       }
@@ -37,8 +34,8 @@
       "type": "Access",
       "description": "initial unused for all interfaces then config as defined",
       "intf_type": "Ethernet",
-      "start_intf": "1/1/1",
-      "end_intf": "1/1/54",
+      "start_intf": "1/1",
+      "end_intf": "1/54",
       "access_vlan": "2",
       "shutdown": true
     },
@@ -47,8 +44,8 @@
       "type": "Access",
       "description": "Host BMC Connection",
       "intf_type": "Ethernet",
-      "start_intf": "1/1/1",
-      "end_intf": "1/1/40",
+      "start_intf": "1/1",
+      "end_intf": "1/20",
       "access_vlan": "125"
     },
     {
@@ -56,7 +53,7 @@
       "type": "Access",
       "description": "HLH BMC Connection",
       "intf_type": "Ethernet",
-      "intf": "1/1/46",
+      "intf": "1/46",
       "access_vlan": "125"
     },
     {
@@ -64,18 +61,38 @@
       "type": "Access",
       "description": "HLH OS Connection",
       "intf_type": "Ethernet",
-      "start_intf": "1/1/49",
-      "end_intf": "1/1/50",
-      "access_vlan": "7"
+      "start_intf": "1/49",
+      "end_intf": "1/50",
+      "access_vlan": "125"
     },
     {
       "name": "To_TORs",
       "type": "Trunk",
       "intf_type": "Ethernet",
-      "start_intf": "1/1/51",
-      "end_intf": "1/1/52",
+      "start_intf": "1/51",
+      "end_intf": "1/52",
       "native_vlan": "99",
-      "tagged_vlans": "7,125"
+      "tagged_vlans": "125"
+    }
+  ],
+  "port_channels": [
+    {
+      "id": 102,
+      "description": "TOR_BMC",
+      "type": "Trunk",
+      "native_vlan": "99",
+      "tagged_vlans": "125",
+      "members": [
+        "1/51",
+        "1/52"
+      ]
+    }
+  ],
+  "static_routes": [
+    {
+      "prefix": "0.0.0.0/0",
+      "next_hop": "10.71.32.193",
+      "description": "BMC default gateway"
     }
   ]
 }

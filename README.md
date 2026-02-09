@@ -1,212 +1,155 @@
 # Network Configuration Generation Tool
 
-- [Network Configuration Generation Tool](#network-configuration-generation-tool)
-  - [Overview](#overview)
-  - [Quick Navigation](#quick-navigation)
-  - [Goals](#goals)
-  - [Design Architecture](#design-architecture)
-    - [Overall Flow](#overall-flow)
-    - [Other User-Defined Input Support](#other-user-defined-input-support)
-    - [Workflow Detail](#workflow-detail)
-  - [Directory Structure](#directory-structure)
-  - [Input \& Output Examples](#input--output-examples)
-    - [Sample Input JSON](#sample-input-json)
-    - [Sample Template (Jinja2)](#sample-template-jinja2)
-  - [Quick Start](#quick-start)
-  - [What's Improved in This Version](#whats-improved-in-this-version)
-    - [Key Enhancements](#key-enhancements)
-
 ## Overview
 
-This tool generates vendor-specific network switch configurations (e.g., Cisco NX-OS, Dell OS10) using JSON input and Jinja2 templates. It supports both source code usage and standalone executables for environments without Python.
+This tool generates vendor-specific network switch configurations (e.g., Cisco NX-OS, Dell OS10) using JSON input and Jinja2 templates. It supports both Python source usage and standalone executables.
 
-## Quick Navigation
+**Documentation:**
 
-**First time here?** Choose your path:
-
-- **Just want to use it?** → [`docs/QUICK_START.md`](docs/QUICK_START.md)
-- **Need to convert your data format?** → [`docs/CONVERTOR_GUIDE.md`](docs/CONVERTOR_GUIDE.md)  
-- **Want to customize templates?** → [`docs/TEMPLATE_GUIDE.md`](docs/TEMPLATE_GUIDE.md)
-- **Need to create/modify switch templates?** → [`docs/SWITCH_INTERFACE_TEMPLATE.md`](docs/SWITCH_INTERFACE_TEMPLATE.md)
-- **Having issues?** → [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
+- [Template Guide](docs/TEMPLATE_GUIDE.md) — Jinja2 templates and switch interface templates
+- [Converter Guide](docs/CONVERTOR_GUIDE.md) — Writing custom input format converters
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — Common issues and solutions
 
 ---
 
-## Goals
+## Quick Start
 
-- Support configuration generation for **multiple switch vendors**
-- Allow users to define **input variables** in a structured JSON format
-- Output readable **vendor-specific configuration files**
-- Support both **source-code use and standalone executable**
-- Ensure clean project structure and developer scalability
+### Option A: Standalone Executable (No Python Required)
+
+Download from [Releases](../../releases), then:
+
+```bash
+# See all options
+./network_config_generator -h
+
+# Generate configs from standard-format JSON
+./network_config_generator --input_json input/standard_input.json --output_folder output/
+
+# Generate from lab-format JSON (auto-converts)
+./network_config_generator --input_json my_lab_input.json --output_folder configs/ --convertor lab
+
+# Include debug data (vlan_map, ip_map) in converted JSON
+./network_config_generator --input_json my_lab_input.json --output_folder configs/ --debug
+```
+
+### Option B: Python Source
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Generate from standard-format JSON
+python -m src.main --input_json input/standard_input.json --output_folder output/
+
+# Generate from lab-format JSON with auto-conversion
+python -m src.main --input_json my_lab_input.json --output_folder configs/ --convertor lab
+
+# Include debug data in converted JSON output
+python -m src.main --input_json my_lab_input.json --output_folder configs/ --debug
+
+# Run tests
+python -m pytest tests/ -v
+```
+
+### Output
+
+The tool produces individual section configs plus a merged full config:
+
+```
+output/
+├── generated_system.cfg
+├── generated_vlan.cfg
+├── generated_interface.cfg
+├── generated_port_channel.cfg
+├── generated_bgp.cfg
+├── generated_prefix_list.cfg
+├── generated_qos.cfg
+├── generated_login.cfg
+└── generated_full_config.cfg
+```
 
 ---
 
-## Design Architecture
+## Architecture
 
-### Overall Flow
-```mermaid
-flowchart LR
-    A["Standard Input JSON<br/>(Network Variables)"]
-    C["Jinja2 Template<br/>(Config Templates)"]
-    E("Config Generation Tool<br/>(Python Script)")
-    G(Generated Configuration)
-
-    A -->|Load Variables| E
-    C -->|Provide Templates| E
-    E -->|Render Template with Variables| G
-
-    subgraph User Input
-        direction TB
-        A
-        C
-    end
-```
-
-> [!NOTE]  
-> The structure and format of the **JSON input file must remain fixed** to match the variables used in the Jinja2 templates, but you can safely update **values** as needed, either manually or programmatically.
-
-### Other User-Defined Input Support
-
-To support a wide range of input data formats, the system allows users to define their own converters. These converters transform any non-standard input into a unified JSON structure. Sample converters are provided in the repository as references to help users get started.
+### Pipeline
 
 ```mermaid
 flowchart LR
-    U1["Non-Standard JSON Input"]
-    U2["CSV Input"]
-    U3["YAML Input"]
-    U4["Other Format Input"]
-    S1["Standard Input JSON"]
-
-    U1 -->|convertor1.py| S1
-    U2 -->|convertor2.py| S1
-    U3 -->|convertor3.py| S1
-    U4 -->|convertorx.py| S1
-
-    subgraph "User-Defined Input Types"
-        direction TB
-        U1
-        U2
-        U3
-        U4
-    end
+    A["Standard Input JSON"] -->|Load Variables| E("Config Generator")
+    C["Jinja2 Templates"] -->|Provide Templates| E
+    E -->|Render| G["Generated .cfg Files"]
 ```
 
-Each input type should be handled by a user-defined converter script (e.g., convertor1.py). These scripts are responsible for converting the input into the standardized JSON format. Example converter scripts are included in the repo to illustrate expected structure and behavior.
+### Converter Support
 
-### Workflow Detail
+Non-standard inputs (lab JSON, CSV, YAML, etc.) are transformed to standard format via pluggable converters:
+
 ```mermaid
 flowchart LR
-    A["Standard Input JSON"]
-    B["Config Generation Tool"]
-    T1["vlan.j2 Template"]
-    T2["bgp.j2 Template"]
-    T3["interface.j2 Template"]
-    Tn["xxx.j2 Templates"]
-    O1["VLAN Config"]
-    O2["BGP Config"]
-    O3["Interface Config"]
-    O4["xxx Config"]
-    OC["Combined Full Config"]
-
-    A --> T1
-    A --> T2
-    A --> T3
-    A --> Tn
-    T1 --> B
-    T2 --> B
-    T3 --> B
-    Tn --> B
-    B --> O1
-    B --> O2
-    B --> O3
-    B --> O4
-    B --> OC
-
-    subgraph "Jinja2 Templates"
-        direction TB
-        T1
-        T2
-        T3
-        Tn
-    end
-
-    subgraph "Dedicated Config Output"
-        direction TB
-        O1
-        O2
-        O3
-        O4
-    end
-
-    subgraph "Full Config Output"
-        direction TB
-        OC
-    end
+    U1["Lab JSON"] -->|convertors_lab_switch_json.py| S1["Standard JSON"]
+    U2["BMC JSON"] -->|convertors_bmc_switch_json.py| S1
+    U3["Custom Format"] -->|your_converter.py| S1
+    S1 --> G["Generator + Templates → .cfg"]
 ```
+
+> [!NOTE]
+> The standard JSON format must match the variables used in Jinja2 templates. You can safely update values but the structure must stay fixed.
+
+---
 
 ## Directory Structure
 
-```plaintext
-root/
-├── .devcontainer/                  # Development container configuration
-├── .github/                        # GitHub Actions workflows
-├── build/                          # Build artifacts and executables
-├── docs/                           # Documentation files
-│   ├── CONVERTOR_GUIDE.md          # Guide for creating custom convertors
-│   ├── QUICK_START.md              # Quick start and executable usage guide
-│   ├── SWITCH_INTERFACE_TEMPLATE.md # Switch interface template guide
-│   ├── TEMPLATE_GUIDE.md           # Jinja2 template development guide
-│   └── TROUBLESHOOTING.md          # Common issues and solutions
-├── input/                          # Input files and templates
-│   ├── standard_input.json         # Standard format input example
-│   ├── jinja2_templates/           # Jinja2 template files
-│   │   ├── cisco/
-│   │   │   └── nxos/               # Cisco NX-OS templates
-│   │   │       ├── bgp.j2          # BGP configuration template
-│   │   │       ├── full_config.j2  # Combined full configuration template
-│   │   │       ├── interface.j2    # Interface configuration template
-│   │   │       ├── login.j2        # Login/user configuration template
-│   │   │       ├── port_channel.j2 # Port channel configuration template
-│   │   │       ├── prefix_list.j2  # Prefix list configuration template
-│   │   │       ├── qos.j2          # QoS configuration template
-│   │   │       ├── system.j2       # System configuration template
-│   │   │       └── vlan.j2         # VLAN configuration template
-│   │   └── dellemc/                # Dell EMC templates (vendor-specific)
-│   └── switch_interface_templates/ # Switch interface template configurations
-│       ├── cisco/
-│       └── dellemc/
-├── src/                            # Source code
-│   ├── __init__.py                 # Package initialization
-│   ├── main.py                     # Entry point for the tool
-│   ├── generator.py                # Main generation logic
-│   ├── loader.py                   # Input file loading and parsing
-│   └── convertors/                 # Input format converters
-│       ├── __init__.py             # Convertor registry
-│       ├── convertors_lab_switch_json.py   # Lab format converter
-│       └── convertors_bmc_switch_json.py   # BMC switch converter
-├── tests/                          # Test files
-│   ├── test_generator.py           # Unit tests for generator logic
-│   ├── test_convertors.py          # Unit tests for input conversion
-│   └── test_cases/                 # Test case data files
-├── requirements.txt                # Python dependencies
-├── network_config_generator.spec   # PyInstaller build specification
-└── _old/                           # Legacy Go implementation (archived)
+```
+├── docs/                               # Documentation
+│   ├── TEMPLATE_GUIDE.md               # Jinja2 + switch interface template guide
+│   ├── CONVERTOR_GUIDE.md              # Custom converter guide
+│   └── TROUBLESHOOTING.md              # Common issues and solutions
+├── input/
+│   ├── standard_input.json             # Standard format example
+│   ├── jinja2_templates/               # Jinja2 config templates
+│   │   ├── cisco/nxos/                 # 10 templates (bgp, vlan, interface, …)
+│   │   └── dellemc/os10/              # 11 templates (+ vlt.j2)
+│   └── switch_interface_templates/     # Switch model definitions
+│       ├── cisco/                      # 93108TC-FX3P, 93180YC-FX, 93180YC-FX3,
+│       │                               # 9348GC-FXP (BMC), 9348GC-FX3 (BMC)
+│       └── dellemc/                    # N3248TE-ON (BMC), S5248F-ON
+├── src/
+│   ├── main.py                         # CLI entry point
+│   ├── generator.py                    # Jinja2 rendering engine
+│   ├── loader.py                       # Input file loading and parsing
+│   ├── constants.py                    # Shared constants (VLAN maps, templates)
+│   ├── utils.py                        # Helpers (infer_firmware, classify_vlan)
+│   └── convertors/
+│       ├── convertors_lab_switch_json.py  # Lab → Standard JSON (TOR switches)
+│       └── convertors_bmc_switch_json.py  # Lab → Standard JSON (BMC switches)
+├── tests/
+│   ├── conftest.py                     # Shared fixtures and helpers
+│   ├── test_unit.py                    # Unit tests (85 tests)
+│   ├── test_convertors.py             # Golden-file converter tests (12 tests)
+│   ├── test_generator.py              # Golden-file generator tests (6 tests)
+│   └── test_cases/                     # Test data (4 converter + 3 generator cases)
+├── tools/                              # Utility scripts (IP mgmt, port mapping)
+└── requirements.txt                    # Python dependencies
 ```
 
 ---
 
 ## Input & Output Examples
 
-### Sample Input JSON
+### Standard Input JSON
 ```json
 {
-  "hostname": "tor-switch-1",
+  "switch": {
+    "hostname": "tor-switch-1",
+    "make": "cisco",
+    "firmware": "nxos"
+  },
+  "vlans": [
+    { "vlan_id": 711, "name": "Compute" }
+  ],
   "interfaces": [
     { "name": "Ethernet1/1", "vlan": 711, "description": "Compute1" }
-  ],
-  "vlans": [
-    { "id": 711, "name": "Compute" }
   ],
   "bgp": {
     "asn": 65001,
@@ -221,33 +164,4 @@ router bgp {{ bgp.asn }}
   router-id {{ bgp.router_id }}
 ```
 
-> [!NOTE]
-> **Need more details?** See [`docs/TEMPLATE_GUIDE.md`](docs/TEMPLATE_GUIDE.md) for complete examples and template development guide.
-
----
-
-## Quick Start
-
-For detailed usage instructions, examples, and setup steps, see [`docs/QUICK_START.md`](docs/QUICK_START.md).
-
----
-
-## What's Improved in This Version
-
-We've significantly redesigned the tool architecture to make it more modular, maintainable, and user-friendly. While the original version used **Go templates**, the new version is built with **Python + Jinja2** and brings several key improvements:
-
-### Key Enhancements
-
-- **Modular Output Generation**  
-  Instead of producing a single full configuration, the tool now supports generating individual configuration sections (e.g., VLANs, interfaces, BGP) based on your input needs—making review, debugging, and reuse much easier.
-
-- **No Rebuild Required for Changes**  
-  All logic is now in editable Python and Jinja2 templates—no compilation needed. You can easily update the templates or logic without rebuilding any binary.
-
-- **Cleaner and More Flexible Logic**  
-  We've removed hardcoded rules and added more structured parsing logic, which makes the tool easier to extend, test, and adapt to different network designs or vendors.
-
-- **Open to Contributions**  
-  The new structure makes it easy for contributors to add new templates or enhance existing ones. If you support a new vendor or configuration style, you can simply submit a template pull request.
-
-This upgrade is not just a technology shift—it's a foundation for faster iteration, better collaboration, and easier maintenance.
+See [docs/TEMPLATE_GUIDE.md](docs/TEMPLATE_GUIDE.md) for complete template reference.

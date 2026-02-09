@@ -5,8 +5,8 @@
     "MainEnvData": [
       {
         "Id": "Env01",
-        "Site": "rr1",
-        "RackName": "s46r06a",
+        "Site": "site1",
+        "RackName": "rack03",
         "NodeCount": 16,
         "ConnectType": "connected",
         "ClusterUnits": [
@@ -14,57 +14,57 @@
             "Name": "Cl01",
             "NodeCount": 4,
             "RackId": "Rack01",
-            "NamingPrefix": "s46r06a01",
-            "PhysicalNamingPrefix": "s46r06a01",
+            "NamingPrefix": "node01",
+            "PhysicalNamingPrefix": "node01",
             "Topology": "Switched",
-            "CompanyName": "Microsoft",
-            "RegionName": "Redmond",
-            "DomainFQDN": "s46r06a01.masd.stbtest.microsoft.com",
-            "ExternalDomainFQDN": "ext-s46r06a01.masd.stbtest.microsoft.com",
+            "CompanyName": "Contoso",
+            "RegionName": "Region1",
+            "DomainFQDN": "node01.test.example.com",
+            "ExternalDomainFQDN": "ext-node01.test.example.com",
             "InfraAzureEnvironment": "AzureCloud",
-            "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+            "InfraAzureDirectoryTenantName": "azurestack.example.com"
           },
           {
             "Name": "Cl02",
             "NodeCount": 4,
             "RackId": "Rack01",
-            "NamingPrefix": "s46r06a02",
-            "PhysicalNamingPrefix": "s46r06a02",
+            "NamingPrefix": "node02",
+            "PhysicalNamingPrefix": "node02",
             "Topology": "Switched",
-            "CompanyName": "Microsoft",
-            "RegionName": "Redmond",
-            "DomainFQDN": "s46r06a02.masd.stbtest.microsoft.com",
-            "ExternalDomainFQDN": "ext-s46r06a02.masd.stbtest.microsoft.com",
+            "CompanyName": "Contoso",
+            "RegionName": "Region1",
+            "DomainFQDN": "node02.test.example.com",
+            "ExternalDomainFQDN": "ext-node02.test.example.com",
             "InfraAzureEnvironment": "AzureCloud",
-            "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+            "InfraAzureDirectoryTenantName": "azurestack.example.com"
           },
           {
             "Name": "Cl03",
             "NodeCount": 4,
             "RackId": "Rack01",
-            "NamingPrefix": "s46r06a03",
-            "PhysicalNamingPrefix": "s46r06a03",
+            "NamingPrefix": "node03",
+            "PhysicalNamingPrefix": "node03",
             "Topology": "Switched",
-            "CompanyName": "Microsoft",
-            "RegionName": "Redmond",
-            "DomainFQDN": "s46r06a03.masd.stbtest.microsoft.com",
-            "ExternalDomainFQDN": "ext-s46r06a03.masd.stbtest.microsoft.com",
+            "CompanyName": "Contoso",
+            "RegionName": "Region1",
+            "DomainFQDN": "node03.test.example.com",
+            "ExternalDomainFQDN": "ext-node03.test.example.com",
             "InfraAzureEnvironment": "AzureCloud",
-            "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+            "InfraAzureDirectoryTenantName": "azurestack.example.com"
           },
           {
             "Name": "Cl04",
             "NodeCount": 4,
             "RackId": "Rack01",
-            "NamingPrefix": "s46r06a04",
-            "PhysicalNamingPrefix": "s46r06a04",
+            "NamingPrefix": "node04",
+            "PhysicalNamingPrefix": "node04",
             "Topology": "Switched",
-            "CompanyName": "Microsoft",
-            "RegionName": "Redmond",
-            "DomainFQDN": "s46r06a04.masd.stbtest.microsoft.com",
-            "ExternalDomainFQDN": "ext-s46r06a04.masd.stbtest.microsoft.com",
+            "CompanyName": "Contoso",
+            "RegionName": "Region1",
+            "DomainFQDN": "node04.test.example.com",
+            "ExternalDomainFQDN": "ext-node04.test.example.com",
             "InfraAzureEnvironment": "AzureCloud",
-            "InfraAzureDirectoryTenantName": "msazurestack.microsoft.com"
+            "InfraAzureDirectoryTenantName": "azurestack.example.com"
           }
         ]
       }
@@ -73,14 +73,14 @@
       {
         "Make": "Cisco",
         "Model": "C9336C-FX2",
-        "Hostname": "s46-r01-9336ssp-1a",
+        "Hostname": "border-1a",
         "Type": "Border1",
         "ASN": 64846
       },
       {
         "Make": "Cisco",
         "Model": "C9336C-FX2",
-        "Hostname": "s46-r01-9336ssp-1b",
+        "Hostname": "border-1b",
         "Type": "Border2",
         "ASN": 64846
       },
@@ -88,7 +88,7 @@
         "Make": "DellEMC",
         "Model": "S5248F-ON",
         "Type": "TOR1",
-        "Hostname": "s46-r06-5248hl-6-1a",
+        "Hostname": "tor-1a",
         "ASN": 64556,
         "Firmware": "10.5.5.5"
       },
@@ -96,7 +96,7 @@
         "Make": "DellEMC",
         "Model": "S5248F-ON",
         "Type": "TOR2",
-        "Hostname": "s46-r06-5248hl-6-1b",
+        "Hostname": "tor-1b",
         "ASN": 64556,
         "Firmware": "10.5.5.5"
       },
@@ -104,15 +104,15 @@
         "Make": "DellEMC",
         "Model": "N3248TE-ON",
         "Type": "BMC",
-        "Hostname": "s46-r06-3248bmc-6-1",
+        "Hostname": "bmc-1",
         "ASN": null,
         "Firmware": "10.5.5.5"
       },
       {
-        "Make": "Microsoft",
+        "Make": "Contoso",
         "Model": null,
         "Type": "MUX",
-        "Hostname": "s46-r06-MUX-1",
+        "Hostname": "mux-1",
         "ASN": 65018,
         "Firmware": null
       }
@@ -132,25 +132,25 @@
           "Cidr": 30,
           "TORGroup": "",
           "NetworkType": "P2P Link",
-          "Subnet": "100.71.12.0/30",
-          "Network": "100.71.12.0",
+          "Subnet": "10.21.1.0/30",
+          "Network": "10.21.1.0",
           "Netmask": "255.255.255.252",
           "Gateway": "",
-          "BroadcastAddress": "100.71.12.3",
-          "FirstAddress": "100.71.12.1",
-          "LastAddress": "100.71.12.2",
+          "BroadcastAddress": "10.21.1.3",
+          "FirstAddress": "10.21.1.1",
+          "LastAddress": "10.21.1.2",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.71.12.0"
+              "IP": "10.21.1.0"
             },
             {
               "Name": "Border1",
-              "IP": "100.71.12.1"
+              "IP": "10.21.1.1"
             },
             {
               "Name": "TOR1",
-              "IP": "100.71.12.2"
+              "IP": "10.21.1.2"
             }
           ]
         },
@@ -167,25 +167,25 @@
           "Cidr": 30,
           "TORGroup": "",
           "NetworkType": "P2P Link",
-          "Subnet": "100.71.12.4/30",
-          "Network": "100.71.12.4",
+          "Subnet": "10.21.1.4/30",
+          "Network": "10.21.1.4",
           "Netmask": "255.255.255.252",
           "Gateway": "",
-          "BroadcastAddress": "100.71.12.7",
-          "FirstAddress": "100.71.12.5",
-          "LastAddress": "100.71.12.6",
+          "BroadcastAddress": "10.21.1.7",
+          "FirstAddress": "10.21.1.5",
+          "LastAddress": "10.21.1.6",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.71.12.4"
+              "IP": "10.21.1.4"
             },
             {
               "Name": "Border1",
-              "IP": "100.71.12.5"
+              "IP": "10.21.1.5"
             },
             {
               "Name": "TOR2",
-              "IP": "100.71.12.6"
+              "IP": "10.21.1.6"
             }
           ]
         },
@@ -202,25 +202,25 @@
           "Cidr": 30,
           "TORGroup": "",
           "NetworkType": "P2P Link",
-          "Subnet": "100.71.12.8/30",
-          "Network": "100.71.12.8",
+          "Subnet": "10.21.1.8/30",
+          "Network": "10.21.1.8",
           "Netmask": "255.255.255.252",
           "Gateway": "",
-          "BroadcastAddress": "100.71.12.11",
-          "FirstAddress": "100.71.12.9",
-          "LastAddress": "100.71.12.10",
+          "BroadcastAddress": "10.21.1.11",
+          "FirstAddress": "10.21.1.9",
+          "LastAddress": "10.21.1.10",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.71.12.8"
+              "IP": "10.21.1.8"
             },
             {
               "Name": "Border2",
-              "IP": "100.71.12.9"
+              "IP": "10.21.1.9"
             },
             {
               "Name": "TOR1",
-              "IP": "100.71.12.10"
+              "IP": "10.21.1.10"
             }
           ]
         },
@@ -237,25 +237,25 @@
           "Cidr": 30,
           "TORGroup": "",
           "NetworkType": "P2P Link",
-          "Subnet": "100.71.12.12/30",
-          "Network": "100.71.12.12",
+          "Subnet": "10.21.1.12/30",
+          "Network": "10.21.1.12",
           "Netmask": "255.255.255.252",
           "Gateway": "",
-          "BroadcastAddress": "100.71.12.15",
-          "FirstAddress": "100.71.12.13",
-          "LastAddress": "100.71.12.14",
+          "BroadcastAddress": "10.21.1.15",
+          "FirstAddress": "10.21.1.13",
+          "LastAddress": "10.21.1.14",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.71.12.12"
+              "IP": "10.21.1.12"
             },
             {
               "Name": "Border2",
-              "IP": "100.71.12.13"
+              "IP": "10.21.1.13"
             },
             {
               "Name": "TOR2",
-              "IP": "100.71.12.14"
+              "IP": "10.21.1.14"
             }
           ]
         },
@@ -272,25 +272,25 @@
           "Cidr": 30,
           "TORGroup": "",
           "NetworkType": "P2P Link",
-          "Subnet": "100.71.12.16/30",
-          "Network": "100.71.12.16",
+          "Subnet": "10.21.1.16/30",
+          "Network": "10.21.1.16",
           "Netmask": "255.255.255.252",
           "Gateway": "",
-          "BroadcastAddress": "100.71.12.19",
-          "FirstAddress": "100.71.12.17",
-          "LastAddress": "100.71.12.18",
+          "BroadcastAddress": "10.21.1.19",
+          "FirstAddress": "10.21.1.17",
+          "LastAddress": "10.21.1.18",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.71.12.16"
+              "IP": "10.21.1.16"
             },
             {
               "Name": "TOR1",
-              "IP": "100.71.12.17"
+              "IP": "10.21.1.17"
             },
             {
               "Name": "TOR2",
-              "IP": "100.71.12.18"
+              "IP": "10.21.1.18"
             }
           ]
         },
@@ -307,8 +307,8 @@
           "Cidr": 32,
           "TORGroup": "",
           "NetworkType": "Loopback",
-          "Subnet": "100.71.12.21/32",
-          "Network": "100.71.12.21",
+          "Subnet": "10.21.1.21/32",
+          "Network": "10.21.1.21",
           "Netmask": "255.255.255.255",
           "Gateway": "",
           "BroadcastAddress": "",
@@ -317,7 +317,7 @@
           "Assignment": [
             {
               "Name": "TOR1",
-              "IP": "100.71.12.21"
+              "IP": "10.21.1.21"
             }
           ]
         },
@@ -334,8 +334,8 @@
           "Cidr": 32,
           "TORGroup": "",
           "NetworkType": "Loopback",
-          "Subnet": "100.71.12.22/32",
-          "Network": "100.71.12.22",
+          "Subnet": "10.21.1.22/32",
+          "Network": "10.21.1.22",
           "Netmask": "255.255.255.255",
           "Gateway": "",
           "BroadcastAddress": "",
@@ -344,7 +344,7 @@
           "Assignment": [
             {
               "Name": "TOR2",
-              "IP": "100.71.12.22"
+              "IP": "10.21.1.22"
             }
           ]
         },
@@ -362,152 +362,152 @@
           "Cidr": 26,
           "TORGroup": "",
           "NetworkType": "Infrastructure",
-          "Subnet": "100.71.12.64/26",
-          "Network": "100.71.12.64",
+          "Subnet": "10.21.1.64/26",
+          "Network": "10.21.1.64",
           "Netmask": "255.255.255.192",
-          "Gateway": "100.71.12.65",
-          "BroadcastAddress": "100.71.12.127",
-          "FirstAddress": "100.71.12.65",
-          "LastAddress": "100.71.12.126",
+          "Gateway": "10.21.1.65",
+          "BroadcastAddress": "10.21.1.127",
+          "FirstAddress": "10.21.1.65",
+          "LastAddress": "10.21.1.126",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.71.12.64",
+              "IP": "10.21.1.64",
               "ClusterID": null
             },
             {
               "Name": "Gateway",
-              "IP": "100.71.12.65",
+              "IP": "10.21.1.65",
               "ClusterID": null
             },
             {
               "Name": "HLH-BMC",
-              "IP": "100.71.12.66",
+              "IP": "10.21.1.66",
               "ClusterID": null
             },
             {
               "Name": "CL01-N01",
-              "IP": "100.71.12.67",
+              "IP": "10.21.1.67",
               "ClusterID": "CL01"
             },
             {
               "Name": "CL01-N02",
-              "IP": "100.71.12.68",
+              "IP": "10.21.1.68",
               "ClusterID": "CL01"
             },
             {
               "Name": "CL01-N03",
-              "IP": "100.71.12.69",
+              "IP": "10.21.1.69",
               "ClusterID": "CL01"
             },
             {
               "Name": "CL01-N04",
-              "IP": "100.71.12.70",
+              "IP": "10.21.1.70",
               "ClusterID": "CL01"
             },
             {
               "Name": "CL02-N01",
-              "IP": "100.71.12.71",
+              "IP": "10.21.1.71",
               "ClusterID": "CL02"
             },
             {
               "Name": "CL02-N02",
-              "IP": "100.71.12.72",
+              "IP": "10.21.1.72",
               "ClusterID": "CL02"
             },
             {
               "Name": "CL02-N03",
-              "IP": "100.71.12.73",
+              "IP": "10.21.1.73",
               "ClusterID": "CL02"
             },
             {
               "Name": "CL02-N04",
-              "IP": "100.71.12.74",
+              "IP": "10.21.1.74",
               "ClusterID": "CL02"
             },
             {
               "Name": "CL03-N01",
-              "IP": "100.71.12.75",
+              "IP": "10.21.1.75",
               "ClusterID": "CL03"
             },
             {
               "Name": "CL03-N02",
-              "IP": "100.71.12.76",
+              "IP": "10.21.1.76",
               "ClusterID": "CL03"
             },
             {
               "Name": "CL03-N03",
-              "IP": "100.71.12.77",
+              "IP": "10.21.1.77",
               "ClusterID": "CL03"
             },
             {
               "Name": "CL03-N04",
-              "IP": "100.71.12.78",
+              "IP": "10.21.1.78",
               "ClusterID": "CL03"
             },
             {
               "Name": "CL04-N01",
-              "IP": "100.71.12.79",
+              "IP": "10.21.1.79",
               "ClusterID": "CL04"
             },
             {
               "Name": "CL04-N02",
-              "IP": "100.71.12.80",
+              "IP": "10.21.1.80",
               "ClusterID": "CL04"
             },
             {
               "Name": "CL04-N03",
-              "IP": "100.71.12.81",
+              "IP": "10.21.1.81",
               "ClusterID": "CL04"
             },
             {
               "Name": "CL04-N04",
-              "IP": "100.71.12.82",
+              "IP": "10.21.1.82",
               "ClusterID": "CL04"
             },
             {
               "Name": "CL01-HLH-DVM01",
-              "IP": "100.71.12.107",
+              "IP": "10.21.1.107",
               "ClusterID": "CL01"
             },
             {
               "Name": "CL02-HLH-DVM02",
-              "IP": "100.71.12.108",
+              "IP": "10.21.1.108",
               "ClusterID": "CL02"
             },
             {
               "Name": "CL03-HLH-DVM03",
-              "IP": "100.71.12.109",
+              "IP": "10.21.1.109",
               "ClusterID": "CL03"
             },
             {
               "Name": "CL04-HLH-DVM04",
-              "IP": "100.71.12.110",
+              "IP": "10.21.1.110",
               "ClusterID": "CL04"
             },
             {
               "Name": "Tor1-Mgmt",
-              "IP": "100.71.12.123",
+              "IP": "10.21.1.123",
               "ClusterID": null
             },
             {
               "Name": "Tor2-Mgmt",
-              "IP": "100.71.12.124",
+              "IP": "10.21.1.124",
               "ClusterID": null
             },
             {
               "Name": "BMC-Mgmt",
-              "IP": "100.71.12.125",
+              "IP": "10.21.1.125",
               "ClusterID": null
             },
             {
               "Name": "HLH-OS",
-              "IP": "100.71.12.126",
+              "IP": "10.21.1.126",
               "ClusterID": null
             },
             {
               "Name": "Broadcast",
-              "IP": "100.71.12.127",
+              "IP": "10.21.1.127",
               "ClusterID": null
             }
           ]
@@ -526,51 +526,51 @@
           "Cidr": 25,
           "TORGroup": "",
           "NetworkType": "PA",
-          "Subnet": "100.71.143.0/25",
-          "Network": "100.71.143.0",
+          "Subnet": "10.22.1.0/25",
+          "Network": "10.22.1.0",
           "Netmask": "255.255.255.128",
-          "Gateway": "100.71.143.1",
-          "BroadcastAddress": "100.71.143.127",
-          "FirstAddress": "100.71.143.1",
-          "LastAddress": "100.71.143.126",
+          "Gateway": "10.22.1.1",
+          "BroadcastAddress": "10.22.1.127",
+          "FirstAddress": "10.22.1.1",
+          "LastAddress": "10.22.1.126",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.71.143.0"
+              "IP": "10.22.1.0"
             },
             {
               "Name": "Gateway",
-              "IP": "100.71.143.1"
+              "IP": "10.22.1.1"
             },
             {
               "Name": "TOR1",
-              "IP": "100.71.143.2"
+              "IP": "10.22.1.2"
             },
             {
               "Name": "TOR2",
-              "IP": "100.71.143.3"
+              "IP": "10.22.1.3"
             }
           ],
           "IPPools": [
             {
               "Name": "CL01",
-              "StartingAddress": "100.71.143.4",
-              "EndingAddress": "100.71.143.31"
+              "StartingAddress": "10.22.1.4",
+              "EndingAddress": "10.22.1.31"
             },
             {
               "Name": "CL02",
-              "StartingAddress": "100.71.143.32",
-              "EndingAddress": "100.71.143.63"
+              "StartingAddress": "10.22.1.32",
+              "EndingAddress": "10.22.1.63"
             },
             {
               "Name": "CL03",
-              "StartingAddress": "100.71.143.64",
-              "EndingAddress": "100.71.143.95"
+              "StartingAddress": "10.22.1.64",
+              "EndingAddress": "10.22.1.95"
             },
             {
               "Name": "CL04",
-              "StartingAddress": "100.71.143.96",
-              "EndingAddress": "100.71.143.126"
+              "StartingAddress": "10.22.1.96",
+              "EndingAddress": "10.22.1.126"
             }
           ]
         },
@@ -588,115 +588,115 @@
           "Cidr": 24,
           "TORGroup": "",
           "NetworkType": "Infrastructure",
-          "Subnet": "100.68.148.0/24",
-          "Network": "100.68.148.0",
+          "Subnet": "10.23.1.0/24",
+          "Network": "10.23.1.0",
           "Netmask": "255.255.255.0",
-          "Gateway": "100.68.148.1",
-          "BroadcastAddress": "100.68.148.255",
-          "FirstAddress": "100.68.148.1",
-          "LastAddress": "100.68.148.254",
+          "Gateway": "10.23.1.1",
+          "BroadcastAddress": "10.23.1.255",
+          "FirstAddress": "10.23.1.1",
+          "LastAddress": "10.23.1.254",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.148.0"
+              "IP": "10.23.1.0"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.148.1"
+              "IP": "10.23.1.1"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.148.2"
+              "IP": "10.23.1.2"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.148.3"
+              "IP": "10.23.1.3"
             },
             {
               "Name": "CL01-N01",
-              "IP": "100.68.148.4"
+              "IP": "10.23.1.4"
             },
             {
               "Name": "CL01-N02",
-              "IP": "100.68.148.5"
+              "IP": "10.23.1.5"
             },
             {
               "Name": "CL01-N03",
-              "IP": "100.68.148.6"
+              "IP": "10.23.1.6"
             },
             {
               "Name": "CL01-N04",
-              "IP": "100.68.148.7"
+              "IP": "10.23.1.7"
             },
             {
               "Name": "CL02-N01",
-              "IP": "100.68.148.64"
+              "IP": "10.23.1.64"
             },
             {
               "Name": "CL02-N02",
-              "IP": "100.68.148.65"
+              "IP": "10.23.1.65"
             },
             {
               "Name": "CL02-N03",
-              "IP": "100.68.148.66"
+              "IP": "10.23.1.66"
             },
             {
               "Name": "CL02-N04",
-              "IP": "100.68.148.67"
+              "IP": "10.23.1.67"
             },
             {
               "Name": "CL03-N01",
-              "IP": "100.68.148.128"
+              "IP": "10.23.1.128"
             },
             {
               "Name": "CL03-N02",
-              "IP": "100.68.148.129"
+              "IP": "10.23.1.129"
             },
             {
               "Name": "CL03-N03",
-              "IP": "100.68.148.130"
+              "IP": "10.23.1.130"
             },
             {
               "Name": "CL03-N04",
-              "IP": "100.68.148.131"
+              "IP": "10.23.1.131"
             },
             {
               "Name": "CL04-N01",
-              "IP": "100.68.148.192"
+              "IP": "10.23.1.192"
             },
             {
               "Name": "CL04-N02",
-              "IP": "100.68.148.193"
+              "IP": "10.23.1.193"
             },
             {
               "Name": "CL04-N03",
-              "IP": "100.68.148.194"
+              "IP": "10.23.1.194"
             },
             {
               "Name": "CL04-N04",
-              "IP": "100.68.148.195"
+              "IP": "10.23.1.195"
             }
           ],
           "IPPools": [
             {
               "Name": "CL01",
-              "StartingAddress": "100.68.148.8",
-              "EndingAddress": "100.68.148.63"
+              "StartingAddress": "10.23.1.8",
+              "EndingAddress": "10.23.1.63"
             },
             {
               "Name": "CL02",
-              "StartingAddress": "100.68.148.68",
-              "EndingAddress": "100.68.148.127"
+              "StartingAddress": "10.23.1.68",
+              "EndingAddress": "10.23.1.127"
             },
             {
               "Name": "CL03",
-              "StartingAddress": "100.68.148.132",
-              "EndingAddress": "100.68.148.191"
+              "StartingAddress": "10.23.1.132",
+              "EndingAddress": "10.23.1.191"
             },
             {
               "Name": "CL04",
-              "StartingAddress": "100.68.148.196",
-              "EndingAddress": "100.68.148.254"
+              "StartingAddress": "10.23.1.196",
+              "EndingAddress": "10.23.1.254"
             }
           ]
         },
@@ -714,51 +714,51 @@
           "Cidr": 24,
           "TORGroup": "",
           "NetworkType": "Tenant",
-          "Subnet": "100.68.149.0/24",
-          "Network": "100.68.149.0",
+          "Subnet": "10.24.1.0/24",
+          "Network": "10.24.1.0",
           "Netmask": "255.255.255.0",
-          "Gateway": "100.68.149.1",
-          "BroadcastAddress": "100.68.149.255",
-          "FirstAddress": "100.68.149.1",
-          "LastAddress": "100.68.149.254",
+          "Gateway": "10.24.1.1",
+          "BroadcastAddress": "10.24.1.255",
+          "FirstAddress": "10.24.1.1",
+          "LastAddress": "10.24.1.254",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.149.0"
+              "IP": "10.24.1.0"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.149.1"
+              "IP": "10.24.1.1"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.149.2"
+              "IP": "10.24.1.2"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.149.3"
+              "IP": "10.24.1.3"
             }
           ],
           "IPPools": [
             {
               "Name": "CL01",
-              "StartingAddress": "100.68.149.4",
-              "EndingAddress": "100.68.149.63"
+              "StartingAddress": "10.24.1.4",
+              "EndingAddress": "10.24.1.63"
             },
             {
               "Name": "CL02",
-              "StartingAddress": "100.68.149.64",
-              "EndingAddress": "100.68.149.127"
+              "StartingAddress": "10.24.1.64",
+              "EndingAddress": "10.24.1.127"
             },
             {
               "Name": "CL03",
-              "StartingAddress": "100.68.149.128",
-              "EndingAddress": "100.68.149.191"
+              "StartingAddress": "10.24.1.128",
+              "EndingAddress": "10.24.1.191"
             },
             {
               "Name": "CL04",
-              "StartingAddress": "100.68.149.192",
-              "EndingAddress": "100.68.149.254"
+              "StartingAddress": "10.24.1.192",
+              "EndingAddress": "10.24.1.254"
             }
           ]
         },
@@ -776,51 +776,51 @@
           "Cidr": 25,
           "TORGroup": "",
           "NetworkType": "Tenant",
-          "Subnet": "100.68.150.0/25",
-          "Network": "100.68.150.0",
+          "Subnet": "10.24.150.0/25",
+          "Network": "10.24.150.0",
           "Netmask": "255.255.255.128",
-          "Gateway": "100.68.150.1",
-          "BroadcastAddress": "100.68.150.127",
-          "FirstAddress": "100.68.150.1",
-          "LastAddress": "100.68.150.126",
+          "Gateway": "10.24.150.1",
+          "BroadcastAddress": "10.24.150.127",
+          "FirstAddress": "10.24.150.1",
+          "LastAddress": "10.24.150.126",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.150.0"
+              "IP": "10.24.150.0"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.150.1"
+              "IP": "10.24.150.1"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.150.2"
+              "IP": "10.24.150.2"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.150.3"
+              "IP": "10.24.150.3"
             }
           ],
           "IPPools": [
             {
               "Name": "CL01",
-              "StartingAddress": "100.68.150.4",
-              "EndingAddress": "100.68.150.31"
+              "StartingAddress": "10.24.150.4",
+              "EndingAddress": "10.24.150.31"
             },
             {
               "Name": "CL02",
-              "StartingAddress": "100.68.150.32",
-              "EndingAddress": "100.68.150.63"
+              "StartingAddress": "10.24.150.32",
+              "EndingAddress": "10.24.150.63"
             },
             {
               "Name": "CL03",
-              "StartingAddress": "100.68.150.64",
-              "EndingAddress": "100.68.150.95"
+              "StartingAddress": "10.24.150.64",
+              "EndingAddress": "10.24.150.95"
             },
             {
               "Name": "CL04",
-              "StartingAddress": "100.68.150.96",
-              "EndingAddress": "100.68.150.126"
+              "StartingAddress": "10.24.150.96",
+              "EndingAddress": "10.24.150.126"
             }
           ]
         },
@@ -838,29 +838,29 @@
           "Cidr": 25,
           "TORGroup": "",
           "NetworkType": "Tenant",
-          "Subnet": "100.68.150.128/25",
-          "Network": "100.68.150.128",
+          "Subnet": "10.24.150.128/25",
+          "Network": "10.24.150.128",
           "Netmask": "255.255.255.128",
-          "Gateway": "100.68.150.129",
-          "BroadcastAddress": "100.68.150.255",
-          "FirstAddress": "100.68.150.129",
-          "LastAddress": "100.68.150.254",
+          "Gateway": "10.24.150.129",
+          "BroadcastAddress": "10.24.150.255",
+          "FirstAddress": "10.24.150.129",
+          "LastAddress": "10.24.150.254",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.150.128"
+              "IP": "10.24.150.128"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.150.129"
+              "IP": "10.24.150.129"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.150.130"
+              "IP": "10.24.150.130"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.150.131"
+              "IP": "10.24.150.131"
             }
           ]
         },
@@ -878,29 +878,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.0/28",
-          "Network": "100.68.151.0",
+          "Subnet": "10.25.1.0/28",
+          "Network": "10.25.1.0",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.1",
-          "BroadcastAddress": "100.68.151.15",
-          "FirstAddress": "100.68.151.1",
-          "LastAddress": "100.68.151.14",
+          "Gateway": "10.25.1.1",
+          "BroadcastAddress": "10.25.1.15",
+          "FirstAddress": "10.25.1.1",
+          "LastAddress": "10.25.1.14",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.0"
+              "IP": "10.25.1.0"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.1"
+              "IP": "10.25.1.1"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.2"
+              "IP": "10.25.1.2"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.3"
+              "IP": "10.25.1.3"
             }
           ]
         },
@@ -918,29 +918,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.16/28",
-          "Network": "100.68.151.16",
+          "Subnet": "10.25.1.16/28",
+          "Network": "10.25.1.16",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.17",
-          "BroadcastAddress": "100.68.151.31",
-          "FirstAddress": "100.68.151.17",
-          "LastAddress": "100.68.151.30",
+          "Gateway": "10.25.1.17",
+          "BroadcastAddress": "10.25.1.31",
+          "FirstAddress": "10.25.1.17",
+          "LastAddress": "10.25.1.30",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.16"
+              "IP": "10.25.1.16"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.17"
+              "IP": "10.25.1.17"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.18"
+              "IP": "10.25.1.18"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.19"
+              "IP": "10.25.1.19"
             }
           ]
         },
@@ -958,29 +958,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.32/28",
-          "Network": "100.68.151.32",
+          "Subnet": "10.25.1.32/28",
+          "Network": "10.25.1.32",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.33",
-          "BroadcastAddress": "100.68.151.47",
-          "FirstAddress": "100.68.151.33",
-          "LastAddress": "100.68.151.46",
+          "Gateway": "10.25.1.33",
+          "BroadcastAddress": "10.25.1.47",
+          "FirstAddress": "10.25.1.33",
+          "LastAddress": "10.25.1.46",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.32"
+              "IP": "10.25.1.32"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.33"
+              "IP": "10.25.1.33"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.34"
+              "IP": "10.25.1.34"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.35"
+              "IP": "10.25.1.35"
             }
           ]
         },
@@ -998,29 +998,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.48/28",
-          "Network": "100.68.151.48",
+          "Subnet": "10.25.1.48/28",
+          "Network": "10.25.1.48",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.49",
-          "BroadcastAddress": "100.68.151.63",
-          "FirstAddress": "100.68.151.49",
-          "LastAddress": "100.68.151.62",
+          "Gateway": "10.25.1.49",
+          "BroadcastAddress": "10.25.1.63",
+          "FirstAddress": "10.25.1.49",
+          "LastAddress": "10.25.1.62",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.48"
+              "IP": "10.25.1.48"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.49"
+              "IP": "10.25.1.49"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.50"
+              "IP": "10.25.1.50"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.51"
+              "IP": "10.25.1.51"
             }
           ]
         },
@@ -1038,29 +1038,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.64/28",
-          "Network": "100.68.151.64",
+          "Subnet": "10.25.1.64/28",
+          "Network": "10.25.1.64",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.65",
-          "BroadcastAddress": "100.68.151.79",
-          "FirstAddress": "100.68.151.65",
-          "LastAddress": "100.68.151.78",
+          "Gateway": "10.25.1.65",
+          "BroadcastAddress": "10.25.1.79",
+          "FirstAddress": "10.25.1.65",
+          "LastAddress": "10.25.1.78",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.64"
+              "IP": "10.25.1.64"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.65"
+              "IP": "10.25.1.65"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.66"
+              "IP": "10.25.1.66"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.67"
+              "IP": "10.25.1.67"
             }
           ]
         },
@@ -1078,29 +1078,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.80/28",
-          "Network": "100.68.151.80",
+          "Subnet": "10.25.1.80/28",
+          "Network": "10.25.1.80",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.81",
-          "BroadcastAddress": "100.68.151.95",
-          "FirstAddress": "100.68.151.81",
-          "LastAddress": "100.68.151.94",
+          "Gateway": "10.25.1.81",
+          "BroadcastAddress": "10.25.1.95",
+          "FirstAddress": "10.25.1.81",
+          "LastAddress": "10.25.1.94",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.80"
+              "IP": "10.25.1.80"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.81"
+              "IP": "10.25.1.81"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.82"
+              "IP": "10.25.1.82"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.83"
+              "IP": "10.25.1.83"
             }
           ]
         },
@@ -1118,29 +1118,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.96/28",
-          "Network": "100.68.151.96",
+          "Subnet": "10.25.1.96/28",
+          "Network": "10.25.1.96",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.97",
-          "BroadcastAddress": "100.68.151.111",
-          "FirstAddress": "100.68.151.97",
-          "LastAddress": "100.68.151.110",
+          "Gateway": "10.25.1.97",
+          "BroadcastAddress": "10.25.1.111",
+          "FirstAddress": "10.25.1.97",
+          "LastAddress": "10.25.1.110",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.96"
+              "IP": "10.25.1.96"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.97"
+              "IP": "10.25.1.97"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.98"
+              "IP": "10.25.1.98"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.99"
+              "IP": "10.25.1.99"
             }
           ]
         },
@@ -1158,29 +1158,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.112/28",
-          "Network": "100.68.151.112",
+          "Subnet": "10.25.1.112/28",
+          "Network": "10.25.1.112",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.113",
-          "BroadcastAddress": "100.68.151.127",
-          "FirstAddress": "100.68.151.113",
-          "LastAddress": "100.68.151.126",
+          "Gateway": "10.25.1.113",
+          "BroadcastAddress": "10.25.1.127",
+          "FirstAddress": "10.25.1.113",
+          "LastAddress": "10.25.1.126",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.112"
+              "IP": "10.25.1.112"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.113"
+              "IP": "10.25.1.113"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.114"
+              "IP": "10.25.1.114"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.115"
+              "IP": "10.25.1.115"
             }
           ]
         },
@@ -1198,29 +1198,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.128/28",
-          "Network": "100.68.151.128",
+          "Subnet": "10.25.1.128/28",
+          "Network": "10.25.1.128",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.129",
-          "BroadcastAddress": "100.68.151.143",
-          "FirstAddress": "100.68.151.129",
-          "LastAddress": "100.68.151.142",
+          "Gateway": "10.25.1.129",
+          "BroadcastAddress": "10.25.1.143",
+          "FirstAddress": "10.25.1.129",
+          "LastAddress": "10.25.1.142",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.128"
+              "IP": "10.25.1.128"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.129"
+              "IP": "10.25.1.129"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.130"
+              "IP": "10.25.1.130"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.131"
+              "IP": "10.25.1.131"
             }
           ]
         },
@@ -1238,29 +1238,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.144/28",
-          "Network": "100.68.151.144",
+          "Subnet": "10.25.1.144/28",
+          "Network": "10.25.1.144",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.145",
-          "BroadcastAddress": "100.68.151.159",
-          "FirstAddress": "100.68.151.145",
-          "LastAddress": "100.68.151.158",
+          "Gateway": "10.25.1.145",
+          "BroadcastAddress": "10.25.1.159",
+          "FirstAddress": "10.25.1.145",
+          "LastAddress": "10.25.1.158",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.144"
+              "IP": "10.25.1.144"
             },
             {
               "Name": "Gateway",
-              "IP": "10.69.179.145"
+              "IP": "10.5.1.145"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.145"
+              "IP": "10.25.1.145"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.146"
+              "IP": "10.25.1.146"
             }
           ]
         },
@@ -1278,29 +1278,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.160/28",
-          "Network": "100.68.151.160",
+          "Subnet": "10.25.1.160/28",
+          "Network": "10.25.1.160",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.161",
-          "BroadcastAddress": "100.68.151.175",
-          "FirstAddress": "100.68.151.161",
-          "LastAddress": "100.68.151.174",
+          "Gateway": "10.25.1.161",
+          "BroadcastAddress": "10.25.1.175",
+          "FirstAddress": "10.25.1.161",
+          "LastAddress": "10.25.1.174",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.160"
+              "IP": "10.25.1.160"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.161"
+              "IP": "10.25.1.161"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.162"
+              "IP": "10.25.1.162"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.163"
+              "IP": "10.25.1.163"
             }
           ]
         },
@@ -1318,29 +1318,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.176/28",
-          "Network": "100.68.151.176",
+          "Subnet": "10.25.1.176/28",
+          "Network": "10.25.1.176",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.177",
-          "BroadcastAddress": "100.68.151.191",
-          "FirstAddress": "100.68.151.177",
-          "LastAddress": "100.68.151.190",
+          "Gateway": "10.25.1.177",
+          "BroadcastAddress": "10.25.1.191",
+          "FirstAddress": "10.25.1.177",
+          "LastAddress": "10.25.1.190",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.176"
+              "IP": "10.25.1.176"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.177"
+              "IP": "10.25.1.177"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.178"
+              "IP": "10.25.1.178"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.179"
+              "IP": "10.25.1.179"
             }
           ]
         },
@@ -1358,29 +1358,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.192/28",
-          "Network": "100.68.151.192",
+          "Subnet": "10.25.1.192/28",
+          "Network": "10.25.1.192",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.193",
-          "BroadcastAddress": "100.68.151.207",
-          "FirstAddress": "100.68.151.193",
-          "LastAddress": "100.68.151.206",
+          "Gateway": "10.25.1.193",
+          "BroadcastAddress": "10.25.1.207",
+          "FirstAddress": "10.25.1.193",
+          "LastAddress": "10.25.1.206",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.192"
+              "IP": "10.25.1.192"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.193"
+              "IP": "10.25.1.193"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.194"
+              "IP": "10.25.1.194"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.195"
+              "IP": "10.25.1.195"
             }
           ]
         },
@@ -1398,29 +1398,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.208/28",
-          "Network": "100.68.151.208",
+          "Subnet": "10.25.1.208/28",
+          "Network": "10.25.1.208",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.209",
-          "BroadcastAddress": "100.68.151.223",
-          "FirstAddress": "100.68.151.209",
-          "LastAddress": "100.68.151.222",
+          "Gateway": "10.25.1.209",
+          "BroadcastAddress": "10.25.1.223",
+          "FirstAddress": "10.25.1.209",
+          "LastAddress": "10.25.1.222",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.208"
+              "IP": "10.25.1.208"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.209"
+              "IP": "10.25.1.209"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.210"
+              "IP": "10.25.1.210"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.211"
+              "IP": "10.25.1.211"
             }
           ]
         },
@@ -1438,29 +1438,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.224/28",
-          "Network": "100.68.151.224",
+          "Subnet": "10.25.1.224/28",
+          "Network": "10.25.1.224",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.225",
-          "BroadcastAddress": "100.68.151.239",
-          "FirstAddress": "100.68.151.225",
-          "LastAddress": "100.68.151.238",
+          "Gateway": "10.25.1.225",
+          "BroadcastAddress": "10.25.1.239",
+          "FirstAddress": "10.25.1.225",
+          "LastAddress": "10.25.1.238",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.224"
+              "IP": "10.25.1.224"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.225"
+              "IP": "10.25.1.225"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.226"
+              "IP": "10.25.1.226"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.227"
+              "IP": "10.25.1.227"
             }
           ]
         },
@@ -1478,29 +1478,29 @@
           "Cidr": 28,
           "TORGroup": "",
           "NetworkType": "L3forward",
-          "Subnet": "100.68.151.240/28",
-          "Network": "100.68.151.240",
+          "Subnet": "10.25.1.240/28",
+          "Network": "10.25.1.240",
           "Netmask": "255.255.255.240",
-          "Gateway": "100.68.151.241",
-          "BroadcastAddress": "100.68.151.255",
-          "FirstAddress": "100.68.151.241",
-          "LastAddress": "100.68.151.254",
+          "Gateway": "10.25.1.241",
+          "BroadcastAddress": "10.25.1.255",
+          "FirstAddress": "10.25.1.241",
+          "LastAddress": "10.25.1.254",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.68.151.240"
+              "IP": "10.25.1.240"
             },
             {
               "Name": "Gateway",
-              "IP": "100.68.151.241"
+              "IP": "10.25.1.241"
             },
             {
               "Name": "TOR1",
-              "IP": "100.68.151.242"
+              "IP": "10.25.1.242"
             },
             {
               "Name": "TOR2",
-              "IP": "100.68.151.243"
+              "IP": "10.25.1.243"
             }
           ]
         },
@@ -1518,35 +1518,35 @@
           "Cidr": 22,
           "TORGroup": "",
           "NetworkType": "ExternalIP",
-          "Subnet": "100.65.24.0/22",
-          "Network": "100.65.24.0",
+          "Subnet": "10.26.1.0/22",
+          "Network": "10.26.1.0",
           "Netmask": "255.255.252.0",
           "Gateway": null,
-          "BroadcastAddress": "100.65.27.255",
-          "FirstAddress": "100.65.24.1",
-          "LastAddress": "100.65.27.254",
+          "BroadcastAddress": "10.26.4.255",
+          "FirstAddress": "10.26.1.1",
+          "LastAddress": "10.26.4.254",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.65.24.0"
+              "IP": "10.26.1.0"
             }
           ],
           "IPPools": [
             {
               "Name": "CL01",
-              "Subnet": "100.65.24.0/24"
+              "Subnet": "10.26.1.0/24"
             },
             {
               "Name": "CL02",
-              "Subnet": "100.65.25.0/24"
+              "Subnet": "10.26.2.0/24"
             },
             {
               "Name": "CL03",
-              "Subnet": "100.65.26.0/24"
+              "Subnet": "10.26.3.0/24"
             },
             {
               "Name": "CL04",
-              "Subnet": "100.65.27.0/24"
+              "Subnet": "10.26.4.0/24"
             }
           ]
         },
@@ -1564,35 +1564,35 @@
           "Cidr": 26,
           "TORGroup": "",
           "NetworkType": "ExternalIP",
-          "Subnet": "100.76.7.128/26",
-          "Network": "100.76.7.128",
+          "Subnet": "10.27.1.128/26",
+          "Network": "10.27.1.128",
           "Netmask": "255.255.255.192",
           "Gateway": null,
-          "BroadcastAddress": "100.76.7.191",
-          "FirstAddress": "100.76.7.129",
-          "LastAddress": "100.76.7.190",
+          "BroadcastAddress": "10.27.1.191",
+          "FirstAddress": "10.27.1.129",
+          "LastAddress": "10.27.1.190",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "100.76.7.128"
+              "IP": "10.27.1.128"
             }
           ],
           "IPPools": [
             {
               "Name": "CL01",
-              "Subnet": "100.76.7.128/28"
+              "Subnet": "10.27.1.128/28"
             },
             {
               "Name": "CL02",
-              "Subnet": "100.76.7.144/28"
+              "Subnet": "10.27.1.144/28"
             },
             {
               "Name": "CL03",
-              "Subnet": "100.76.7.160/28"
+              "Subnet": "10.27.1.160/28"
             },
             {
               "Name": "CL04",
-              "Subnet": "100.76.7.176/28"
+              "Subnet": "10.27.1.176/28"
             }
           ]
         },
@@ -1610,17 +1610,17 @@
           "Cidr": 24,
           "TORGroup": "",
           "NetworkType": "Storage",
-          "Subnet": "10.71.1.0/24",
-          "Network": "10.71.1.0",
+          "Subnet": "10.8.1.0/24",
+          "Network": "10.8.1.0",
           "Netmask": "255.255.255.0",
-          "Gateway": "10.71.1.1",
-          "BroadcastAddress": "10.71.1.255",
-          "FirstAddress": "10.71.1.1",
-          "LastAddress": "10.71.1.254",
+          "Gateway": "10.8.1.1",
+          "BroadcastAddress": "10.8.1.255",
+          "FirstAddress": "10.8.1.1",
+          "LastAddress": "10.8.1.254",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "10.71.1.0"
+              "IP": "10.8.1.0"
             }
           ]
         },
@@ -1638,17 +1638,17 @@
           "Cidr": 24,
           "TORGroup": "",
           "NetworkType": "Storage",
-          "Subnet": "10.71.2.0/24",
-          "Network": "10.71.2.0",
+          "Subnet": "10.8.2.0/24",
+          "Network": "10.8.2.0",
           "Netmask": "255.255.255.0",
-          "Gateway": "10.71.2.1",
-          "BroadcastAddress": "10.71.2.255",
-          "FirstAddress": "10.71.2.1",
-          "LastAddress": "10.71.2.254",
+          "Gateway": "10.8.2.1",
+          "BroadcastAddress": "10.8.2.255",
+          "FirstAddress": "10.8.2.1",
+          "LastAddress": "10.8.2.254",
           "Assignment": [
             {
               "Name": "Network",
-              "IP": "10.71.2.0"
+              "IP": "10.8.2.0"
             }
           ]
         },
@@ -1681,9 +1681,9 @@
     ],
     "Setting": {
       "TimeZone": "Pacific Standard Time",
-      "TimeServer": ["10.10.240.20"],
-      "SyslogServer": ["10.10.43.111"],
-      "DNSForwarder": ["10.10.240.23", "10.10.240.24"]
+      "TimeServer": ["10.100.0.1"],
+      "SyslogServer": ["10.100.0.2"],
+      "DNSForwarder": ["10.100.0.3", "10.100.0.4"]
     }
   }
 }

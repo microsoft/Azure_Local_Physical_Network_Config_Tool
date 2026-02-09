@@ -1,0 +1,86 @@
+{
+  "switch": {
+    "make": "dellemc",
+    "model": "n3248te-on",
+    "type": "BMC",
+    "hostname": "bmc-1",
+    "version": "10.5.5.5",
+    "firmware": "os10",
+    "site": "site1"
+  },
+  "vlans": [
+    {
+      "vlan_id": 2,
+      "name": "UNUSED_VLAN",
+      "shutdown": true
+    },
+    {
+      "vlan_id": 99,
+      "name": "NATIVE_VLAN"
+    },
+    {
+      "vlan_id": 125,
+      "name": "BMC_Mgmt_125",
+      "interface": {
+        "ip": "10.21.1.126",
+        "cidr": 26,
+        "mtu": 9216
+      }
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "Unused",
+      "type": "Access",
+      "description": "initial unused for all interfaces then config as defined",
+      "intf_type": "Ethernet",
+      "start_intf": "1/1/1",
+      "end_intf": "1/1/54",
+      "access_vlan": "2",
+      "shutdown": true
+    },
+    {
+      "name": "Host_BMC",
+      "type": "Access",
+      "description": "Host BMC Connection",
+      "intf_type": "Ethernet",
+      "start_intf": "1/1/1",
+      "end_intf": "1/1/40",
+      "access_vlan": "125"
+    },
+    {
+      "name": "HLH_BMC",
+      "type": "Access",
+      "description": "HLH BMC Connection",
+      "intf_type": "Ethernet",
+      "intf": "1/1/46",
+      "access_vlan": "125"
+    },
+    {
+      "name": "HLH_OS",
+      "type": "Access",
+      "description": "HLH OS Connection",
+      "intf_type": "Ethernet",
+      "start_intf": "1/1/49",
+      "end_intf": "1/1/50",
+      "access_vlan": "7"
+    },
+    {
+      "name": "To_TORs",
+      "type": "Trunk",
+      "intf_type": "Ethernet",
+      "start_intf": "1/1/51",
+      "end_intf": "1/1/52",
+      "native_vlan": "99",
+      "tagged_vlans": "7,125"
+    }
+  ],
+  "port_channels": [],
+  "static_routes": [
+    {
+      "prefix": "0.0.0.0/0",
+      "next_hop": "10.21.1.65",
+      "description": "BMC default gateway"
+    }
+  ]
+}

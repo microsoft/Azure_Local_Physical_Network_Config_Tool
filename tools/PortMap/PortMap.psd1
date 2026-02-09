@@ -25,7 +25,7 @@
     Copyright            = '(c) Microsoft Corporation. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description          = 'PortMap Tool - Network Device Physical Port Assignment Documentation Generator. Part of the AzureStack Network Switch Config Generator project.'
+    Description          = 'PortMap Tool - Network Device Physical Port Assignment Documentation Generator. Part of the Azure Local Network Switch Config Generator project.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion    = '5.1'
@@ -96,7 +96,7 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags         = @('Network', 'Documentation', 'AzureStack', 'Switch', 'Configuration', 'PortMapping')
+            Tags         = @('Network', 'Documentation', 'AzureLocal', 'Switch', 'Configuration', 'PortMapping')
 
             # A URL to the license for this module.
             LicenseUri   = 'https://github.com/microsoft/AzureStack_Network_Switch_Config_Generator/blob/main/LICENSE'
@@ -130,7 +130,7 @@
 - **JSON**: Machine-readable format for integration
 
 ## Integration
-- Designed for AzureStack Network Switch Config Generator project
+- Designed for Azure Local Network Switch Config Generator project
 - Compatible with existing Jinja2 template system
 - Supports configuration generator workflows
 '@
