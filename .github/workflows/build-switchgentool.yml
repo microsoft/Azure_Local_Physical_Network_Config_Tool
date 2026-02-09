@@ -137,9 +137,7 @@ jobs:
         shell: bash
         run: |
           python -c "
-          import sys
-          sys.path.insert(0, 'src')
-          from convertors.convertors_bmc_switch_json import convert_bmc_switches
+          from src.convertors.convertors_bmc_switch_json import convert_bmc_switches
           print('[OK] BMC converter module can be imported')
           "
 
