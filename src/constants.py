@@ -27,10 +27,15 @@ BMC = "BMC"
 TOR_SWITCH_TYPES: list[str] = [TOR1, TOR2]
 
 # ── Deployment patterns ───────────────────────────────────────────────────
+# Customer-facing name → internal key mapping:
+#   "HyperConverged" (Azure Local docs) → converter remaps to "fully_converged"
+#   "Switched" / "Switchless" → used as-is in template lookup
 PATTERN_HYPERCONVERGED = "hyperconverged"
 PATTERN_FULLY_CONVERGED = "fully_converged"
-PATTERN_FULLY_CONVERGED1 = "fully_converged1"  # trunk mode
-PATTERN_FULLY_CONVERGED2 = "fully_converged2"  # access mode
+PATTERN_FULLY_CONVERGED1 = "fully_converged1"  # trunk mode (Dell sub-variant)
+PATTERN_FULLY_CONVERGED2 = "fully_converged2"  # access mode (Dell sub-variant)
+PATTERN_SWITCHED = "switched"
+PATTERN_SWITCHLESS = "switchless"
 
 # ── Output defaults ──────────────────────────────────────────────────────
 DEFAULT_OUTPUT_DIR = "output"

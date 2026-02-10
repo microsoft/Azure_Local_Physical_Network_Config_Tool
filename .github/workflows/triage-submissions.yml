@@ -32,7 +32,6 @@ jobs:
             // ========================================
             // CHECK 1: Config has minimum content
             // ========================================
-            // Look for config section - could be in code block or plain text
             const configSection = body.includes('### Switch Configuration') 
               ? body.split('### Switch Configuration')[1]?.split('###')[0] || ''
               : '';
@@ -41,7 +40,7 @@ jobs:
             console.log(`Config lines found: ${configLines}`);
             
             if (configLines < 10) {
-              errors.push('❌ Config appears too short (< 10 lines). Please provide full running config or attach a file.');
+              errors.push('❌ Config appears too short (< 10 lines). Please provide full running config.');
             } else if (configLines < 30) {
               warnings.push('⚠️ Config is relatively short. Make sure you included the full running config.');
             }
@@ -60,7 +59,6 @@ jobs:
             console.log(`Switch patterns found: ${foundPatterns.map(p => p.name).join(', ')}`);
             
             if (foundPatterns.length === 0) {
-              // Could be "see attached file"
               if (body.toLowerCase().includes('attached') || body.toLowerCase().includes('see file')) {
                 warnings.push('⚠️ Config appears to be in an attached file. Maintainer will verify.');
               } else {
@@ -77,7 +75,6 @@ jobs:
               /onclick=/i,
               /onerror=/i,
             ];
-            // Template-like patterns (${} and {{}}) are legitimate in Dell OS10 / Jinja2 configs
             const templatePatterns = [
               /\$\{.*\}/,
               /\{\{.*\}\}/,
@@ -101,23 +98,83 @@ jobs:
             console.log(`Checkboxes: ${checkedBoxes}/${totalBoxes} checked`);
             
             if (checkedBoxes < 2) {
-              errors.push('❌ Please check the required checkboxes (password sanitization and CONTRIBUTING.md review).');
+              errors.push('❌ Please check the required checkboxes (sanitization and CONTRIBUTING.md review).');
             }
             
             // ========================================
             // CHECK 5: Required fields present
             // ========================================
             const requiredFields = [
+              { name: 'Submission Type', pattern: /### What do you need\?\s*\n\s*\S+/i },
+              { name: 'Deployment Pattern', pattern: /### Deployment Pattern\s*\n\s*\S+/i },
               { name: 'Switch Vendor', pattern: /### Switch Vendor\s*\n\s*\S+/i },
               { name: 'Firmware/OS', pattern: /### Firmware\/OS Version\s*\n\s*\S+/i },
               { name: 'Switch Model', pattern: /### Switch Model\s*\n\s*\S+/i },
               { name: 'Switch Role', pattern: /### Switch Role\s*\n\s*\S+/i },
-              { name: 'Deployment Pattern', pattern: /### Deployment Pattern\s*\n\s*\S+/i },
             ];
             
             const missingFields = requiredFields.filter(f => !f.pattern.test(body));
             if (missingFields.length > 0) {
               errors.push(`❌ Missing required fields: ${missingFields.map(f => f.name).join(', ')}`);
+            }
+            
+            // ========================================
+            // CHECK 6: Submission type specific checks
+            // ========================================
+            const submissionTypeSection = body.includes('### What do you need?')
+              ? body.split('### What do you need?')[1]?.split('###')[0]?.trim() || ''
+              : '';
+            const isFix = /fix\s*\/\s*improvement/i.test(submissionTypeSection);
+            const isNewVendor = /new\s*vendor\s*\/\s*model/i.test(submissionTypeSection);
+            
+            console.log(`Submission type: ${isFix ? 'Fix/Improvement' : isNewVendor ? 'New Vendor/Model' : 'Unknown'}`);
+            
+            // For Fix submissions, "What's wrong?" is important (warn if empty, don't block)
+            if (isFix) {
+              const whatsWrongSection = body.includes("### What's wrong or what needs to change?")
+                ? body.split("### What's wrong or what needs to change?")[1]?.split('###')[0]?.trim() || ''
+                : '';
+              if (whatsWrongSection.length < 10) {
+                warnings.push('⚠️ **"What\'s wrong?"** field is empty or very short. Please describe the issue so Copilot knows where to look. Examples: "HSRP priority should be 200", "Missing BGP neighbor for spine"');
+              }
+            }
+            
+            // ========================================
+            // CHECK 7: Credential scan (basic)
+            // ========================================
+            const credentialPatterns = [
+              /password\s+\S+/i,
+              /enable\s+secret\s+\S+/i,
+              /snmp-server\s+community\s+\S+/i,
+              /BEGIN.*PRIVATE\s+KEY/i,
+              /tacacs-server.*key\s+\S+/i,
+              /radius-server.*key\s+\S+/i,
+            ];
+            // Exclude lines with placeholder patterns
+            const configWithoutPlaceholders = configSection.replace(/\$CREDENTIAL_PLACEHOLDER\$/gi, '');
+            const foundCredentials = credentialPatterns.filter(p => p.test(configWithoutPlaceholders));
+            
+            if (foundCredentials.length > 0) {
+              errors.push('❌ **Possible credentials detected** in your config. Please replace all passwords, secrets, and keys with `$CREDENTIAL_PLACEHOLDER$` and re-submit.');
+            }
+            
+            // ========================================
+            // CHECK 8: Lab JSON validation (if provided)
+            // ========================================
+            const labJsonSection = body.includes('### Lab JSON Input')
+              ? body.split('### Lab JSON Input')[1]?.split('###')[0]?.trim() || ''
+              : '';
+            if (labJsonSection.length > 20) {
+              // Strip markdown code fences if present
+              const jsonText = labJsonSection.replace(/^```[\w]*\n?/m, '').replace(/\n?```$/m, '').trim();
+              try {
+                const parsed = JSON.parse(jsonText);
+                if (!parsed.InputData && !parsed.Version) {
+                  warnings.push('⚠️ Lab JSON provided but missing expected keys (`Version`, `InputData`). Copilot will validate further.');
+                }
+              } catch (e) {
+                warnings.push('⚠️ Lab JSON provided but has syntax errors. Copilot will attempt to fix or ask for clarification.');
+              }
             }
             
             // ========================================
@@ -129,6 +186,7 @@ jobs:
               warnings,
               configLines,
               patternsFound: foundPatterns.map(p => p.name),
+              submissionType: isFix ? 'fix' : isNewVendor ? 'new_vendor' : 'unknown',
             };
             
             console.log('Validation result:', JSON.stringify(result, null, 2));
@@ -144,8 +202,9 @@ jobs:
           script: |
             const result = JSON.parse(process.env.VALIDATION_RESULT);
             const warnings = result.warnings || [];
+            const submissionType = result.submissionType || 'unknown';
             
-            console.log('✅ Submission validated, assigning to Copilot');
+            console.log(`✅ Submission validated (type: ${submissionType}), assigning to Copilot`);
             
             // Remove triage labels
             const labelsToRemove = ['needs-triage', 'needs-info'];
@@ -162,18 +221,27 @@ jobs:
               }
             }
             
-            // Add Copilot assignment label
+            // Add Copilot assignment labels
+            const labels = ['copilot', 'validated'];
+            if (submissionType === 'new_vendor') {
+              labels.push('new-vendor');
+            }
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              labels: ['copilot', 'validated']
+              labels: labels
             });
             
             // Build comment
+            const typeLabel = submissionType === 'fix'
+              ? '**Fix / Improvement** — Copilot will analyze your config, identify the affected templates or code, and create a targeted fix PR.'
+              : submissionType === 'new_vendor'
+              ? '**New Vendor / Model** — Copilot will analyze your config and create scaffold templates, switch interface definitions, and a reference archive.'
+              : '**Config Submission** — Copilot will analyze your config and create a PR.';
+            
             let comment = '## ✅ Submission Validated\n\n';
-            comment += 'Your config submission passed automated validation. ';
-            comment += '**Copilot will now process your submission** and create a PR.\n\n';
+            comment += `Submission type: ${typeLabel}\n\n`;
             
             if (warnings.length > 0) {
               comment += '### Warnings\n';
@@ -183,7 +251,7 @@ jobs:
             comment += '### What happens next?\n';
             comment += '1. 🤖 **Copilot** analyzes your config and creates a PR\n';
             comment += '2. 👤 **Maintainer** reviews the PR\n';
-            comment += '3. ✅ **Merge** — your config becomes part of the reference collection\n\n';
+            comment += '3. ✅ **Merge** — your contribution improves the tool for everyone\n\n';
             comment += '> **Reminder:** This repo provides reference configurations only. ';
             comment += 'You are responsible for validating in your environment.\n';
             

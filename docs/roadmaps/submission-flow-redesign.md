@@ -96,47 +96,53 @@ a code fix.
 
 - [x] Create feature branch `feature/submission-flow-redesign`
 - [x] Create roadmap document (`docs/roadmaps/submission-flow-redesign.md`)
-- [ ] Create `submissions/` directory with `.gitkeep`
-- [ ] Add `PATTERN_SWITCHED` / `PATTERN_SWITCHLESS` constants to `src/constants.py`
+- [x] Create `submissions/` directory with `.gitkeep`
+- [x] Add `PATTERN_SWITCHED` / `PATTERN_SWITCHLESS` constants to `src/constants.py`
 
 ### Phase 2: Issue Template Redesign
 
-- [ ] Redesign `.github/ISSUE_TEMPLATE/config-submission.yml`
-  - [ ] Add "Submission Type" dropdown (Fix/Improvement vs New Vendor/Model)
-  - [ ] Fix deployment pattern dropdown (HyperConverged, Switched, Switchless)
-  - [ ] Add "What's wrong?" textarea
-  - [ ] Mark BMC role as "(lab use only)"
-  - [ ] Add optional Node Count field
-  - [ ] Update sanitization note (IPs + hostnames, not just passwords)
+- [x] Redesign `.github/ISSUE_TEMPLATE/config-submission.yml`
+  - [x] Add "Submission Type" dropdown (Fix/Improvement vs New Vendor/Model)
+  - [x] Fix deployment pattern dropdown (HyperConverged, Switched, Switchless)
+  - [x] Add "What's wrong?" textarea
+  - [x] Mark BMC role as "(lab use only)"
+  - [x] Add optional Node Count field
+  - [x] Add optional Lab JSON Input field
+  - [x] Update sanitization note (IPs + hostnames + SSH keys, not just passwords)
 
 ### Phase 3: Process-Submission Instructions Rewrite
 
-- [ ] Rewrite `.github/instructions/process-submission.instructions.md`
-  - [ ] Remove all `backend/` script references
-  - [ ] Update Step 1: extraction with corrected normalization maps
-  - [ ] Replace Steps 2-4: inline Copilot analysis (no Python imports)
-  - [ ] Add submission type processing split (Fix vs New Vendor)
-  - [ ] Add file-mapping guide: description → codebase file lookup
-  - [ ] Add data sanitization step
-  - [ ] Update credential check patterns
-  - [ ] Update PR template format
+- [x] Rewrite `.github/instructions/process-submission.instructions.md`
+  - [x] Remove all `backend/` script references
+  - [x] Update Step 1: extraction with corrected normalization maps
+  - [x] Replace Steps 2-4: inline Copilot analysis (no Python imports)
+  - [x] Add submission type processing split (Fix vs New Vendor)
+  - [x] Add file-mapping guide: description → codebase file lookup
+  - [x] Add data sanitization step
+  - [x] Update credential check patterns
+  - [x] Update PR template format
 
 ### Phase 4: Triage Workflow Update
 
-- [ ] Update `.github/workflows/triage-submissions.yml`
-  - [ ] Validate "Submission Type" field
-  - [ ] Validate "What's wrong?" field (required for Fix type)
-  - [ ] Accept `HyperConverged` as valid pattern (customer-facing name)
-  - [ ] Handle both submission types in label logic
+- [x] Update `.github/workflows/triage-submissions.yml`
+  - [x] Validate "Submission Type" field
+  - [x] Validate "What's wrong?" field (warn if empty for Fix type)
+  - [x] Accept `HyperConverged` as valid pattern (customer-facing name)
+  - [x] Handle both submission types in label logic
+  - [x] Add credential scan (basic pattern matching)
+  - [x] Add Lab JSON syntax validation
+  - [x] Auto-add `new-vendor` label for New Vendor submissions
 
 ### Phase 5: Documentation
 
-- [ ] Update `CONTRIBUTING.md`
-  - [ ] Replace deployment pattern table with customer-facing names
-  - [ ] Add "Fix / Improvement" submission guidance with examples
-  - [ ] Add "How to identify your pattern" using HyperConverged terminology
-  - [ ] Strengthen sanitization section (IPs, hostnames, ASNs)
-  - [ ] Add "For Advanced Users" — Lab JSON submissions
+- [x] Update `CONTRIBUTING.md`
+  - [x] Replace deployment pattern table with customer-facing names (HyperConverged)
+  - [x] Add "Fix / Improvement" submission guidance with examples
+  - [x] Add "How to identify your pattern" using HyperConverged terminology
+  - [x] Strengthen sanitization section (IPs, hostnames, SSH keys, SNMP)
+  - [x] Add "For Advanced Users" — Lab JSON submissions
+  - [x] Mark BMC role as lab-only
+  - [x] Add two example submissions (Fix + New Vendor)
 
 ### Phase 6: Verification
 
