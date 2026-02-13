@@ -1,7 +1,7 @@
 # Test Cases Summary
 
 ## Quick Reference
-**Status**: All tests passing (103 passed)
+**Status**: All tests passing (227 passed)
 **Run Tests**: `python -m pytest tests/ -v`
 
 ---
@@ -10,14 +10,15 @@
 
 | Layer | File | Strategy | Count |
 |-------|------|----------|-------|
-| Unit | `test_unit.py` | Synthetic inputs, one method at a time | 85 |
+| Unit | `test_unit.py` | Synthetic inputs, one method at a time | 88 |
 | Converter integration | `test_convertors.py` | Golden-file comparison (lab JSON → standard JSON) | 12 |
 | Generator integration | `test_generator.py` | Golden-file comparison (standard JSON → .cfg) | 6 |
-| **Total** | | | **103** |
+| Submission flow | `test_submission_flow.py` | Schema + consistency checks (issue template, workflow) | 121 |
+| **Total** | | | **227** |
 
 ---
 
-## Unit Tests (`test_unit.py` — 85 tests)
+## Unit Tests (`test_unit.py` — 88 tests)
 
 Tests individual methods of `StandardJSONBuilder` and utility functions with small synthetic inputs. Each test targets one behaviour.
 
@@ -52,6 +53,8 @@ End-to-end pipeline: lab JSON → converter → compare full standard JSON outpu
 **Test cases:**
 - `convert_lab_switch_input_json_cisco_nxos_fc` — Cisco NX-OS Fully Converged
 - `convert_lab_switch_input_json_cisco_nxos_switched` — Cisco NX-OS Switched
+- `convert_lab_switch_input_json_cisco_nxos_switched_20node` — Cisco NX-OS Switched (20-node)
+- `convert_lab_switch_input_json_cisco_nxos_switched_nobmc` — Cisco NX-OS Switched (no BMC)
 - `convert_lab_switch_input_json_cisco_nxos_switchless` — Cisco NX-OS Switchless
 - `convert_lab_switch_input_json_dell_os10` — Dell OS10 Fully Converged
 
@@ -71,6 +74,20 @@ End-to-end pipeline: standard JSON → generator + Jinja2 templates → compare 
 
 ---
 
+## Submission Flow Tests (`test_submission_flow.py` — 121 tests)
+
+Validates the config submission workflow end-to-end: issue template schema, triage validation logic, cross-file consistency, and file-path existence.
+
+| Area | Tests | Coverage |
+|------|-------|----------|
+| Triage validation | ~20 | Mock issue bodies covering every validation scenario |
+| Issue template schema | ~15 | Field IDs, dropdowns, required fields |
+| Cross-file consistency | ~40 | Pattern names, roles, field names across all submission files |
+| File-path existence | ~25 | Every path in process-submission.instructions.md exists |
+| Workflow guards | ~20 | Infinite loop prevention, label checks |
+
+---
+
 ## Running Tests
 
 ```bash
@@ -82,6 +99,9 @@ python -m pytest tests/test_unit.py -v
 
 # Integration tests only
 python -m pytest tests/test_convertors.py tests/test_generator.py -v
+
+# Submission flow tests only
+python -m pytest tests/test_submission_flow.py -v
 
 # Single test class
 python -m pytest tests/test_unit.py::TestTORBuildVlans -v

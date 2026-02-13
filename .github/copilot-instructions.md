@@ -139,6 +139,14 @@ Lab JSON → Converter → Standard JSON → Generator + Jinja2 Templates → .c
 - **MTU**: Use `JUMBO_MTU = 9216` constant, never hardcode `9216` directly.
 - **VLAN IDs**: Resolved from input Supernets via symbolic mapping (`VLAN_GROUP_MAP`),
   never hardcoded in converter logic (exception: BMC hardcoded VLANs with clear comments).
+- **Storage VLANs**: Storage VLAN handling depends on the deployment pattern:
+  - **Switched**: One storage VLAN per TOR (enforced). Storage VLAN A → TOR1 only,
+    Storage VLAN B → TOR2 only. The converter filters out the other TOR's storage VLAN.
+  - **HyperConverged**: One storage VLAN per TOR is recommended (same as switched),
+    but both storage VLANs on both TORs is allowed as optional. The converter does
+    not filter.
+  - **Switchless**: Storage traffic is direct-attached between nodes; storage VLANs
+    are defined on the switch but not assigned to host-facing ports.
 - **BGP ASN**: Passed as integer, supports both 16-bit and 32-bit (4-byte) ASNs.
   Templates render in asplain notation.
 - **IP addressing**: Point-to-point links use /31 pairs (standard RFC 3021 practice).
@@ -174,9 +182,10 @@ input/
 
 tests/
 ├── conftest.py              # Shared fixtures, helpers, pytest hooks
-├── test_unit.py             # Unit tests for StandardJSONBuilder methods (85 tests)
+├── test_unit.py             # Unit tests for StandardJSONBuilder methods (88 tests)
 ├── test_convertors.py       # Golden-file integration tests (converter pipeline, 12 tests)
 ├── test_generator.py        # Golden-file integration tests (generator pipeline, 6 tests)
+├── test_submission_flow.py  # Submission workflow & template tests (121 tests)
 └── test_cases/              # Test data: input JSON + expected outputs per scenario
 ```
 
@@ -187,7 +196,7 @@ tests/
 ### Framework & Execution
 
 - **Framework**: `pytest` — run with `python -m pytest tests/ -v`.
-- **103 tests total**: 85 unit + 12 converter integration + 6 generator integration.
+- **227 tests total**: 88 unit + 12 converter integration + 6 generator integration + 121 submission flow.
 - **CI gate**: All tests must pass before build. Build must pass before release.
 
 ### Test Architecture (Hybrid Strategy)
@@ -197,6 +206,7 @@ tests/
 | **Unit** (`test_unit.py`) | Synthetic inputs, one method at a time | Fast, pinpointed failure diagnosis for `StandardJSONBuilder` methods |
 | **Converter integration** (`test_convertors.py`) | Golden-file comparison | End-to-end converter pipeline smoke test |
 | **Generator integration** (`test_generator.py`) | Golden-file comparison | End-to-end Jinja2 rendering smoke test |
+| **Submission flow** (`test_submission_flow.py`) | Schema + consistency checks | Issue template, workflow, and cross-file alignment |
 
 ### Golden-File Pattern
 
@@ -282,7 +292,7 @@ invariant and don't introduce vendor-specific `if/else` branches.
 ## Build & Release
 
 - **PyInstaller** builds cross-platform executables (Windows + Linux).
-- **CI/CD pipeline**: `test` (pytest, 103 tests) → `build` (PyInstaller matrix) →
+- **CI/CD pipeline**: `test` (pytest, 227 tests) → `build` (PyInstaller matrix) →
   `release` (GitHub Release, tag-based with environment approval gate).
 - **Python 3.12** is the target version for CI and dev container.
 - **Tag-based release**: `v*` tags trigger the full pipeline. GitHub Environment

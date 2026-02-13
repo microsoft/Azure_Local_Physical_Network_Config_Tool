@@ -108,9 +108,9 @@ body:
         For "New Vendor / Model" submissions, describe what makes this vendor/model unique.
       placeholder: |
         Examples:
-        - "HSRP priority for storage VLANs should be 200 instead of 150"
+        - "HSRP priority for management VLANs should be 200 instead of 150"
         - "BGP neighbor for spine switch 10.1.1.1 is missing"
-        - "VLAN 712 should not be on port Ethernet1/48"
+        - "Port Ethernet1/48 should be an uplink, not a host port"
         - "QoS policy needs DSCP marking for storage traffic"
         - "This is a new Arista switch — CLI syntax is different from Cisco/Dell"
     validations:

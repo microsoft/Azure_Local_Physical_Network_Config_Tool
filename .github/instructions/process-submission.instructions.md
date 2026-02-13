@@ -136,6 +136,12 @@ Cross-check the stated vendor against patterns in the config text:
 Count and extract from the config text directly:
 
 - **VLANs**: Count `vlan <id>` lines, extract IDs
+- **Storage VLAN placement**: Validate against deployment pattern:
+  - **Switched**: Storage VLAN A (typically 711) must only appear on TOR1; Storage VLAN B
+    (typically 712) must only appear on TOR2. One storage VLAN per TOR is **enforced**.
+  - **HyperConverged**: One storage VLAN per TOR is **recommended** (same as switched),
+    but both storage VLANs on both TORs is **allowed as optional** — do not flag as error.
+  - **Switchless**: Storage VLANs may be defined but are not assigned to host-facing ports.
 - **Interfaces**: Count `interface` lines (Ethernet, Vlan, Loopback, Port-channel)
 - **Port-channels**: Count `port-channel` or `channel-group` references, extract IDs
 - **BGP**: Extract ASN from `router bgp <asn>`, count neighbors

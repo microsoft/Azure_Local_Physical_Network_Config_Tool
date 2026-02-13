@@ -649,6 +649,35 @@ class TestTORBuildVlans:
         hnvpa = next(v for v in tor_builder.sections["vlans"] if v["vlan_id"] == 6)
         assert "interface" not in hnvpa
 
+    def test_tor1_only_has_storage_vlan_a_switched(self, tor_builder):
+        """Switched pattern: TOR1 should only define its own storage VLAN (A), not TOR2's."""
+        tor_builder.build_switch("TOR1")
+        tor_builder.build_vlans("TOR1")
+        storage_ids = [v["vlan_id"] for v in tor_builder.sections["vlans"]
+                       if "storage" in v.get("name", "").lower()]
+        assert 711 in storage_ids, "TOR1 must have Storage VLAN A (711)"
+        assert 712 not in storage_ids, "TOR1 must NOT have Storage VLAN B (712)"
+
+    def test_tor2_only_has_storage_vlan_b_switched(self):
+        """Switched pattern: TOR2 should only define its own storage VLAN (B), not TOR1's."""
+        builder = StandardJSONBuilder(_make_tor_input())
+        builder.build_switch("TOR2")
+        builder.build_vlans("TOR2")
+        storage_ids = [v["vlan_id"] for v in builder.sections["vlans"]
+                       if "storage" in v.get("name", "").lower()]
+        assert 712 in storage_ids, "TOR2 must have Storage VLAN B (712)"
+        assert 711 not in storage_ids, "TOR2 must NOT have Storage VLAN A (711)"
+
+    def test_hyperconverged_both_storage_vlans_on_tor(self):
+        """HyperConverged: both storage VLANs allowed on each TOR (recommended: one, but both valid)."""
+        builder = StandardJSONBuilder(_make_tor_input(deployment_pattern="HyperConverged"))
+        builder.build_switch("TOR1")
+        builder.build_vlans("TOR1")
+        storage_ids = [v["vlan_id"] for v in builder.sections["vlans"]
+                       if "storage" in v.get("name", "").lower()]
+        assert 711 in storage_ids, "TOR1 must have Storage VLAN A (711)"
+        assert 712 in storage_ids, "HyperConverged TOR1 may also have Storage VLAN B (712)"
+
 
 class TestResolveInterfaceVlans:
     """StandardJSONBuilder._resolve_interface_vlans — symbolic VLAN resolution."""

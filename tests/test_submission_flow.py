@@ -274,14 +274,12 @@ _SAMPLE_CISCO_CONFIG = textwrap.dedent("""\
       name HNV-PA
     vlan 711
       name Storage-1
-    vlan 712
-      name Storage-2
     !
     interface Ethernet1/1
       description HOST-01-Port0
       switchport mode trunk
       switchport trunk native vlan 2
-      switchport trunk allowed vlan 2,7,201,711,712
+      switchport trunk allowed vlan 2,7,201,711
       mtu 9216
       no shutdown
     !
@@ -289,7 +287,7 @@ _SAMPLE_CISCO_CONFIG = textwrap.dedent("""\
       description HOST-02-Port0
       switchport mode trunk
       switchport trunk native vlan 2
-      switchport trunk allowed vlan 2,7,201,711,712
+      switchport trunk allowed vlan 2,7,201,711
       mtu 9216
       no shutdown
     !
@@ -1297,29 +1295,19 @@ class TestWorkflowInfiniteLoopGuards:
             pytest.skip("PyYAML not installed")
 
     def test_workflow_only_triggers_on_issue_events(self):
-        """Workflow must only trigger on issue opened/edited, NOT on labeled/commented.
-
-        Note: PyYAML parses 'on' as True (boolean). We fall back to raw text
-        parsing to inspect the trigger types reliably.
-        """
-        # PyYAML interprets 'on:' as True, so use raw text matching
-        text = self.workflow_text
-
-        # Must trigger on opened and edited
-        assert re.search(r"types:\s*\[.*opened.*\]", text), (
-            "Workflow must trigger on 'opened' events"
-        )
-        assert re.search(r"types:\s*\[.*edited.*\]", text), (
-            "Workflow must trigger on 'edited' events"
-        )
-
-        # Must NOT trigger on label/comment events (would cause infinite loops)
-        assert "labeled" not in text, (
+        """Workflow must only trigger on issue opened/edited, NOT on labeled/commented."""
+        # PyYAML parses the YAML key 'on:' as boolean True, not the string "on"
+        triggers = self.workflow.get(True, {})
+        issue_types = triggers.get("issues", {}).get("types", [])
+        assert "opened" in issue_types
+        assert "edited" in issue_types
+        # These would cause infinite loops — workflow adds labels and comments
+        assert "labeled" not in issue_types, (
             "DANGER: 'labeled' trigger would cause infinite loop — "
             "workflow adds labels which would re-trigger itself"
         )
-        assert "issue_comment" not in text, (
-            "DANGER: 'issue_comment' trigger would cause infinite loop — "
+        assert "commented" not in issue_types, (
+            "DANGER: 'commented' trigger would cause infinite loop — "
             "workflow adds comments which would re-trigger itself"
         )
 

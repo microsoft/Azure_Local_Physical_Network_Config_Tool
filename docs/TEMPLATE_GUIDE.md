@@ -163,7 +163,7 @@ Each file contains:
 | `shutdown` | Disable interface | `true` / `false` |
 | `ipv4` | IP address | `""` (empty = filled by converter) |
 
-**VLAN symbols:** `M` = Management/INFRA, `C` = Compute, `S` = Storage. You can also use literal VLAN IDs.
+**VLAN symbols:** `M` = Management/INFRA, `C` = Compute, `S` = Storage (resolved per-TOR: S1 for TOR1, S2 for TOR2). In Switched pattern, each TOR only defines its own storage VLAN. In HyperConverged, both storage VLANs are allowed on both TORs. You can also use literal VLAN IDs.
 
 ### Common Use Cases
 
@@ -201,9 +201,9 @@ Each file contains:
 
 | Pattern | Description | Host Interfaces |
 |---------|-------------|-----------------|
-| `fully_converged` | HCI — all traffic on one trunk | M+C+S tagged |
-| `switched` | Separate compute and storage trunks | C trunk + S trunk |
-| `switchless` | Storage direct-attached | C trunk only |
+| `fully_converged` | HCI — all traffic on one trunk | M+C+S tagged (recommended: one storage VLAN per TOR; both allowed) |
+| `switched` | Separate compute and storage trunks | C trunk + S trunk (strictly one storage VLAN per TOR) |
+| `switchless` | Storage direct-attached | C trunk only (no storage VLANs on host ports) |
 
 The `common` section defines interfaces shared across all patterns (loopbacks, uplinks, unused ports, BMC trunk).
 

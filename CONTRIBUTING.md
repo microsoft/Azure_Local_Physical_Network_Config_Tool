@@ -100,18 +100,23 @@ assignments, port roles, and BGP structure. You must know your pattern before su
 
 | Pattern | Storage Traffic | Host Port Config | When Used |
 |---------|-----------------|------------------|-----------|
-| **HyperConverged** | On switch (shared ports with compute) | Both storage VLANs (711, 712) + compute VLANs on same host ports | Most common — general purpose Azure Local |
-| **Switched** | On switch (dedicated ports) | Compute ports carry management + compute VLANs only; separate ports for storage | Enterprise — network isolation between compute and storage |
-| **Switchless** | Direct host-to-host (bypasses TOR) | No storage VLANs on switch at all | Edge — cost-sensitive, fewer nodes |
+| **HyperConverged** | On switch (shared ports with compute) | Recommended: one storage VLAN per TOR (VLAN A on TOR1, VLAN B on TOR2) + compute VLANs on same host ports. Both storage VLANs on both TORs is also valid. | Most common — general purpose Azure Local |
+| **Switched** | On switch (dedicated ports) | Compute ports carry management + compute VLANs only; separate dedicated ports for storage — strictly one storage VLAN per TOR (enforced) | Enterprise — network isolation between compute and storage |
+| **Switchless** | Direct host-to-host (bypasses TOR) | No storage VLANs on host-facing ports (storage is direct-attached between nodes) | Edge — cost-sensitive, fewer nodes |
 
 ### Check Your Config to Confirm
 
 ```
-! Both storage VLANs on host-facing ports → HyperConverged
-interface range Ethernet1/1-16
-  switchport trunk allowed vlan 7,201,711,712
+! HyperConverged — recommended: one storage VLAN per TOR
+! TOR1 carries Storage VLAN A (711), TOR2 carries Storage VLAN B (712)
+! Both storage VLANs on both TORs is also accepted
+interface range Ethernet1/1-16       ! on TOR1
+  switchport trunk allowed vlan 7,201,711
+interface range Ethernet1/1-16       ! on TOR2
+  switchport trunk allowed vlan 7,201,712
 
-! Only compute VLANs on host ports, storage on separate ports → Switched
+! Switched — strictly one storage VLAN per TOR (enforced)
+! Compute ports carry management + compute VLANs only
 interface range Ethernet1/1-16
   switchport trunk allowed vlan 7,201
 
@@ -288,7 +293,7 @@ Yes! Create a separate Issue for each:
 **Firmware:** `NX-OS`  
 **Model:** `93180YC-FX3`  
 **Role:** `TOR1`  
-**What's wrong?:** `HSRP priority for storage VLANs (711, 712) should be 200 instead of 150. Our deployment requires higher priority on TOR1 for faster failover.`
+**What's wrong?:** `HSRP priority for management VLAN should be 200 instead of 150. Our deployment requires higher priority on TOR1 for faster failover.`
 
 **Config:** *(paste full running config showing the correct HSRP priority)*
 

@@ -28,6 +28,7 @@ from ..constants import (
     TOR_SWITCH_TYPES,
     PATTERN_HYPERCONVERGED, PATTERN_FULLY_CONVERGED,
     PATTERN_FULLY_CONVERGED1, PATTERN_FULLY_CONVERGED2,
+    PATTERN_SWITCHED,
     SWITCH_TEMPLATE, SVI_TEMPLATE, VLAN_TEMPLATE,
     IP_PREFIX_P2P_BORDER1, IP_PREFIX_P2P_BORDER2,
     IP_PREFIX_LOOPBACK0, IP_PREFIX_P2P_IBGP,
@@ -128,6 +129,21 @@ class StandardJSONBuilder:
                 self.vlan_map["S1"].append(vlan_id)
             elif vlan_name.endswith(TOR2):
                 self.vlan_map["S2"].append(vlan_id)
+
+            # ── Storage VLAN per-TOR filtering (Switched pattern only) ─
+            # Switched design: one storage VLAN per TOR switch (enforced).
+            #   Storage VLAN A → TOR1 only, Storage VLAN B → TOR2 only.
+            # HyperConverged: one per TOR is also recommended, but both
+            #   storage VLANs on both TORs is allowed as optional.
+            # Skip storage VLANs that don't belong to this TOR so they
+            # are not defined in the VLAN section at all.
+            if (symbol == "S"
+                    and self.original_pattern == PATTERN_SWITCHED
+                    and switch_type in (TOR1, TOR2)):
+                if vlan_name.endswith(TOR1) and switch_type != TOR1:
+                    continue
+                if vlan_name.endswith(TOR2) and switch_type != TOR2:
+                    continue
 
             # collect IP / GW
             ip          = ""

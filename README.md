@@ -25,11 +25,11 @@ Download from [Releases](../../releases), then:
 # Generate configs from standard-format JSON
 ./network_config_generator --input_json input/standard_input.json --output_folder output/
 
-# Generate from lab-format JSON (auto-converts)
-./network_config_generator --input_json my_lab_input.json --output_folder configs/ --convertor lab
+# Generate from custom-format JSON (auto-converts)
+./network_config_generator --input_json my_input.json --output_folder configs/ --convertor lab
 
 # Include debug data (vlan_map, ip_map) in converted JSON
-./network_config_generator --input_json my_lab_input.json --output_folder configs/ --debug
+./network_config_generator --input_json my_input.json --output_folder configs/ --debug
 ```
 
 ### Option B: Python Source
@@ -41,11 +41,11 @@ pip install -r requirements.txt
 # Generate from standard-format JSON
 python -m src.main --input_json input/standard_input.json --output_folder output/
 
-# Generate from lab-format JSON with auto-conversion
-python -m src.main --input_json my_lab_input.json --output_folder configs/ --convertor lab
+# Generate from custom-format JSON with auto-conversion
+python -m src.main --input_json my_input.json --output_folder configs/ --convertor lab
 
 # Include debug data in converted JSON output
-python -m src.main --input_json my_lab_input.json --output_folder configs/ --debug
+python -m src.main --input_json my_input.json --output_folder configs/ --debug
 
 # Run tests
 python -m pytest tests/ -v
@@ -83,13 +83,11 @@ flowchart LR
 
 ### Converter Support
 
-Non-standard inputs (lab JSON, CSV, YAML, etc.) are transformed to standard format via pluggable converters:
+Non-standard inputs can be transformed to standard format via pluggable converters:
 
 ```mermaid
 flowchart LR
-    U1["Lab JSON"] -->|convertors_lab_switch_json.py| S1["Standard JSON"]
-    U2["BMC JSON"] -->|convertors_bmc_switch_json.py| S1
-    U3["Custom Format"] -->|your_converter.py| S1
+    U1["Custom Format<br/>(JSON, CSV, YAML, etc.)"] -->|Converter| S1["Standard JSON"]
     S1 --> G["Generator + Templates → .cfg"]
 ```
 
@@ -112,8 +110,8 @@ flowchart LR
 │   │   └── dellemc/os10/              # 11 templates (+ vlt.j2)
 │   └── switch_interface_templates/     # Switch model definitions
 │       ├── cisco/                      # 93108TC-FX3P, 93180YC-FX, 93180YC-FX3,
-│       │                               # 9348GC-FXP (BMC), 9348GC-FX3 (BMC)
-│       └── dellemc/                    # N3248TE-ON (BMC), S5248F-ON
+│       │                               # 9348GC-FXP, 9348GC-FX3
+│       └── dellemc/                    # N3248TE-ON, S5248F-ON
 ├── src/
 │   ├── main.py                         # CLI entry point
 │   ├── generator.py                    # Jinja2 rendering engine
@@ -121,14 +119,15 @@ flowchart LR
 │   ├── constants.py                    # Shared constants (VLAN maps, templates)
 │   ├── utils.py                        # Helpers (infer_firmware, classify_vlan)
 │   └── convertors/
-│       ├── convertors_lab_switch_json.py  # Lab → Standard JSON (TOR switches)
-│       └── convertors_bmc_switch_json.py  # Lab → Standard JSON (BMC switches)
+│       ├── convertors_lab_switch_json.py  # Input format converter (TOR switches)
+│       └── convertors_bmc_switch_json.py  # Input format converter (BMC switches)
 ├── tests/
 │   ├── conftest.py                     # Shared fixtures and helpers
-│   ├── test_unit.py                    # Unit tests (85 tests)
+│   ├── test_unit.py                    # Unit tests (88 tests)
 │   ├── test_convertors.py             # Golden-file converter tests (12 tests)
 │   ├── test_generator.py              # Golden-file generator tests (6 tests)
-│   └── test_cases/                     # Test data (4 converter + 3 generator cases)
+│   ├── test_submission_flow.py         # Submission workflow & template tests (121 tests)
+│   └── test_cases/                     # Test data (6 converter + 3 generator cases)
 ├── tools/                              # Utility scripts (IP mgmt, port mapping)
 └── requirements.txt                    # Python dependencies
 ```

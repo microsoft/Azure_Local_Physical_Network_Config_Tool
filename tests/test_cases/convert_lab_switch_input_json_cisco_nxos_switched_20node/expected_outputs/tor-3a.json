@@ -351,10 +351,6 @@
     {
       "vlan_id": 711,
       "name": "Storage_711_TOR1"
-    },
-    {
-      "vlan_id": 712,
-      "name": "Storage_712_TOR2"
     }
   ],
   "interfaces": [
