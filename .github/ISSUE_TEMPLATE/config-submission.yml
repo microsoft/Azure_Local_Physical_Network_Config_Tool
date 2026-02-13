@@ -1,5 +1,5 @@
 name: "🔧 Switch Config Submission"
-description: "Submit a switch configuration to help improve Azure Local network templates"
+description: "Report a config issue, suggest an improvement, or submit a new vendor/model configuration"
 title: "[Config] "
 labels: ["config-submission", "needs-triage"]
 body:
@@ -10,16 +10,42 @@ body:
         
         Your switch configuration helps the community build better Azure Local network templates.
         
-        > **Important:** Please sanitize your config before submitting:
-        > - Remove passwords, secrets, SNMP strings
-        > - Replace sensitive IPs if needed
+        > **⚠️ Important — Sanitize your config before submitting:**
+        > - Remove all passwords, secrets, SNMP community strings, SSH keys
+        > - Replace sensitive hostnames and IP addresses with dummy values if needed
+        > - Replace credentials with `$CREDENTIAL_PLACEHOLDER$`
         > - See [CONTRIBUTING.md](../../CONTRIBUTING.md) for details
+
+  - type: dropdown
+    id: submission_type
+    attributes:
+      label: What do you need?
+      description: "Are you reporting something wrong with the tool's output, or contributing a config for a new vendor/model?"
+      options:
+        - "Fix / Improvement — The tool generates something incorrect or incomplete"
+        - "New Vendor / Model — I have a working config for a vendor or model not yet supported"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment_pattern
+    attributes:
+      label: Deployment Pattern
+      description: |
+        Which Azure Local deployment pattern is this config for? This determines VLAN layout, port roles, and BGP structure.
+        Not sure? See [CONTRIBUTING.md](../../CONTRIBUTING.md#how-to-identify-your-deployment-pattern) for help.
+      options:
+        - "HyperConverged (Storage + Compute on same NICs — most common)"
+        - "Switched (Dedicated storage ports, separate from compute)"
+        - "Switchless (Storage direct-attached between nodes, bypasses TOR)"
+    validations:
+      required: true
 
   - type: input
     id: vendor
     attributes:
       label: Switch Vendor
-      description: "The switch manufacturer (e.g., Dell EMC, Cisco, Arista)"
+      description: "The switch manufacturer (e.g., Dell EMC, Cisco, Arista, Juniper)"
       placeholder: "Dell EMC"
     validations:
       required: true
@@ -28,7 +54,7 @@ body:
     id: firmware
     attributes:
       label: Firmware/OS Version
-      description: "The operating system or firmware (e.g., OS10, NX-OS 10.2)"
+      description: "The operating system or firmware version (e.g., OS10, NX-OS 10.3, EOS 4.28)"
       placeholder: "OS10"
     validations:
       required: true
@@ -37,7 +63,7 @@ body:
     id: model
     attributes:
       label: Switch Model
-      description: "The specific switch model"
+      description: "The specific switch model number"
       placeholder: "S5248F-ON"
     validations:
       required: true
@@ -46,23 +72,11 @@ body:
     id: role
     attributes:
       label: Switch Role
-      description: "The role of this switch in Azure Local deployment"
+      description: "The role of this switch in your Azure Local deployment"
       options:
-        - TOR1 (Top-of-Rack Switch 1)
-        - TOR2 (Top-of-Rack Switch 2)
-        - BMC (Baseboard Management Controller Switch)
-    validations:
-      required: true
-
-  - type: dropdown
-    id: deployment_pattern
-    attributes:
-      label: Deployment Pattern
-      description: "Azure Local network deployment pattern"
-      options:
-        - fully_converged (Storage + Compute on same network)
-        - switched (Dedicated storage switches)
-        - switchless (Direct host-to-host storage)
+        - "TOR1 (Top-of-Rack Switch 1 — active/primary)"
+        - "TOR2 (Top-of-Rack Switch 2 — standby/secondary)"
+        - "BMC (Baseboard Management Controller Switch — lab use only)"
     validations:
       required: true
 
@@ -70,8 +84,35 @@ body:
     id: hostname
     attributes:
       label: Switch Hostname
-      description: "The hostname configured on the switch (optional)"
+      description: "The hostname configured on the switch (optional — will be sanitized)"
       placeholder: "rack1-tor1"
+    validations:
+      required: false
+
+  - type: input
+    id: node_count
+    attributes:
+      label: Node Count
+      description: "Number of nodes in your Azure Local cluster (optional, helps with port layout analysis)"
+      placeholder: "4"
+    validations:
+      required: false
+
+  - type: textarea
+    id: whats_wrong
+    attributes:
+      label: What's wrong or what needs to change?
+      description: |
+        Describe in plain English what the tool gets wrong or what needs to be added.
+        Be as specific as you can — mention VLAN IDs, interface names, BGP settings, priorities, etc.
+        For "New Vendor / Model" submissions, describe what makes this vendor/model unique.
+      placeholder: |
+        Examples:
+        - "HSRP priority for management VLANs should be 200 instead of 150"
+        - "BGP neighbor for spine switch 10.1.1.1 is missing"
+        - "Port Ethernet1/48 should be an uplink, not a host port"
+        - "QoS policy needs DSCP marking for storage traffic"
+        - "This is a new Arista switch — CLI syntax is different from Cisco/Dell"
     validations:
       required: false
 
@@ -81,7 +122,8 @@ body:
       label: Switch Configuration
       description: |
         Paste your full switch running configuration here.
-        This will be automatically analyzed and processed.
+        For "Fix / Improvement": this is your WORKING config that shows the correct behavior.
+        For "New Vendor / Model": this is the complete running config for template creation.
       placeholder: |
         hostname my-switch
         !
@@ -89,10 +131,29 @@ body:
          description Management
          ip address 10.0.0.1/24
         !
-        ... (paste full config)
+        ... (paste full running config)
       render: text
     validations:
       required: true
+
+  - type: textarea
+    id: lab_json
+    attributes:
+      label: Lab JSON Input (Advanced Users Only)
+      description: |
+        If you used this tool's JSON input format, paste it here.
+        This is optional — most users won't have this. Leave blank if unsure.
+      placeholder: |
+        {
+          "Version": "1.0.0",
+          "InputData": {
+            "Switches": [...],
+            "Supernets": [...]
+          }
+        }
+      render: json
+    validations:
+      required: false
 
   - type: textarea
     id: notes
@@ -103,6 +164,7 @@ body:
         - This config is for a 4-node cluster
         - Using jumbo frames for storage
         - BGP peering with datacenter spine
+        - Firmware version 10.5.5.5
     validations:
       required: false
 
@@ -112,7 +174,7 @@ body:
       label: Pre-submission Checklist
       description: "Please confirm the following before submitting"
       options:
-        - label: "I have removed all passwords, secrets, and SNMP community strings"
+        - label: "I have removed all passwords, secrets, SNMP community strings, and SSH keys"
           required: true
         - label: "I have reviewed [CONTRIBUTING.md](../../CONTRIBUTING.md)"
           required: true
