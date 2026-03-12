@@ -1,0 +1,64 @@
+{
+  "make": "Cisco",
+  "model": "93108TC-FX",
+  "type": "BMC",
+  "interface_templates": {
+    "common": [
+      {
+        "name": "Unused",
+        "type": "Access",
+        "description": "initial unused for all interfaces then config as defined",
+        "intf_type": "Ethernet",
+        "start_intf": "1/17",
+        "end_intf": "1/48",
+        "access_vlan": "2",
+        "shutdown": true
+      },
+      {
+        "name": "BMC_Management",
+        "type": "Access",
+        "description": "BMC Management Ports",
+        "intf_type": "Ethernet",
+        "start_intf": "1/1",
+        "end_intf": "1/16",
+        "access_vlan": "125",
+        "shutdown": false
+      },
+      {
+        "name": "Uplink_TOR1",
+        "type": "Trunk",
+        "description": "Uplink to TOR Switch 1",
+        "intf_type": "Ethernet",
+        "intf": "1/49",
+        "native_vlan": "99",
+        "tagged_vlans": "125"
+      },
+      {
+        "name": "Uplink_TOR2",
+        "type": "Trunk",
+        "description": "Uplink to TOR Switch 2",
+        "intf_type": "Ethernet",
+        "intf": "1/50",
+        "native_vlan": "99",
+        "tagged_vlans": "125"
+      },
+      {
+        "name": "Loopback0",
+        "type": "L3",
+        "intf_type": "loopback",
+        "intf": "loopback0",
+        "ipv4": ""
+      }
+    ]
+  },
+  "port_channels": [
+    {
+      "id": 1,
+      "description": "Uplink_to_TOR_Switches",
+      "type": "Trunk",
+      "native_vlan": "99",
+      "tagged_vlans": "125",
+      "members": ["1/49", "1/50"]
+    }
+  ]
+}

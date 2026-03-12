@@ -1,0 +1,73 @@
+{
+  "switch": {
+    "make": "cisco",
+    "model": "93108tc-fx",
+    "type": "BMC",
+    "hostname": "bmc-switch-1",
+    "firmware": "nxos",
+    "version": "10.3(4a)"
+  },
+  "vlans": [
+    {
+      "vlan_id": 2,
+      "name": "UNUSED_VLAN"
+    },
+    {
+      "vlan_id": 99,
+      "name": "Native_VLAN"
+    },
+    {
+      "vlan_id": 125,
+      "name": "BMC_Mgmt_125",
+      "interface": {
+        "ip": "100.71.85.66",
+        "cidr": 26,
+        "mtu": 1500,
+        "redundancy": {
+          "type": "hsrp",
+          "group": 125,
+          "priority": 100,
+          "virtual_ip": "100.71.85.65"
+        }
+      }
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "Unused",
+      "type": "Access",
+      "intf_type": "Ethernet",
+      "start_intf": "1/17",
+      "end_intf": "1/48",
+      "access_vlan": "2",
+      "shutdown": true
+    },
+    {
+      "name": "BMC_Management",
+      "type": "Access",
+      "description": "BMC Management Ports",
+      "intf_type": "Ethernet",
+      "start_intf": "1/1",
+      "end_intf": "1/16",
+      "access_vlan": "125",
+      "shutdown": false
+    },
+    {
+      "name": "Loopback0",
+      "type": "L3",
+      "intf_type": "loopback",
+      "intf": "loopback0",
+      "ipv4": "100.71.85.20/32"
+    }
+  ],
+  "port_channels": [
+    {
+      "id": 1,
+      "description": "Uplink_to_TOR_Switches",
+      "type": "Trunk",
+      "native_vlan": 99,
+      "tagged_vlans": "125",
+      "members": ["1/49", "1/50"]
+    }
+  ]
+}

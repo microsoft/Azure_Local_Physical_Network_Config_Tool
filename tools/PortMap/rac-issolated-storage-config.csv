@@ -1,0 +1,6 @@
+DeviceName,DeviceMake,DeviceModel,Location,Rack,RackUnit,PortRange,MediaType,Speed,Description
+TOR-1,Cisco,93180YC-FX3,"Rack A, Position 42",,,1-48,SFP28,25G,25G interfaces supporting SFP28 transceivers
+TOR-1,Cisco,93180YC-FX3,"Rack A, Position 42",,,49-52,QSFP28,100G,100G uplink interfaces supporting QSFP28 transceivers
+TOR-2,Dell,S5248F-ON,"Rack B, Position 42",,,1-48,SFP28,25G,25G server interfaces
+TOR-2,Dell,S5248F-ON,"Rack B, Position 42",,,49-54,QSFP28,100G,100G uplink and inter-switch interfaces
+SPINE-1,Cisco,N9K-C93360YC-FX2,"Rack C, Position 20",,,1-96,QSFP28,100G,100G spine interfaces for leaf connections

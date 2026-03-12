@@ -1,0 +1,429 @@
+{
+  "metadata": {
+    "description": "issolated sLeafage switch environment with Leaf and BMC switches, 25G and 100G ports",
+    "version": "1.0",
+    "created": "2025-11-08",
+    "environment": "RAC-Issolated-SLeafage"
+  },
+  "devices": [
+    {
+      "deviceName": "Spine-1",
+      "deviceMake": "Cisco",
+      "deviceModel": "93180YC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G interfaces supporting SFP28 transceivers"
+        },
+        {
+          "range": "49-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink interfaces supporting QSFP28 transceivers"
+        }
+      ]
+    },
+    {
+      "deviceName": "Spine-2",
+      "deviceMake": "Cisco",
+      "deviceModel": "93180YC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G interfaces supporting SFP28 transceivers"
+        },
+        {
+          "range": "49-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink interfaces supporting QSFP28 transceivers"
+        }
+      ]
+    },
+    {
+      "deviceName": "SLeafage-1",
+      "deviceMake": "Cisco",
+      "deviceModel": "93180YC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G interfaces supporting SFP28 transceivers"
+        },
+        {
+          "range": "49-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink interfaces supporting QSFP28 transceivers"
+        }
+      ]
+    },
+    {
+      "deviceName": "SLeafage-2",
+      "deviceMake": "Cisco",
+      "deviceModel": "93180YC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G interfaces supporting SFP28 transceivers"
+        },
+        {
+          "range": "49-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink interfaces supporting QSFP28 transceivers"
+        }
+      ]
+    },
+    {
+      "deviceName": "SLeafage-3",
+      "deviceMake": "Cisco",
+      "deviceModel": "93180YC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G interfaces supporting SFP28 transceivers"
+        },
+        {
+          "range": "49-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink interfaces supporting QSFP28 transceivers"
+        }
+      ]
+    },
+    {
+      "deviceName": "SLeafage-4",
+      "deviceMake": "Cisco",
+      "deviceModel": "93180YC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G interfaces supporting SFP28 transceivers"
+        },
+        {
+          "range": "49-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink interfaces supporting QSFP28 transceivers"
+        }
+      ]
+    },
+    {
+      "deviceName": "Leaf-1",
+      "deviceMake": "Cisco",
+      "deviceModel": "93180YC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G interfaces supporting SFP28 transceivers"
+        },
+        {
+          "range": "49-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink interfaces supporting QSFP28 transceivers"
+        }
+      ]
+    },
+    {
+      "deviceName": "Leaf-2",
+      "deviceMake": "Cisco",
+      "deviceModel": "93180YC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G server interfaces"
+        },
+        {
+          "range": "49-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink and inter-switch interfaces"
+        }
+      ]
+    },
+    {
+      "deviceName": "Leaf-3",
+      "deviceMake": "Cisco",
+      "deviceModel": "93180YC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G server interfaces"
+        },
+        {
+          "range": "49-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink and inter-switch interfaces"
+        }
+      ]
+    },
+    {
+      "deviceName": "Leaf-4",
+      "deviceMake": "Cisco",
+      "deviceModel": "93180YC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G server interfaces"
+        },
+        {
+          "range": "49-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink and inter-switch interfaces"
+        }
+      ]
+    },
+    {
+      "deviceName": "BMC-1",
+      "deviceMake": "Cisco",
+      "deviceModel": "N9K-C9348GC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "1000-BASE-T",
+          "speed": "1G",
+          "description": "1G RJ48 ports"
+        },
+        {
+          "range": "49-52",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G uplink ports"
+        },
+        {
+          "range": "53-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink ports"
+        }
+      ]
+    },
+    {
+      "deviceName": "BMC-2",
+      "deviceMake": "Cisco",
+      "deviceModel": "N9K-C9348GC-FX3",
+      "location": "",
+      "portRanges": [
+        {
+          "range": "1-48",
+          "mediaType": "1000-BASE-T",
+          "speed": "1G",
+          "description": "1G RJ48 ports"
+        },
+        {
+          "range": "49-52",
+          "mediaType": "SFP28",
+          "speed": "25G",
+          "description": "25G uplink ports"
+        },
+        {
+          "range": "53-54",
+          "mediaType": "QSFP28",
+          "speed": "100G",
+          "description": "100G uplink ports"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "description": "Compute-Management Intent connections to Leaf-1",
+      "sourceDevice": "Leaf-1",
+      "sourcePorts": "1-4",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "Server-Nodes",
+      "destinationPorts": "0",
+      "destinationMedia": "SFP28",
+      "connectionType": "Server",
+      "notes": "Compute-Management Interface 1-4"
+    },
+    {
+      "description": "Leaf-1 to Leaf-2 iBGP connection",
+      "sourceDevice": "Leaf-1",
+      "sourcePorts": "41-42",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "Leaf-2",
+      "destinationPorts": "41-42",
+      "destinationMedia": "SFP28",
+      "connectionType": "iBGP",
+      "notes": "iBGP peer links between Leaf-1 and Leaf-2"
+    },
+    {
+      "description": "Leaf-1 to BMC-1 downlink",
+      "sourceDevice": "Leaf-1",
+      "sourcePorts": "44",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "BMC-1",
+      "destinationPorts": "51",
+      "destinationMedia": "SFP28",
+      "connectionType": "BMCNetwork",
+      "notes": "Downlink to BMC switch for management network"
+    },
+    {
+      "description": "Leaf-1 to Border Router uplink",
+      "sourceDevice": "Leaf-1",
+      "sourcePorts": "45-46",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "Optional-Border-Router",
+      "destinationPorts": "1",
+      "destinationMedia": "SFP28",
+      "connectionType": "Uplink",
+      "notes": "Uplinks to border router for external connectivity"
+    },
+    {
+      "description": "Leaf-1 to Border Router uplink",
+      "sourceDevice": "Leaf-1",
+      "sourcePorts": "47-48",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "Border-Router",
+      "destinationPorts": "1",
+      "destinationMedia": "SFP28",
+      "connectionType": "Uplink",
+      "notes": "Uplinks to border router for external connectivity"
+    },
+    {
+      "description": "Leaf-1 to Leaf-2 HSRP Peer Link",
+      "sourceDevice": "Leaf-1",
+      "sourcePorts": "49-51",
+      "sourceMedia": "QSFP28",
+      "destinationDevice": "Leaf-2",
+      "destinationPorts": "49-51",
+      "destinationMedia": "QSFP28",
+      "connectionType": "HSRPPEER",
+      "notes": "HSRP Peer Link between Leaf-1 and Leaf-2"
+    },
+    {
+      "description": "Compute-Management Intent connections to Leaf-2",
+      "sourceDevice": "Leaf-2",
+      "sourcePorts": "1-12",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "Server-Nodes",
+      "destinationPorts": "1",
+      "destinationMedia": "SFP28",
+      "connectionType": "Server",
+      "notes": "Compute-Management Interface 1-12"
+    },
+    {
+      "description": "SLeafage Intent connections to Leaf-2",
+      "sourceDevice": "Leaf-2",
+      "sourcePorts": "17-29",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "SLeafage-Nodes",
+      "destinationPorts": "1",
+      "destinationMedia": "SFP28",
+      "connectionType": "SLeafage",
+      "notes": "SLeafage Intent Interface 17-29"
+    },
+    {
+      "description": "Leaf-2 to Leaf-1 iBGP connection",
+      "sourceDevice": "Leaf-2",
+      "sourcePorts": "41-42",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "Leaf-1",
+      "destinationPorts": "41-42",
+      "destinationMedia": "SFP28",
+      "connectionType": "iBGP",
+      "notes": "iBGP peer links between Leaf-2 and Leaf-1"
+    },
+    {
+      "description": "Leaf-2 to BMC-1 downlink",
+      "sourceDevice": "Leaf-2",
+      "sourcePorts": "44",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "BMC-1",
+      "destinationPorts": "52",
+      "destinationMedia": "SFP28",
+      "connectionType": "BMCNetwork",
+      "notes": "Downlink to BMC switch for management network"
+    },
+    {
+      "description": "Leaf-2 to Border Router uplink",
+      "sourceDevice": "Leaf-2",
+      "sourcePorts": "45-46",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "Optional-Border-Router",
+      "destinationPorts": "2",
+      "destinationMedia": "SFP28",
+      "connectionType": "Uplink",
+      "notes": "Uplinks to border router for external connectivity"
+    },
+    {
+      "description": "Leaf-2 to Border Router uplink",
+      "sourceDevice": "Leaf-2",
+      "sourcePorts": "47-48",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "Border-Router",
+      "destinationPorts": "2",
+      "destinationMedia": "SFP28",
+      "connectionType": "Uplink",
+      "notes": "Uplinks to border router for external connectivity"
+    },
+    {
+      "description": "Leaf-2 to Leaf-1 HSRP Peer Link",
+      "sourceDevice": "Leaf-2",
+      "sourcePorts": "49-51",
+      "sourceMedia": "QSFP28",
+      "destinationDevice": "Leaf-1",
+      "destinationPorts": "49-51",
+      "destinationMedia": "QSFP28",
+      "connectionType": "HSRPPEER",
+      "notes": "HSRP Peer Link between Leaf-2 and Leaf-1"
+    },
+    {
+      "description": "BMC-1 to Server BMC Interfaces",
+      "sourceDevice": "BMC-1",
+      "sourcePorts": "1-12",
+      "sourceMedia": "1000-BASE-T",
+      "destinationDevice": "Server-BMC",
+      "destinationPorts": "0",
+      "destinationMedia": "1000-BASE-T",
+      "connectionType": "BMCNetwork",
+      "notes": "BMC Network connections to server BMC interfaces"
+    },
+    {
+      "description": "BMC-1 to HLH Server BMC Interfaces",
+      "sourceDevice": "BMC-1",
+      "sourcePorts": "49-50",
+      "sourceMedia": "SFP28",
+      "destinationDevice": "HLH-Server-BMC",
+      "destinationPorts": "0-1",
+      "destinationMedia": "SFP28",
+      "connectionType": "BMCNetwork",
+      "notes": "BMC Network connections to HLH server BMC interfaces"
+    }
+  ]
+}
