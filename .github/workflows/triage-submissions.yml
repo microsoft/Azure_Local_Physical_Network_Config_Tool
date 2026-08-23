@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Validate submission
         id: validate
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           script: |
             const body = context.payload.issue.body || '';
@@ -195,7 +195,7 @@ jobs:
 
       - name: Handle valid submission - Assign to Copilot
         if: fromJson(steps.validate.outputs.result).valid
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         env:
           VALIDATION_RESULT: ${{ steps.validate.outputs.result }}
         with:
@@ -264,7 +264,7 @@ jobs:
 
       - name: Handle invalid submission - Request fixes
         if: "!fromJson(steps.validate.outputs.result).valid"
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         env:
           VALIDATION_RESULT: ${{ steps.validate.outputs.result }}
         with:
